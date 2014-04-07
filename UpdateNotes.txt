@@ -1,0 +1,68 @@
+Update notes for FeynRules 2.0.x
+
+2343 2.0.23 26-03-14 fuks:       Bug fix with the decay package for spin3/2 
+                                fields (thanks to Helmut Eberl) 
+
+2341 2.0.22 26-03-14 aalloul:    Updated the LHA reader in order to allow it 
+                                to read files where decay information is 
+                                not at the end. 
+
+2330 2.0.21 16-03-14 fuks:       Improvement of the optimization of the 
+                                decay package 
+
+2322 2.0.20 04-03-14 fuks:       Freezing the convention corrections for the 
+                                epsilons 
+
+2319 2.0.19 04-03-14 fuks:       Making the decay package compliant with 
+                                spin 3/2 fields (thanks to Helmut Eberl) 
+
+2315 2.0.18 26-02-14 aalloul:    Adding PythonForm for the Cosecant 
+
+2312 2.0.17 19-02-14 fuks:       Removing formfactors 
+
+2306 2.0.16 17-02-14 degrande:   bug fix for the gaugexi in FA interface 
+
+2302 2.0.15 13-02-14 aalloul:    Input options ASperGe extended to allow for 
+                                autocompletion in MadGraph thanks to Karen 
+
+2299 2.0.14 12-02-14 aalloul:    Updated several bugs related to ASperGe 
+
+2297 2.0.13 07-02-14 claudeduhr: Same bug fix as before, but in current 
+
+2295 2.0.12 07-02-14 aalloul:    Fixed phase of neutralinos in mass matrices 
+
+2275 2.0.11 30-01-14 fuks:       Small bug fix in the decay package (thanks 
+                                to Kentarou Mawatari) 
+
+2274 2.0.10 30-01-14 fuks:       Small bug fix in the decay package (thanks 
+                                to Kentarou Mawatari) 
+
+2273 2.0.9 29-01-14 fuks:       Small bug with the Lie algebra 
+                                simplifications in the presence of Epsilon 
+                                in color space (Thanks to Angelo Monteux) 
+
+2249 2.0.8 13-01-14 fuks:       Improving the FA interface (thanks to 
+                                Damien Tant) 
+
+2248 2.0.7 10-01-14 fuks:       Bug fix with the decay package (thanks to 
+                                Dorival Goncalves Netto) 
+
+2225 2.0.6 26-11-13 fuks:       minor bug in the decay package 
+
+2218 2.0.5 09-11-13 fuks:       cleaning of the ff achieved and corrected 
+
+2215 2.0.4 04-11-13 neil:       Added rule for epsilon tensor to CH 
+                                interface. 
+
+2206 2.0.3 23-10-13 fuks:       Bug fix with the CheckHermiticity routine 
+                                when the lagrangian contains epsilon 
+                                tensors 
+
+2204 2.0.2 21-10-13 omatt:      bug with multiple interaction order fixed 
+
+2200 2.0.1 10-10-13 fuks:       The UFO interfaces now supports one mass 
+                                parameter for several particles 
+
+2196 2.0.0 09-10-13 fuks:       Release of version 2.0 
+
+
