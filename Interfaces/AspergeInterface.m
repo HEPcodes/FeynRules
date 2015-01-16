@@ -14,7 +14,7 @@ $ASperGeDir = "";
 (* *)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Useful tools*)
 
 
@@ -143,7 +143,7 @@ CheckDefinitions[def_]:=Block[{masslist={},fieldmasses={}},
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DefinitionsToStrings*)
 
 
@@ -171,7 +171,7 @@ DefinitionsToStrings[def_]:=Block[{TransformParamsNames,tmpdef,tmpp},
 GetParamDescription[param_]:=Return[(Cases[M$Parameters,_?(MatchQ[#,Equal[param/.a_[ind__]:>a,rule__]]&)]/.Equal[_,b__]:>(Description/.b)/.Description->"No description found")[[1]] ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Format Output*)
 
 
@@ -189,6 +189,8 @@ FormatOutput[def_]:=Block[{MyArrow,tmpp,CRules},
   MyArrow[pars__?(Head[#]===Plus &),value]:=(MyArrow[#,value]&/@pars); MyArrow[pars__?(Head[#]===Times&),value]:=(MyArrow[#,value]&/@pars); MyArrow[par_?(NumericQ[#]&),value]:=par; MyArrow[a_?(ListQ[#]&),value]:=(MyArrow[#,value] &/@a);MyArrow[Power[par_,x_],value]:=Power[MyArrow[par,value],x];
   MyArrow[Conjugate[par_],value]:=Conjugate[MyArrow[par,value]];
   MyArrow[func_[par_?(MemberQ[MR$Parameters[[All,1]],#]&)],value]:=func[MyArrow[par,value]];
+  (*A.A. 09/01/2014: Added the line below because Cos[a*theta] was not handled correctly*)
+  MyArrow[func_[a_*par_?(MemberQ[MR$Parameters[[All,1]],#]&)],value]:=func[a*MyArrow[par,value]];
   (*CForm doesn't seem to work that well, so some extra replacement rules need to be provided*)
   CRules={"1/"->"1./","Power"->"pow","Pi"->"M_PI","Sqrt("~~n:DigitCharacter:>"sqrt("<>ToString[n]<>".","Sqrt"->"sqrt","Cos"->"cos","Sin"->"sin","Tan"->"tan","ArcTan"->"atan","Complex"->"complex<double>","Conjugate"->"conj"};
   (*Apply MyArrow to the def*)
@@ -197,6 +199,8 @@ FormatOutput[def_]:=Block[{MyArrow,tmpp,CRules},
   tmpp=If[MatrixQ[tmpp],
     StringReplace[StringReplace[ToString/@(CForm/@#),CRules],{ToString[MyArrow]<>"("->"",",value)"->"->getValue()"}]&/@tmpp,
     StringReplace[StringReplace[ToString[CForm[tmpp]],CRules],{ToString[MyArrow]<>"("->"",",value)"->"->getValue()"}]];
+  (*A.A. 09/01/2014: Added this line because 0.5 was changed to 0..5*)
+  tmpp=If[MatrixQ[tmpp],StringReplace[#,".."->"."]&/@tmpp, StringReplace[tmpp,".."->"."]];
   Return[tmpp]];
 
 
@@ -239,7 +243,7 @@ CheckMatrices[]:=Block[{matrix,checkhermiticity},
 (*Write the files*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteFiles function*)
 
 
@@ -530,7 +534,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Main*)
 
 

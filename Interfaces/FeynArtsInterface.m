@@ -73,7 +73,7 @@ b___*TensDot[a__][Index[Spin,Ext[ss1_]],Index[Spin,Ext[ss2_]]]/;OddQ[Length[List
 b___*TensDot[a__][Index[Spin,Ext[ss1_]],Index[Spin,Ext[ss2_]]]/;EvenQ[Length[List[a]]]->b*TensDot[Sequence@@Reverse[List[a]]][Index[Spin,Ext[ss2]],Index[Spin,Ext[ss1]]]};
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*LSymmetrize[particles,  structure]*)
 
 
@@ -186,7 +186,7 @@ ReOrderFCforFA[ll__] := Module[{ReOrderFunc, temp, output,vt, AntiToEnd},
               temp]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Particle renaming*)
 
 
@@ -486,14 +486,14 @@ FACouplingRenaming[favertices_] := Block[{vertListTmp = {}, vertN = 1},
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Index handling*)
 
 
 MakeFAExtIndex[Index[name_, Ext[k__]], fcl_,part_] := Block[{tempk, firstk, indlist, output, fcltemp = fcl,parttemp},
       fcltemp = fcltemp //. $Maj->Identity;
       fcltemp = fcltemp //. {x___, f_?AntiFieldQ, y___} :> {x, anti[f], y};
-      fcltemp = fcltemp //. FA$MemberToClass;
+      fcltemp = fcltemp /. FA$MemberToClass;
       fcltemp = fcltemp //. FA$ClassToName;
       tempk = StringJoin @@ (ToString /@ {k});
       firstk = If[Length[{k}] > 1, First[[{k}]], k];
@@ -506,7 +506,7 @@ MakeFAIntIndex[Index[name_, k__]] := Index[name, ToExpression[StringJoin @@ (ToS
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*IndexSum*)
 
 
@@ -516,8 +516,7 @@ GetIndices[xx___,tt_?((FreeQ[#,Index]&&FreeQ[#,NTIndex])&),yy___]:=GetIndices[xx
 GetIndices[xx___,Index[n__],yy___,Index[n__],zz___]:=GetIndices[xx,Index[n],yy,zz];
 GetIndices[xx___, Index[_, _?NumericQ], yy___] := GetIndices[xx, yy];
 
-IndexSum/:{xx___, IndexSum[exp_,{n_,n1__}],yy___,exp1_,zz___}:={xx,IndexSum[exp*exp1,{n,n1}],yy,zz}/;Not[FreeQ[exp1,n]];
-IndexSum/:{xx___, exp1_,yy___,IndexSum[exp_,{n_,n1__}],zz___}:={xx,IndexSum[exp*exp1,{n,n1}],yy,zz}/;Not[FreeQ[exp1,n]];
+IndexSum[a_*b_,{n_,ninc__}]:=a*IndexSum[b,{n,ninc}]/;FreeQ[a,n]
 
 MakeIndexSum[lisi_List] := MakeIndexSum /@ lisi;
 
@@ -527,10 +526,16 @@ MakeIndexSum[expr_?(Head[#]=!=List &)]:=Block[{tmpexprlist,getindlist,IndexSum1}
    getindlist=GetIndices/@tmpexprlist;
    getindlist=getindlist/.GetIndices->List/.{}->1;
    getindlist=getindlist/.Index[name_,k_]:>IndexSum1[1,{k,First[MRIndexRange[Index[name]]],Last[MRIndexRange[Index[name]]]}];
-   getindlist=Times@@@getindlist;
-   tmpexprlist=Table[List@@Expand[tmpexprlist[[term]]*getindlist[[term]]],{term,Length[tmpexprlist]}];
+   For[term=1,term<=Length[tmpexprlist],term++,
+     If[Length[getindlist[[term]]]>0,getindlist[[term,1,1]]=tmpexprlist[[term]];
+       For[ind=2,ind<=Length[getindlist[[term]]],ind++,
+         getindlist[[term,ind,1]]=getindlist[[term,ind-1]];
+       ];
+       tmpexprlist[[term]]=Last[getindlist[[term]]];
+     ];
+   ];
    tmpexprlist=tmpexprlist/.IndexSum1->IndexSum;
-   tmpexprlist=Plus@@(Times@@@tmpexprlist)];
+   tmpexprlist=Plus@@tmpexprlist];
 
 
 
@@ -1224,15 +1229,15 @@ FR$FeynArtsInterface = False;
         vertexlistFA = OrderEps[LorentzContract[ExpandAll[vertexlistFA]]//.{Times[aa___,Eps[bb___,dd_,cc___],ee___,FV[ff_,dd_],hh___]->Times[aa,Eps[bb,FV[ff],cc],ee,hh]}];
   	  vertexlistFA = ExpandAll[vertexlistFA]/.FV[bbb_,cc_]TensDot[eee___,Ga[cc_],fff___][ss1_,ss2_]:>TensDot[eee,SlashedP[bbb],fff][ss1,ss2];
 
-Print["t1"];
+Print["Identifying the Lorentz structures"];
         FAIDStructure @@@ vertexlistFA;
 
-Print["Lsym"];
+Print["Symmetrizing the Lorentz structure"];
 		structurelistFA = LSymmetrize @@@ structurelistFA;
 
-Print["t3"];
+Print["Obtaining their coefficients"];
 		vertexlistFA = (FAStructure2 @@@ vertexlistFA)/.CSPRL->1;
-Print["t4"];
+Print["splitting done"];
 (*Print[vertexlistFA];*)
         (*Split the tree-level and counterterms and put them as two different entries*)
         vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0]],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
@@ -1408,16 +1413,17 @@ FAIDStructure[vertextype_, FAPartContent_, vertex_, fc_] := Module[{temp,temp2,t
 ];(*end Module*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FAStructure2*)
 
 
 FAStructure2[vertextype_, FAPartContent_, vertex_, fc_] := Module[{temp, ReturnConst, $HCHELAS, tempFApc, output,temp2},
+
 	temp = vertex /. {T[aa_, ii_, jj_] -> SUNT[aa, ii, jj], T[aa_] -> SUNT[aa], f[aa_, bb_, cc_] -> SUNF[aa,bb,cc], ee -> EL, gs -> GS};
 	temp = Expand[temp/.{SUNF[Aaa__,Bbb_,Ccc_]SUNT[Ccc_,Iii_,Jjj_]->-I(SUNT[Aaa,Bbb,Iii,Jjj]-SUNT[Bbb,Aaa,Iii,Jjj])}];
 	temp = temp//.{SUNT[Aaa__,Iii_,Jjj_]SUNT[Bbb__,Jjj_,Kkk_]->SUNT[Aaa,Bbb,Iii,Kkk]};
 	temp = Expand[temp];
-(*Print[temp];*)
+
 	ReturnConst[pat_] := Module[{epsind,perm,xx,kk,pos,remain,sign,epscoef,ll,newpat,newsign,res,aa,bb,cc,dd},
                            If[FreeQ[pat,Eps],
                              If[MatchQ[pat,Times[a___,-1,b___]],
@@ -1463,7 +1469,7 @@ If[Length[Cases[temp,yx_?(FreeQ[#,Spin]&&FreeQ[#,Lorentz]&&FreeQ[#,SP]&)*newpat-
     temp = temp //. Index[name_, k__] :> MakeFAIntIndex[Index[name, k]];
     If[Not[FreeQ[temp, Index[_, _?(Not[NumericQ[#]]&)]]], temp = MakeIndexSum[temp]];
     temp = temp /. {Index[_, k_] -> k};
-    temp = Factor[Expand[temp]];
+    temp = If[$VersionNumber<9,Simplify[Expand[temp],TimeConstraint->0.01],Factor[Expand[temp]]];
     tempFApc = First /@ FAPartContent;
     output = {tempFApc, temp}
 ];

@@ -1219,8 +1219,12 @@ Unprotect[Dot];
 
 Dot[tt__, FR$HCMinus[field_]] := -Dot[tt, field];
 Dot[tt__, FR$HCMinus[field_][ind___]] := -Dot[tt, field[ind]];
+Dot[tt__, del[FR$HCMinus[field_][ind___],mu_]] := -Dot[tt, del[field[ind],mu]];
+Dot[tt__, del[FR$HCMinus[field_],mu_]] := -Dot[tt, del[field,mu]];
 Dot[FR$HCMinus[field_], tt__] := -Dot[field, tt];
 Dot[FR$HCMinus[field_][ind___], tt__] := -Dot[field[ind], tt];
+Dot[del[FR$HCMinus[field_],mu_], tt__] := -Dot[del[field,mu], tt];
+Dot[del[FR$HCMinus[field_][ind___],mu_], tt__] := -Dot[del[field[ind],mu], tt];
 
 Dot[gh1_?(((Not[AntiFieldQ[#]] === True) && (GhostFieldQ[#] === True))&)[ind1___], gh2_?(((AntiFieldQ[#] === True) && GhostFieldQ[#] === True)&)[ind2___]] := -Dot[gh2[ind2], gh1[ind1]];
 Dot[gh1_?(((Not[AntiFieldQ[#]] === True) && GhostFieldQ[#] === True)&)[ind1___], del[gh2_?((AntiFieldQ[#] === True && GhostFieldQ[#] === True)&)[ind2___], mu_]] := -Dot[del[gh2[ind2], mu], gh1[ind1]];

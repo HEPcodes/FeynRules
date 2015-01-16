@@ -292,7 +292,7 @@ CheckDiagonalKineticTerms[lagrangian_, options___] := Block[{lag, DKT = True, fc
       fcl1 = DeleteCases[fcl1,{_?ScalarFieldQ,_?VectorFieldQ}|{_?VectorFieldQ,_?ScalarFieldQ}];
       Do[tmp=Append[tmp,Plus@@((lag[[#]]&)@@@Position[fcl,fcl1[[nfcl]]])],{nfcl,Length[fcl1]}];
          Do[If[fcl1[[$kk,1]] =!= anti[fcl1[[$kk,2]]],
-               tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1 //. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
+               tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1 //.TensDot[Ga[_],ProjM|ProjP][_,_]->1/2//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
                If[Not[NumericQ[NumericalValue[tmptmp]]],Print["Warning: not numerical value encountered. Unable to decide whether kinetic term is diagonal"]];
                If[(NumericalValue[tmptmp] < N[10^(-8)])=!=True, DKT = False;
                   Print["Non diagonal kinetic term found: ", tmp[[$kk]]]]],
@@ -314,7 +314,7 @@ CheckDiagonalQuadraticTerms[lagrangian_, options___] := Block[{lag, DQT = True, 
          fcl1=KillDoubles[fcl];
          Do[tmp=Append[tmp,Plus@@((lag[[#]]&)@@@Position[fcl,fcl1[[nfcl]]])],{nfcl,Length[fcl1]}];
          Do[If[fcl1[[$kk,1]] =!= anti[fcl1[[$kk,2]]],
-               tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
+               tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1//.TensDot[Ga[_],ProjM|ProjP][_,_]->1/2//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
                If[Not[NumericQ[NumericalValue[tmptmp]]],Print["Warning: not numerical value encountered. Unable to decide whether quadratic term is diagonal"]];
                   If[(NumericalValue[tmptmp] < N[10^(-8)])=!=True, DQT = False;
                      Print["Non diagonal quadratic term found: ", tmp[[$kk]]]]],

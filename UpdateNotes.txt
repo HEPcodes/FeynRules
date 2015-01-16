@@ -1,5 +1,28 @@
 Update notes for FeynRules 2.0.x
 
+2406 2.0.31 11-11-14 fuks:       Bug with the parallelization and 
+                                restrictions fixed 
+
+2402 2.0.30 24-10-14 fuks:       Bug fix in the mass diagonalization package 
+                                (thanks to Santosh Rai) 
+
+2397 2.0.29 14-10-14 degrande:   bug fix for IndexSum 
+
+2392 2.0.28 01-09-14 aalloul:    Bug fix thanks to J-B. Flament in ASperGe 
+                                interface 
+
+2388 2.0.27 15-08-14 fuks:       Small issue with the CheckHermiticity 
+                                function when a '0.' term was present in 
+                                the Lagrangian 
+
+2378 2.0.26 08-07-14 fuks:       Bug with HC of derivatives of ghost fields 
+
+2354 2.0.25 22-04-14 fuks:       Bug fix in the check of the kinetic terms 
+                                (thanks to Josh Berger) 
+
+2351 2.0.24 18-04-14 fuks:       OptimizeIndex when tensor fields are 
+                                involved 
+
 2343 2.0.23 26-03-14 fuks:       Bug fix with the decay package for spin3/2 
                                 fields (thanks to Helmut Eberl) 
 

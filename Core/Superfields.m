@@ -1776,7 +1776,7 @@ TreatUDeps[exp_]:=Block[{indices,rules},
 ];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Transform an expression in a list of the indices appearing inside, keeping the same order*)
 
 
@@ -1816,6 +1816,8 @@ ToIndexList[exp_]:=Block[{res,MyTens},
     f_?(MajoranaFieldQ[#]===True &)[sp_,inds__]:> Sequence[Index[Spin,sp],Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]]],
     f_?(DiracFieldQ[#]===True &)[sp_]-> Index[Spin,sp],
     f_?(MajoranaFieldQ[#]===True &)[sp_]-> Index[Spin,sp],
+    f_?(Spin2FieldQ[#]===True&)[mu_,nu_]:>Sequence[Index[Lorentz,mu],Index[Lorentz,nu]],
+    f_?(Spin2FieldQ[#]===True&)[mu_,nu_,inds__]:>Sequence[Index[Lorentz,mu],Index[Lorentz,nu],Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]]],
     f_?(VectorFieldQ[#]===True&)[mu_]->Index[Lorentz,mu],
     f_?(VectorFieldQ[#]===True&)[mu_,inds__]:> Sequence[Index[Lorentz,mu],Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]]],
     f_?(ScalarFieldQ[#]===True&)[inds__]:> Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]],

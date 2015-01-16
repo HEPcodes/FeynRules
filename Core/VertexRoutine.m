@@ -611,7 +611,7 @@ GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag,FRoptions, FCList,F
   FR$DoPara=If[Global`FR$Parallelize && Length[lagrangian]>40 && $KernelCount>1,True,False];
 
   (* Expansion of the Lagrangian *)
-  Print["Expanding the Lagrangian..."];
+  Print["Expanding the Lagrangian..."]; 
   templag=If[FR$DoPara,
     Print["Expanding indices over ", Global`FR$KernelNumber," cores"];
     ParallelizeMe[ExpandIndices,lagrangian,MyOptions->FRoptions],

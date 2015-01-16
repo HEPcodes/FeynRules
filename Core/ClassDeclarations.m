@@ -703,12 +703,12 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
    FR$restrictionCounter = 0;
 
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]
+      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
      ];
    Print["Loading restrictions from ", filename, " : ", Dynamic[FR$restrictionCounter]," / ",Length[M$Restrictions]];
    AddDefinition[#,Output->False]&/@M$Restrictions;
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]
+      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
      ];
 
 
@@ -2003,7 +2003,7 @@ DeclareParametersMG := Module[{nlist, ParamRules2},
      ParametersMG @@ $ParamListtemp]; 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Tensor parameters*)
 
 
