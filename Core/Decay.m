@@ -354,7 +354,7 @@ ToSpinor32[field_,position_,ordering_,loridx_]:=If[Position[ordering,Index[Spin,
 (*Squaring the amplitudes and getting the decay width*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Reduction of the color trace*)
 
 
@@ -364,10 +364,11 @@ DeltaC::usage="";
 Colorrules={
   DeltaC[Index[Colour,ii_],Index[Colour,ii_]]->3,
   DeltaC[Index[Gluon,ii_],Index[Gluon,ii_]]->8,
-  DeltaC[Index[type_,ii_],Index[type_,jj_]]DeltaC[Index[type_,jj_],Index[type_,kk_]]->DeltaC[Index[type,ii],Index[type,kk]], 
+  DeltaC[Index[type_,ii_],Index[type_,jj_]]DeltaC[Index[type_,jj_],Index[type_,kkk_]]->DeltaC[Index[type,ii],Index[type,kkk]], 
   DeltaC[Index[type_,ii_],Index[type_,jj_]]DeltaC[Index[type_,jj_],Index[type_,ii_]]->DeltaC[Index[type,ii],Index[type,ii]], 
   T[aa_,ii_,ii_]->0,
-  T[Index[Gluon,aa_],ll_,mm_] T[Index[Gluon,bb_],mm_,ll_]->1/2 DeltaC[Index[Gluon,aa],Index[Gluon,bb]]
+  T[Index[Gluon,aa_],ll_,mm_] T[Index[Gluon,bb_],mm_,ll_]->1/2 DeltaC[Index[Gluon,aa],Index[Gluon,bb]],
+  dSUN[a_,b_,c_]^2->40/3
 };
 
 
@@ -481,7 +482,7 @@ MakeDiracRule[exp_,rul_]:=Block[{tmp,idx,myPattern,myRule},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Conjugating a diagram*)
 
 
@@ -520,6 +521,7 @@ Squaring[{fields__},expr_]:=Block[{Amp,CAmp,ECAmp,M2,masses,gammalist,CArule={}}
   (* Conjugating the gamma lines *)
   CAmp=ConjugateAmp[expr]/.Index[Lorentz,Ext[i1__]]->Index[Lorentz,eext[i1]]/.IndexDelta->FR$myidx/.Index[Lorentz, sy_, 1]->Index[Lorentz,sy,2];
   ECAmp=Expand[CAmp];
+
   Block[{muf,newrules},
     muf=Cases[Tally[Cases[#,Index[Lorentz,_],Infinity]],{_,2}]; 
     muf=DeleteCases[muf,{Index[Lorentz,eext[__]],2}];
@@ -593,12 +595,12 @@ Squarify[Amp_,CAmp_,masses_]:=Block[{msq},
   };
 
   msq= msq/.{
-   GLine[args1__,Spinor[Spv,Ext[i1_]],a_]GLine[Spinor[Spvbar,Ext[i1_],b_],args2__]:>If[masses[[i1]]=!=0,
+   GLine[args1__,Spinor[Spv,Ext[i1_],a_]]GLine[Spinor[Spvbar,Ext[i1_],b_],args2__]:>If[masses[[i1]]=!=0,
       (-ME[b,a]+2/3 FV[Ext[i1],b] FV[Ext[i1],a]/masses[[i1]]^2)*(GLine[SlashedP[i1],args2,args1]-masses[[i1]] GLine[args2,args1])+
       1/3*(GLine[SlashedP[i1],Ga[a],Ga[b],args2,args1]-masses[[i1]] GLine[Ga[a],Ga[b],args2,args1])-
       1/(3 masses[[i1]])*FV[Ext[i1],b]*(GLine[SlashedP[i1],Ga[a],args2,args1]-masses[[i1]] GLine[Ga[a],args2,args1])+
       1/(3 masses[[i1]])*FV[Ext[i1],a]*(GLine[SlashedP[i1],Ga[b],args2,args1]-masses[[i1]] GLine[Ga[b],args2,args1])],
-   GLine[args1__,Spinor[Spu,Ext[i1_]]]GLine[Spinor[Spubar,Ext[i1_]],args2__]:>If[masses[[i1]]=!=0,
+   GLine[args1__,Spinor[Spu,Ext[i1_],a_]]GLine[Spinor[Spubar,Ext[i1_],b_],args2__]:>If[masses[[i1]]=!=0,
       (-ME[b,a]+2/3 FV[Ext[i1],b] FV[Ext[i1],a]/masses[[i1]]^2)*(GLine[SlashedP[i1],args2,args1]+masses[[i1]] GLine[args2,args1])+
       1/3*(GLine[SlashedP[i1],Ga[a],Ga[b],args2,args1]+masses[[i1]] GLine[args1,Ga[a],Ga[b],args2,args1])+
       1/(3 masses[[i1]])*FV[Ext[i1],b]*(GLine[SlashedP[i1],Ga[a],args2,args1]+masses[[i1]] GLine[Ga[a],args2,args1])-

@@ -89,6 +89,7 @@ PY$IntIndexCounter = 1;
 << "PYDecays.m";
 << "PYFormFactors.m";
 << "PYNLO.m";
+(*<< "PYRestrictions.m";*)
 
 
 
@@ -245,7 +246,10 @@ Options[WriteUFO] := Join[Options[FeynmanRules],
      SimplifyDecays -> False,
      R2Vertices   -> {},
      UVCounterterms -> {},
-     CTParameters -> {}}] /. {Rule[FlavorExpand, _] :> Rule[FlavorExpand, Automatic]};
+     CTParameters -> {} /. {Rule[FlavorExpand, _] :> Rule[FlavorExpand, Automatic]},
+     Restrictions -> {}
+}
+];
 
 
 WriteUFO[lagrangians_List, options___] := WriteUFO[Sequence @@ lagrangians, options];
@@ -264,11 +268,11 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
    PY$R2Vertices = OptionValue[R2Vertices], 
    PY$UVVertices = OptionValue[UVCounterterms],
    PY$CTparameters = OptionValue[CTParameters],
-   IsUFOAtNLO = False, NLOcoupls
+   IsUFOAtNLO = False, NLOcoupls, 
+   PY$OldDirectory = Directory[]
    },
 
    Print[" --- Universal FeynRules Output (UFO) v " <> UFO$Version <> " ---"];
-
 
 (* * * * * * * * * * * * * * * * * * * * * * * *)
 (* Preparation                                *)
@@ -286,6 +290,11 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
 
     (*Simplify If*)
     PY$UVVertices=PY$UVVertices/.((Rule[#,#/.MR$Definitions]&)/@Union[Cases[PY$UVVertices,_If,\[Infinity]]]);
+
+    (*Simplify using the definitions to avoid 0/0 later*)
+    (*Off[Simplify::time];
+    PY$R2Vertices=Simplify[PY$R2Vertices//.MR$Definitions/.FR$RmDblExt,TimeConstraint->1];
+    On[Simplify::time];*)
 
 
    (* Create the output directory *)
@@ -418,7 +427,6 @@ If[$Debug,
 ];
 
    (* Apply simplification rules *)
-(*Print[InputForm[vertices]];*)
    vertices = DeleteCases[VertexSimplify @@@ vertices, {_, 0}];
 
    (*vertices = MergeSortedVertices[vertices];*)
@@ -486,7 +494,7 @@ If[$Debug,
 (* Compute Decays                             *)
 (* * * * * * * * * * * * * * * * * * * * * * * *)
 
-Print[OptionValue[AddDecays]];
+(*Print[OptionValue[AddDecays]];*)
    If[OptionValue[AddDecays],
       decays = GetUFODecays[vertices //. {PYR2UVTag[_] :> 0}, SimplifyDecays -> simplifydecays];
       ];
@@ -590,6 +598,16 @@ If[$Debug,
 (* * * * * * * * * * * * * * * * * * * * * * * *)
 
    Print["    - Writing files."];
+
+ (*   (* Create restrictions.py *)
+   If[ValueQ[NLOCT$assumptions] && (NLOCT$assumptions =!= {}),
+      WritePYAssumptions[NLOCT$assumptions]
+      ];
+
+
+   If[OptionValue[Restrictions] =!= {},
+      WritePYRestrictions[PY$OldDirectory,OptionValue[Restrictions]];
+     ];*)
 
    (* Create particles.py *)
    WritePYParticles[partlist];

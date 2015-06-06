@@ -617,7 +617,6 @@ CreateVertexObjectEntry[list_, {counter_Integer}] := Block[{
      lorentz = ("L." <> # &) /@ lorentz;
      coupl = {#1, #2, "C." <> #& /@ #3}& @@@ coupl;
 
-
      (* We now construct the output object *)
      pyvertex = {{"name",      PYString["V_" <> ToString[counter]]},
                  {"particles", PYList[particles]},
@@ -662,7 +661,7 @@ WriteVertexObject[file_, vertex_List] := Block[{
 (*WritePYVertices[ list ] writes all the vertices in list to vertices.py*)
 
 
-WritePYVertices[vertlist_] := Block[{outfile},
+WritePYVertices[vertexlist_] := Block[{outfile, vertlist=vertexlist, PullOutSingleIOCouplings, VertObj},
 
    (* Prepare the log file *)
    AppendTo[GenInt$LogFile, "#"];
@@ -680,6 +679,27 @@ WritePYVertices[vertlist_] := Block[{outfile},
    WriteString[outfile, "import couplings as C\n"];
    WriteString[outfile, "import lorentz as L\n"];
    WriteString[outfile, "\n\n"];
+
+   (* CD, 31.03.2015: With SH and MG5 we decided to go back to one coupling per vertex, not list thereof if they have different InteractionOrders *)
+   vertlist = VertObj @@@ vertlist;
+
+   PullOutSingleIOCouplings[vo_]:=Block[{parts=vo[[1]],vertsparts=(List@@Rest[vo]),maxiter, VertTermObj},
+      vertsparts = VertTermObj @@@ vertsparts;
+      vertsparts = vertsparts /. VertTermObj[as__, clist_List] :> (VertTermObj[as, {#}]& /@ clist);
+
+      maxiter=Max[Length/@vertsparts];
+      If[maxiter<2,Return[vo]];
+  
+      vertsparts=Table[If[Length[#]<i,{},#[[i]]]&/@vertsparts,{i,maxiter}];
+      vertsparts=DeleteCases[#,{}]&/@vertsparts;
+      vertsparts=vertsparts//.VertTermObj->List;
+      vertsparts=VertObj[parts,Sequence@@#]&/@vertsparts;
+      Return[vertsparts]
+   ];
+
+   vertlist = Flatten[(PullOutSingleIOCouplings /@ vertlist)];
+   vertlist = List @@@ vertlist;
+   (* CD End*)
 
    WriteVertexObject[outfile, #1]& /@ MapIndexed[CreateVertexObjectEntry, vertlist];
    
@@ -1156,7 +1176,7 @@ WritePYCouplings[list_] := Block[{outfile},
 ]; 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*MakeOutgoingParticles*)
 
 
@@ -1176,7 +1196,7 @@ MakeOutgoingParticles[vertex_] := Block[{
 
    expr = expr /. {FV[i_, mu_] :> -FV[i, mu],
                    SlashedP[i_,inds__] :> -SlashedP[i, inds],
-                   TensDot[ga1___, SlashedP[i_], ga2___][inds__] :> -TensDot[ga1, SlashedP[i], ga2][inds]};
+                   TensDot[ga1___][inds__] :> (-1)^Count[{ga1},_SlashedP,\[Infinity]]TensDot[ga1][inds]/;Not[FreeQ[ga1,SlashedP]]};
 
    (* Return and exit*)
    Return[{particles, expr}];

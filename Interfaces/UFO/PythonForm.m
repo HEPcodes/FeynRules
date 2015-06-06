@@ -114,6 +114,47 @@ WritePYDictionary[file_, name_String, list_List] := Block[{dic},
 
 
 (* ::Subsection:: *)
+(*WritePYTuple*)
+
+
+(* ::Text:: *)
+(*WritePYLongTuple[file, list] writes out a python tuple*)
+(**)
+(*( list1, list2, ...)*)
+
+
+WritePYTuple[file_String, list_List] := WriteString[file, PYTuple[list]];
+
+
+(* ::Subsection:: *)
+(*WritePYLongTuple*)
+
+
+(* ::Text:: *)
+(*WritePYLongTuple[file, list, offset] writes out a python tuple*)
+(**)
+(*( list1,*)
+(*  list2*)
+(*)*)
+(**)
+(*off set is the number of white space at the beginning of the new line.*)
+
+
+WritePYLongTuple[filename_String, list_List, offset_:20] := Block[{entries = list,
+   whitespace = StringJoin @@ Table[" ", {offset}],
+   file = OpenAppend[filename]
+   },
+
+   entries = Append[Table[entries[[i]] <> ",\n", {i,Length[entries]-1}], entries[[-1]]];
+   WriteString[file, "( ", entries[[1]]];
+   WriteString[file, whitespace, #] & /@ Rest[Most[entries]];
+   WriteString[file, whitespace, entries[[-1]], ")"];
+   Close[file];
+
+];
+
+
+(* ::Subsection:: *)
 (*PYString*)
 
 
@@ -146,6 +187,13 @@ PYListString[list_List] := If[Length[list] == 1,
 
 
 (* ::Subsection:: *)
+(*PYTuple*)
+
+
+PYTuple[list_List] := StringJoin["( ", Sequence @@ Riffle[list, ", "], ")"];
+
+
+(* ::Subsection:: *)
 (*MakeString*)
 
 
@@ -161,7 +209,7 @@ MakeString[expr_] := If[StringQ[expr], expr, ToString[expr]];
 
 
 (* ::Text:: *)
-(*PYList[ list ] turns a list into a Pythong list. the output is a string.*)
+(*PYList[ list ] turns a list into a Python list. the output is a string.*)
 
 
 PYList[{}] = "[]";

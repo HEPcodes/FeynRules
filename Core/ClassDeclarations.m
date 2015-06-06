@@ -8,7 +8,7 @@
 (*This file contains the routines that read the model file, and declare all the corresponding classes*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Some usefull functions*)
 
 
@@ -151,7 +151,7 @@ Return[newoutputlist]
 (*Reading the model file*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MakeNumQ*)
 
 
@@ -221,7 +221,7 @@ ModelInformation[] := Block[{tmp},
       
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*LoadModel (one argument)*)
 
 
@@ -250,6 +250,7 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
 		curDir=Directory[];
 		DistributeDefinitions[curDir];
 		ParallelEvaluate[
+			Begin["Global`"];(*NC: The subkernels have System` as their default context which causes shadowing of the model defined parameters. *)
 			$Output={};
 			SetDirectory[curDir];
 			LoadModel[modfile, rule];
@@ -403,7 +404,7 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*LoadModel (multiple arguments) *)
 
 
@@ -417,6 +418,7 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
 		curDir=Directory[];
 		DistributeDefinitions[curDir];
 		ParallelEvaluate[
+			Begin["Global`"];(*NC: The subkernels have System` as their default context which causes shadowing of the model defined parameters. *)
 			$Output={};
 			SetDirectory[curDir];
 			LoadModel[modfile1,modelfiles, rule];
@@ -477,7 +479,7 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Restrictions and Definitions*)
 
 
@@ -656,6 +658,7 @@ LoadRestriction[filename_String] := Block[{curDir},
 (*	(*Parallelize - NC*)
 	If[Global`FR$Parallelize&&Length[Kernels[]]>0,
 		ParallelEvaluate[
+			Begin["Global`"];(*NC: The subkernels have System` as their default context which causes shadowing of the model defined parameters. *)
 			$Output={};
 			ResetNumericalValues[];
 		    CleanParamLists[];
@@ -688,6 +691,7 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
 		curDir=Directory[];
 		DistributeDefinitions[curDir];
 		ParallelEvaluate[
+			Begin["Global`"];(*NC: The subkernels have System` as their default context which causes shadowing of the model defined parameters. *)
 			$Output={};
 			SetDirectory[curDir];
 			LoadRestriction[filename,nprint];
@@ -702,12 +706,12 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
    FR$restrictionCounter = 0;
 
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]
+      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
      ];
    Print["Loading restrictions from ", filename, " : ", Dynamic[FR$restrictionCounter]," / ",Length[M$Restrictions]];
    AddDefinition[#,Output->False]&/@M$Restrictions;
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]
+      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
      ];
 
 
@@ -717,7 +721,7 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
 LoadRestriction[] := LoadRestriction[""];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Unfold[]*)
 
 
@@ -768,7 +772,7 @@ DeclareQuantumNumbers[tempclassname_, tempclassmembers_,tempQNrules_] := Block[{
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Class declarations (spin 3/2 added)*)
 
 
@@ -1220,7 +1224,9 @@ If[Not[repo], Print["   - Loading particle classes."]];
 
       {kk, Length[MR$ClassesList]}];
 
-
+	(*NC : Feb 4, 2015: Added dispatch here because it was causing problems in Math10 in AddParticlesToClass where it used to be.*)
+	$FAToMRRules = Dispatch[$FAToMRRules];
+	(*NC : End*)
 
       DeclareWeylFermions[];
 
@@ -1603,7 +1609,7 @@ $DefaultAntiPartName[name_, type_] := (ToString[name] <> "~") /; MemberQ[{CS, F,
 $DefaultAntiPartName[name_, type_] := Hold[ToString[name]] /; MemberQ[{RS, M, RV, RR, T},type];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Declaration*)
 
 
@@ -1816,7 +1822,9 @@ AddParticlesToClass[part_List, class_[n_], options___] := Block[{nind, classname
         (*                                           *)
         (* Relation between the FA and MR notations  *)
         (*                                           *)
-      $FAToMRRules = Dispatch[Join[$FAToMRRules, {temp -> classname, class[n, {ind___}] -> classname[ind]}]]/. temp -> class[n];
+	(*NC : Feb 4, 2015: Removed Dispatch from the next line because it was causing trouble in Math 10.  Moved it to after the loop finishes in FR$Declarations..*)
+      $FAToMRRules = Join[$FAToMRRules, {temp -> classname, class[n, {ind___}] -> classname[ind]}]/. temp -> class[n];
+	(*NC End*)
       If[FlavoredQ[classname] && addflav, 
          templist1 = Table[classname[ind1___, Index[flav, kk] ,ind2___], {kk, Length[MRIndexRange[Index[flav]]]}];
          templist2 = $ClassMembers[class[n]] //. {g1___, field_?(FreeQ[#, ind1]&), g2___} -> {g1, field[ind1, ind2], g2};
@@ -1833,7 +1841,7 @@ AddParticlesToClass[part_List, class_[n_], options___] := Block[{nind, classname
 (*Parameter declaration*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Useful stuff*)
 
 
@@ -1894,7 +1902,7 @@ GetOrder[{x1_,x2___}] := GetOrder[x1] /; (x1 =!= 0);
 GetOrder[{0,x2_,___}] := GetOrder[x2];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ExtParameter*)
 
 
@@ -1928,7 +1936,7 @@ ExtParameter[gMath_, block_, options___] := Module[{output, temp},
     output = temp];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*IntParameter*)
 
 
@@ -1957,7 +1965,7 @@ IntParameter[gMath_, def_, options___] := Module[{output, temp},
     output = temp];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Declaration*)
 
 
@@ -2002,7 +2010,7 @@ DeclareParametersMG := Module[{nlist, ParamRules2},
      ParametersMG @@ $ParamListtemp]; 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Tensor parameters*)
 
 
@@ -2076,7 +2084,7 @@ DeclareTensor[t_, ind_List, options___] := Block[{tc, tcom, tex},
 (*Gauge group declaration*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Abelian gauge groups*)
 
 
@@ -2116,7 +2124,7 @@ AbelianGaugeGroup[name_, boson_, charge_, coupconst_, report_] := Block[{output}
       ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Non abelian gauge groups*)
 
 
@@ -2329,7 +2337,7 @@ UpdateGaugeRepresentations[list_List] := UpdateGaugeRepresentations /@ Union[lis
    
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Coupling Orders*)
 
 
@@ -2354,7 +2362,7 @@ UpdateGaugeRepresentations[list_List] := UpdateGaugeRepresentations /@ Union[lis
 (*                                                          *)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ReadOutOrdersFromParamList*)
 
 
@@ -2381,7 +2389,7 @@ ReadOutOrdersFromParamList[eparamlist_, iparamlist_] := Block[{
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*InitializeInteractionOrders*)
 
 
@@ -2438,7 +2446,7 @@ InitializeInteractionOrders[hierarchy_, expansion_] := Block[{
     
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*OverwriteInteractionOrders*)
 
 

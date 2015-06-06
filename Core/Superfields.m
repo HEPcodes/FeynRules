@@ -649,7 +649,7 @@ SF2Components[exp_?(Head[#]=!=Plus&),mu_,alpha_,alphadot_] := Module[{tmp, resu,
 resu];
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Superfield definitions*)
 
 
@@ -1765,7 +1765,9 @@ OptimizeIndex2[exp_?(Head[#]=!=Plus&),Param_List:{}]:=Block[{bckp,OptRules,flavs
 
   (* final simplications *)
   tmp = TreatUDeps[tmp];
-  tmp = tmp/.Index[inds__]:>Index[Sequence@@ReplaceAll[{inds},OptRules]]/.{Index[type_,Index[type_,bb__]]->Index[type,bb]};
+  tmp = tmp/.Index[inds__]:>Index[Sequence@@ReplaceAll[{inds},OptRules]];
+  tmp = tmp/.TensDot2[ff__][inds__]:>TensDot2[ff][Sequence@@ReplaceAll[{inds},OptRules]];
+  tmp=tmp/.{Index[type_,Index[type_,bb__]]->Index[type,bb]};
   Return[tmp];
 ];
 
@@ -1900,7 +1902,7 @@ IndexType[param_?(NoTensQ[#]===True&)]:= (Indices/.(MR$ParameterRules[param]))/.
 SolveEqMotionFD[exp_]:=SolveEqMotionF[SolveEqMotionD[exp]];
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*D-terms: SolveEqMotionD[ expression ]*)
 
 

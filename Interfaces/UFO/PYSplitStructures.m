@@ -17,8 +17,8 @@ PatternLorentz = {Ga -> L$Ga,
 };
 
 (* Patterns for Color *)
-PatternColor = {f[x_,y_,z_] :> C$f[x,y,z],
-                f[x_,y_,z_]f[a_,b_,z_]:> C$ff[x,y,a,b],
+PatternColor = {f[x_,y_,zz_] :> C$f[x,y,zz],
+                f[x_,y_,zz_]f[a_,b_,zz_]:> C$ff[x,y,a,b],
                 T -> C$T,
                 IndexDelta[Index[Colour,Ext[x_]],Index[Colour,Ext[y_]]]:> C$IndexDelta[Index[Colour,Ext[x]],Index[Colour,Ext[y]]],
                 IndexDelta[Index[Gluon,Ext[x_]],Index[Gluon,Ext[y_]]]:> C$IndexDelta[Index[Gluon,Ext[x]],Index[Gluon,Ext[y]]],
@@ -105,7 +105,7 @@ IndexReplace = Index[x_,Ext[y_Integer]]:> y;
 
 HelasConvention = {L$TensDot[x_[a___],y_[b___]][Index[Spin,Ext[p_Integer]],Index[Spin,Ext[q_Integer]]] :> x[a,p,int$]y[b,int$,q],
 L$TensDot[x_[a___],y_][Index[Spin,Ext[p_Integer]],Index[Spin,Ext[q_Integer]]] :> x[a,p,int$]y[int$,q],
-L$SlashedP[x_Integer,Index[Spin,Ext[y_Integer]],Index[Spin,Ext[z_Integer]]]:> L$Ga[a$,y,z]L$FV[a$,x],
+L$SlashedP[x_Integer,Index[Spin,Ext[y_Integer]],Index[Spin,Ext[zz_Integer]]]:> L$Ga[a$,y,zz]L$FV[a$,x],
 L$SP[x_,y_] :> L$FV[a$,x]L$FV[a$,y],L$FV[x_,y_]:> L$FV[y,x]};
 
 HelasString  = {"L$ME"->"Metric","L$Ga"->"Gamma","L$FV"->"P","int$"->"'a'","L$ProjP"-> "ProjP","L$ProjM"->"ProjM","L$IndexDelta"->"Indentity"};

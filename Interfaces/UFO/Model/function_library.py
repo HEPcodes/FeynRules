@@ -35,23 +35,23 @@ im = Function(name = 'im',
 
 sec = Function(name = 'sec',
              arguments = ('z',),
-             expression = '1./cmath.cos(z)')
+             expression = '1./cmath.cos(z.real)')
 
 asec = Function(name = 'asec',
              arguments = ('z',),
-             expression = 'cmath.acos(1./z)')
+             expression = 'cmath.acos(1./(z.real))')
 
 csc = Function(name = 'csc',
              arguments = ('z',),
-             expression = '1./cmath.sin(z)')
+             expression = '1./cmath.sin(z.real)')
 
 acsc = Function(name = 'acsc',
              arguments = ('z',),
-             expression = 'cmath.asin(1./z)')
+             expression = 'cmath.asin(1./(z.real))')
 
 cot = Function(name = 'cot',
                arguments = ('z',),
-               expression = '1./cmath.tan(z)')
+               expression = '1./cmath.tan(z.real)')
 
 # Heaviside theta function
 
@@ -67,5 +67,5 @@ cond = Function(name = 'cond',
 
 reglog = Function(name = 'reglog',
                 arguments = ('z'),
-                expression = '(0.0 if z==0.0 else cmath.log(z))')
+                expression = '(0.0 if z==0.0 else cmath.log(z.real))')
 

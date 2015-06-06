@@ -14,53 +14,8 @@ $ASperGeDir = "";
 (* *)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Useful tools*)
-
-
-(* ::Subsection::Closed:: *)
-(*Particle name to PDG*)
-
-
-(* ::Text:: *)
-(*Input: name of a particle*)
-(*Output: its pdg-Id*)
-
-
-(* ::Text:: *)
-(*If an anti particle is given, then it's -1* PDG-Id of the particle.*)
-
-
-ParticleToPDG[part_?(AntiFieldQ[#]&)]:=-ParticleToPDG[anti[part]];
-ParticleToPDG[part_?(AntiFieldQ[#]&)[ind_]]:=-ParticleToPDG[anti[part][ind]];
-
-
-(* ::Text:: *)
-(*This is for Weyl fields to know which Dirac field they are part of and then it's the Dirac fields PDG-Id that is returned*)
-
-
-ParticleToPDG[part_?(WeylFieldQ[#]&)[ind_]]:=ParticleToPDG[LeftWeylPart[part]//.{Dot->Times,ProjM[__]->1,ProjM->1,CC[p_]:>p}/.a_:>a[ind]]
-
-
-ParticleToPDG[part_]:=Block[{pos,tmpart,tmppart,tmpind},
-
-  Which[ 
-    (*In the massbasis declaration, fields can be declared like field[integer, _ ]*)
-    MatchQ[part,a_[ind_Integer,___]],
-      tmppart=(part/.a_[__]:>a); tmpind=(part/.a_[ind_Integer,___]:>ind);
-      pos=Flatten[Position[M$ClassesDescription,Rule[ClassName,tmppart]]];
-      If[ Position[M$ClassesDescription[[ First[pos] ]],PDG]=!={},ReplaceAll[PDG,M$ClassesDescription[[First[pos],2]]][[tmpind]],Print["Particle ",part," has no PDG-Id. Please enter one"];Abort[]],
-
-    (*either the particle is not in ClassMembers*)
-    Position[M$ClassesDescription,Rule[ClassName,part]]=!={},
-      pos=Flatten[Position[M$ClassesDescription,Rule[ClassName,part]]];
-      If[ Position[M$ClassesDescription[[ First[pos] ]],PDG]=!={},ReplaceAll[PDG,M$ClassesDescription[[First[pos],2]]],Print["Particle ",part," has no PDG-Id. Please enter one"];Abort[]],
-    (*either it is in ClassMembers*)
-    Position[M$ClassesDescription,Rule[ClassMembers,List[particles___,part,particles2___]]]=!={},
-      pos=Flatten[Position[M$ClassesDescription,part]];
-      If[ Position[M$ClassesDescription[[First[pos]]],PDG]=!={},OptionValue[M$ClassesDescription[[First[pos],2]],PDG][[Last[pos]]],Print["Particle ",part," has no PDG-Id. Please enter one"];Abort[]]
-    ]
-];
 
 
 (* ::Subsection::Closed:: *)
@@ -124,7 +79,7 @@ DefineParam[def_]:=Block[{tmpp},
   Return[tmpp]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Check definitions*)
 
 
@@ -216,7 +171,7 @@ DefineBlocks[blockdefined_,block_]:=Block[{tmpp},
   Return[tmpp]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Checking hermiticity*)
 
 
@@ -384,7 +339,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString[MatrixSymbol[#,"L"]];
       blockname=ToString/@List[BlockName[#,"L"],BlockName[#,"R"]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#].ConjugateTranspose[MassMatrix[#]], ConjugateTranspose[MassMatrix[#]].MassMatrix[#] ]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(Sort/@List[ParticleToPDG/@MassBasis[#],ParticleToPDG/@MassBasis[#]]);
+      pdgids=ToString/@(Sort/@List[PartPDG/@MassBasis[#],PartPDG/@MassBasis[#]]);
       massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
       liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis],
 
@@ -393,7 +348,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString/@(List[MatrixSymbol[#][[1]],MatrixSymbol[#][[2]]]);
       blockname =ToString/@List[BlockName[#][[1]],BlockName[#][[2]]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#].ConjugateTranspose[MassMatrix[#]],ConjugateTranspose[MassMatrix[#]].MassMatrix[#]]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(List[Sort[ParticleToPDG/@MassBasis[#][[1]]],-Sort[ParticleToPDG/@MassBasis[#][[2]]]]);
+      pdgids=ToString/@(List[Sort[PartPDG/@MassBasis[#][[1]]],-Sort[PartPDG/@MassBasis[#][[2]]]]);
       massbasis=List[ToString/@(MassBasis[#][[1]]/.par_[n_Integer,_]:>par[n]),ToString/@(MassBasis[#][[2]]/.par_[n_Integer,_]:>par[n])];
       liste=List[matrixsymbol,blockname,ToString/@(Length/@massbasis),massmatrix,pdgids,massbasis];
       Sequence@@List[liste[[All,1]],liste[[All,2]]],
@@ -402,7 +357,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString/@(List[MatrixSymbol[#,"S"],MatrixSymbol[#,"PS"]]);
       blockname=ToString/@List[BlockName[#,"S"],BlockName[#,"PS"]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#,"S"], MassMatrix[#,"PS"]]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(Sort/@List[ParticleToPDG/@MassBasis[#,"S"],ParticleToPDG/@MassBasis[#,"PS"]]);
+      pdgids=ToString/@(Sort/@List[PartPDG/@MassBasis[#,"S"],PartPDG/@MassBasis[#,"PS"]]);
       massbasis=List[ToString/@(MassBasis[#,"S"]/.par_[n_Integer,_]:>par[n]),ToString/@(MassBasis[#,"PS"]/.par_[n_Integer,_]:>par[n])];                 
       liste=List[matrixsymbol,blockname,ToString/@(Length/@massbasis),massmatrix,pdgids,massbasis];
       Sequence@@List[liste[[All,1]],liste[[All,2]]],
@@ -413,14 +368,14 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
         matrixsymbol=ToString[MatrixSymbol[#]];
         blockname=ToString[BlockName[#]];
         massmatrix=DefinitionsToStrings[(Expand[MassMatrix[#]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num];
-        pdgids=ToString[Sort[ParticleToPDG/@MassBasis[#]]];
+        pdgids=ToString[Sort[PartPDG/@MassBasis[#]]];
         massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
         liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis,"nsq"],
 (*or a vector field*)
         matrixsymbol=ToString[MatrixSymbol[#]];
         blockname=ToString[BlockName[#]];
         massmatrix=DefinitionsToStrings[Expand[MassMatrix[#]]/.Index[typ_,num_]:>num];
-        pdgids=ToString[Sort[ParticleToPDG/@MassBasis[#]]];
+        pdgids=ToString[Sort[PartPDG/@MassBasis[#]]];
         massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
         liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis]]]&/@FR$MassMatrices;
 

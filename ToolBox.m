@@ -567,7 +567,7 @@ GetMassSpectrum[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fcl1,tmp={},tmpt
                If[Re[mnumval]^2<N[10^(-10)],mnumval=0.];
                parttmp=If[AntiFieldQ[fcl1[[$nn,1]]], anti[fcl1[[$nn,1]]], fcl1[[$nn,1]]];
                res=Append[res,{parttmp,mval,mnumval}]],{$nn,Length[fcl1]}];
-               res=({#1,#2,If[Im[#3]<N[10^(-13)],Re[#3]]}&)@@@res;
+               res=({#1,#2,If[Im[#3]<N[10^(-13)]Re[#3],Re[#3],#3]}&)@@@res;
                res=DeleteCases[res,{_,_,0.}];
                res=Prepend[res,{"Particle", "Analytical value", "Numerical value"}];
       TableForm[res]]]
@@ -592,6 +592,7 @@ CheckMassSpectrum[lagrangian_,options___]:=Block[{spectre,speccheck,tmp},
     Print["Getting mass spectrum."];
     Print["Checking for less then 0.1% agreement with model file values."];
     spectre=({#1,#2,#3,NumericalValue[Mass[#1]]}&)@@@spectre;
+    spectre=({#1,#2,#3,If[Im[#4]<N[10^(-13)]Re[#4],Re[#4],#4]}&)@@@spectre;
     speccheck=Table[If[(spectre[[$nn,3]]>N[spectre[[$nn,4]]*0.999])&&(spectre[[$nn,3]]<N[spectre[[$nn,4]]*1.001]),"OK",StyleForm["Discrepency!",FontColor->RGBColor[1,0,0]]],{$nn,Length[spectre]}];
     spectre=Table[Append[spectre[[$nn]],speccheck[[$nn]]],{$nn,Length[spectre]}]//.{ind__,"OK"}->{ind};
     spectre=Prepend[spectre,{"Particle", "Analytic value","Numerical value", "Model-file value"}];

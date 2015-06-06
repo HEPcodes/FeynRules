@@ -238,13 +238,6 @@ GatherByLoopParticles[couplingobject_] := Block[{
    
 
 
-   
-   
-   
-
-   
-
-
 RenameNLOCoupling[elem_, repl_] := Block[{
    head = Head[elem],
    oldname = elem[[1]],
@@ -417,7 +410,7 @@ WritePYCTCouplings[list_] := Block[{outfile},
    WriteString[outfile, "\n\n"];
 
 (*Print["In WPYCTCoupl"];
-Print[InputForm[list]];Print[InputForm[CreateCouplingObjectEntry /@ list]];*)
+  Print[InputForm[list]];Print[InputForm[CreateCouplingObjectEntry /@ list]];*)
 
    WriteCouplingObject[outfile, #]& /@ (CreateCouplingObjectEntry /@ list);
    
@@ -620,5 +613,48 @@ ProjectMasslessCountertermOntoMSBar[uvcounterterm_] := Block[{
    Return[{particles, counterterm}];
 
 ];
+
+   
+
+
+(* ::Section:: *)
+(*WritePYAssumptions*)
+
+
+CreateAssumptionObject[string_String, {i_}]:= AssumptionObject["Assumption"<>ToString[i], "Assumption",
+     {{"name", PYString["Assumption"<>ToString[i]]},
+      {"condition", PYString[string]},
+      {"validity", "'nlo'"}}
+     ];
+
+   
+
+
+WriteOutAssumptionObject[name_String,ass_] := Block[{
+    file = OpenAppend[name]
+    },
+
+    WritePYObject[name,Sequence @@ ass];
+    WriteString[file,"\n\n"];
+    Close[file];
+];
+
+
+WritePYAssumptions[list_List] := Block[{asslist = ToString /@ list,
+    file},
+
+    asslist = MapIndexed[CreateAssumptionObject, asslist];
+    
+    DeleteFileIfExists["assumptions.py"];
+    file = OpenWrite["assumptions.py"];
+    WritePYFRHeader["assumptions.py"];
+    WriteString[file, "from object_library import all_assumptions, Assumption\n\n\n"];
+    Close[file];
+
+    WriteOutAssumptionObject["assumptions.py", #]& /@ asslist;
+];
+  
+    
+
 
    

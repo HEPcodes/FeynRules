@@ -12,15 +12,15 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "=.2.4";
-FR$VersionDate = "13 January 2015";
+FR$VersionNumber = "2.3.2";
+FR$VersionDate = "31 May 2015";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];
 Print["Authors: A. Alloul, N. Christensen, C. Degrande, C. Duhr, B. Fuks"];
 Print[" "];
 Print["Please cite:"];
-Print["    - arXiv:1310.1921;"];
+Print["    - Comput.Phys.Commun.185:2250-2300,2014 (arXiv:1310.1921);"];
 Print["    - Comput.Phys.Commun.180:1614-1641,2009 (arXiv:0806.4194)."];
 Print[" "];
 Print["http://feynrules.phys.ucl.ac.be"];
@@ -574,6 +574,8 @@ The default is False.";
 
 RemoveGhosts::usage = "Option of WriteUFO. Remove all ghosts and Goldstoen bosons from the output.";
 
+Restrictions::usage = "Option of WriteUFO. A list of strings, which are names of restriction files (.rst), whose contents will be passed to the UFO output.";
+
 
 NumericalOnly::usage = "Option of WriteParameters. If True, NoValue[1] and Internal are ignored when writing out the parameters. The default is False.";
 
@@ -790,7 +792,7 @@ NumericalValue::usage = "NumericalValue[param] returns the numerical value of a 
 MR$FlavorList::usage = "List containing all flavor indices deined in the model file.";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Other usefull symbols and functions*)
 
 
@@ -1070,13 +1072,13 @@ FR$deltaZ::usage="Wave function renormalization constants.";
 
 FR$delta::usage="Parameter renormalization constants.";
 
-FR$deltat::usage="tadpole renormalization constants."; 
+FR$deltat::usage="tadpole renormalization constants.";
 
 FieldRenormalization::usage="Derive renormalized field from bare field.";
 
 ParameterRenormalization::usage="Derive renormalized parameters from bare paramneters.";
 
-TadpoleRenormalization::usage="field shifts for the renormalisation of the tadpole"; 
+TadpoleRenormalization::usage="field shifts for the renormalisation of the tadpole";
 
 ExtractCounterterms::usage="Main function to extract the counterterms from an expression.";
 
@@ -1125,7 +1127,10 @@ CTParameters::usage = "Option of WriteUFO. The list of CT paramters, as they com
 IPL::usage = "Internal variable tagging the particles running insides a loop.";
 
 
-(* ::Subsection:: *)
+NLOCT$assumptions::usage = "List of assumptions returned by NLOCT.";
+
+
+(* ::Subsection::Closed:: *)
 (*Color representations*)
 
 
@@ -1215,7 +1220,7 @@ WriteSuSpectOutput::usage="Writes files to be linked to SuSpect 3.";
 yVector::usage="";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Decay package*)
 
 
@@ -1330,7 +1335,7 @@ NoDefinitions::usage = "To forbid field rotations";
 (*Error messages and warnings*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*All messages*)
 
 
@@ -1499,6 +1504,9 @@ RGE::SuperWparams="The superpotential must contain at most one term for each par
 RGE::SuperWrenorm="The superpotential contains non-renormalizable interactions";
 
 IntOrder::Overwrite = "Warning: Conflicting definitions for InteractionOrder `1` found for `2`. Last definition is kept.";
+
+
+UFORestrict::NoInternal = "Internal parameters cannot be restricted. Restriction ignored.";
 
 
 (* ::Subsection::Closed:: *)

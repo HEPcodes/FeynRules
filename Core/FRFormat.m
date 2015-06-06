@@ -50,7 +50,7 @@ Format[FV[k_, mu_], TraditionalForm] := Power[Subscript["p",k],mu];
 Format[SP[k1_, k2_], TraditionalForm] := Dot[Subscript["p", k1], Subscript["p", k2]];
 
 Unprotect[Conjugate];
-Format[Conjugate[z_], TraditionalForm] := Power[z, "*"];
+Format[Conjugate[zz_], TraditionalForm] := Power[zz, "*"];
 Protect[Conjugate];
 
 Format[SlashedP[k_,i_,j_], TraditionalForm] := Subscript[Dot[\[Gamma], Subscript["p",k]], i,j];
@@ -176,7 +176,7 @@ Format[CC[t_][ind___], StandardForm] := Power[Subscript[t, ind], C];
 Format[del[f_, mu_], StandardForm] := Subscript["\[PartialD]", mu][f];
 
 Unprotect[Conjugate];
-Format[Conjugate[z_], StandardForm] := Power[z, "*"];
+Format[Conjugate[zz_], StandardForm] := Power[zz, "*"];
 Protect[Conjugate];
 
 Format[FV[k_, mu_], StandardForm] := Power[Subscript["p",k], mu];

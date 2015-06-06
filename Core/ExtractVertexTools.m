@@ -100,7 +100,7 @@ NTIdelta /: NTIdelta[Index[name_, i_, k_], Index[name_, j_]]*h2_[w2___, h_[w___,
 
 
 OperatorChain[x___, a_, y___] := a OperatorChain[x, y] /; numQ[a];
-OperatorChain[x___, a_*y_, z___] := a OperatorChain[x, y, z] /; numQ[a];
+OperatorChain[x___, a_*y_, zz___] := a OperatorChain[x, y, zz] /; numQ[a];
 OperatorChain[] = 1;
 OperatorChain[_crea, ___] := 0;
 OperatorChain[___,0,___] = 0
@@ -317,7 +317,7 @@ ConserveQN[fc_List, qnumbers_] := Block[{output = {}, qcons},
                              Return[output]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Tensor structure handling*)
 
 
@@ -333,16 +333,16 @@ GetLorentzStructureRules =
         f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___, Index[Lorentz, mu_], c___] -> f[a, Index[Lorentz, mu, 1],b, Index[Lorentz, mu, 2], c] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
         func_[f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], Index[Lorentz, mu_]] -> func[f[a, Index[Lorentz, mu, 1], b], Index[Lorentz, mu, 2]] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
         func_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___]g_[c___, Index[Lorentz, mu_], d___] -> func[x, f[a, Index[Lorentz, mu, 1], b], y]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]g[c, Index[Lorentz, mu, 2], d], 
-        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___]func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[z, g[c, Index[Lorentz, mu, 2], d], t],
+        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___]func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[zz, g[c, Index[Lorentz, mu, 2], d], t],
         func_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]g_[c___, Index[Lorentz, mu_], d___] -> func[x, f[a, Index[Lorentz, mu, 1], b], y][ind]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]g[c, Index[Lorentz, mu, 2], d], 
-        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[z, g[c, Index[Lorentz, mu, 2], d], t],
-        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___]func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___][ind2___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind1]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[z, g[c, Index[Lorentz, mu, 2], d], t][ind2],
+        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[zz, g[c, Index[Lorentz, mu, 2], d], t],
+        func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___]func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___][ind2___] -> func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind1]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]func2[zz, g[c, Index[Lorentz, mu, 2], d], t][ind2],
         gun_[u___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], v___, g_[c___, Index[Lorentz, mu_], d___], w___] -> gun[u, f[a, Index[Lorentz, mu, 1], b], v, g[c, Index[Lorentz, mu, 2],d], w]ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]], 
         gun_[u___, func_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___], v___, g_[c___, Index[Lorentz, mu_], d___], w___] -> gun[u, func[x, f[a, Index[Lorentz, mu, 1], b], y], v, g[c, Index[Lorentz, mu, 2], d], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]], 
-        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___], v___, func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y], v, func2[z, g[c, Index[Lorentz, mu, 2], d], t], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
+        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___], v___, func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y], v, func2[zz, g[c, Index[Lorentz, mu, 2], d], t], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
         gun_[u___, func_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, g_[c___, Index[Lorentz, mu_], d___], w___] -> gun[u, func[x, f[a, Index[Lorentz, mu, 1], b], y][ind], v, g[c, Index[Lorentz, mu, 2], d], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]], 
-        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind], v, func2[z, g[c, Index[Lorentz, mu, 2], d], t], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
-        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___], v___, func2_[z___, g_[c___, Index[Lorentz, mu_], d___], t___][ind2___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind1], v, func2[z, g[c, Index[Lorentz, mu, 2], d], t][ind2], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]}];
+        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind], v, func2[zz, g[c, Index[Lorentz, mu, 2], d], t], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]],
+        gun_[u___, func1_[x___, f_[a___, Index[Lorentz, mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___], v___, func2_[zz___, g_[c___, Index[Lorentz, mu_], d___], t___][ind2___], w___] -> gun[u, func1[x, f[a, Index[Lorentz, mu, 1], b], y][ind1], v, func2[zz, g[c, Index[Lorentz, mu, 2], d], t][ind2], w] ME[Index[Lorentz, mu, 1], Index[Lorentz, mu, 2]]}];
         
 
 
@@ -351,16 +351,16 @@ GetIndexStructureRules =
     Dispatch[{f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___]g_[c___, Index[name_, mu_], d___] -> f[a, Index[name, mu, 1], b]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]g[c, Index[name, mu, 2],d], 
         f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___, Index[name_, mu_], c___] -> f[a, Index[name, mu, 1],b, Index[name, mu, 2],c] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]],
         func_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___]g_[c___, Index[name_, mu_], d___] -> func[x, f[a, Index[name, mu, 1], b], y]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]g[c, Index[name, mu, 2], d], 
-        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___]func2_[z___, g_[c___, Index[name_, mu_], d___], t___] -> func1[x, f[a, Index[name, mu, 1], b], y]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[z, g[c, Index[name, mu, 2], d], t],
+        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___]func2_[zz___, g_[c___, Index[name_, mu_], d___], t___] -> func1[x, f[a, Index[name, mu, 1], b], y]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[zz, g[c, Index[name, mu, 2], d], t],
         func_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]g_[c___, Index[name_, mu_], d___] -> func[x, f[a, Index[name, mu, 1], b], y][ind]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]g[c, Index[name, mu, 2], d], 
-        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]func2_[z___, g_[c___, Index[name_, mu_], d___], t___] -> func1[x, f[a, Index[name, mu, 1], b], y][ind]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[z, g[c, Index[name, mu, 2], d], t],
-        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___]func2_[z___, g_[c___, Index[name_, mu_], d___], t___][ind2___] -> func1[x, f[a, Index[name, mu, 1], b], y][ind1]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[z, g[c, Index[name, mu, 2], d], t][ind2],
+        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___]func2_[zz___, g_[c___, Index[name_, mu_], d___], t___] -> func1[x, f[a, Index[name, mu, 1], b], y][ind]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[zz, g[c, Index[name, mu, 2], d], t],
+        func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___]func2_[zz___, g_[c___, Index[name_, mu_], d___], t___][ind2___] -> func1[x, f[a, Index[name, mu, 1], b], y][ind1]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]func2[zz, g[c, Index[name, mu, 2], d], t][ind2],
         gun_[u___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], v___, g_[c___, Index[name_, mu_], d___], w___] -> gun[u, f[a, Index[name, mu, 1], b], v, g[c, Index[name, mu, 2],d], w]MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]], 
         gun_[u___, func_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___], v___, g_[c___, Index[name_, mu_], d___], w___] -> gun[u, func[x, f[a, Index[name, mu, 1], b], y], v, g[c, Index[name, mu, 2], d], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]], 
-        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___], v___, func2_[z___, g_[c___, Index[name_, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y], v, func2[z, g[c, Index[name, mu, 2], d], t], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]],
+        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___], v___, func2_[zz___, g_[c___, Index[name_, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y], v, func2[zz, g[c, Index[name, mu, 2], d], t], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]],
         gun_[u___, func_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, g_[c___, Index[name_, mu_], d___], w___] -> gun[u, func[x, f[a, Index[name, mu, 1], b], y][ind], v, g[c, Index[name, mu, 2], d], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]], 
-        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, func2_[z___, g_[c___, Index[name_, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y][ind], v, func2[z, g[c, Index[name, mu, 2], d], t], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]],
-        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___], v___, func2_[z___, g_[c___, Index[name_, mu_], d___], t___][ind2___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y][ind1], v, func2[z, g[c, Index[name, mu, 2], d], t][ind2], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]}];
+        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind___], v___, func2_[zz___, g_[c___, Index[name_, mu_], d___], t___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y][ind], v, func2[zz, g[c, Index[name, mu, 2], d], t], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]],
+        gun_[u___, func1_[x___, f_[a___, Index[Except[Lorentz, name_], mu_?(Not[NumericQ[#]]&)], b___], y___][ind1___], v___, func2_[zz___, g_[c___, Index[name_, mu_], d___], t___][ind2___], w___] -> gun[u, func1[x, f[a, Index[name, mu, 1], b], y][ind1], v, func2[zz, g[c, Index[name, mu, 2], d], t][ind2], w] MRIndexDelta[Index[name, mu, 1], Index[name, mu, 2]]}];
 
 
 

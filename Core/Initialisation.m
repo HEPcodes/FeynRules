@@ -12,7 +12,7 @@
 (*Date*)
 
 
-DateFormat[] := Block[{date = Date[]},
+FR$DateFormat[] := Block[{date = Date[]},
      ToString[date[[3]]] <> ". " <> ToString[date[[2]]] <> ". " <> ToString[date[[1]]] <> ",    " <> ToString[date[[4]]]<>":" <> ToString[date[[5]]]];
 
 
@@ -95,7 +95,7 @@ SetAttributes[Dot,Flat]
 
 Dot[___, 0, ___] := 0;
 
-Dot[xx___, kk_?(numQ[#] === True &)* z_, yy___] := kk Dot[xx, z,yy];
+Dot[xx___, kk_?(numQ[#] === True &)* zz_, yy___] := kk Dot[xx, zz,yy];
 
 
 Ga[Index[Lorentz, 0], inds___]:= Ga[0, inds];
@@ -275,15 +275,15 @@ numQ[TensDot[xx_, yy___][i_,j_]] := True;
 CnumQ[FR$deltaZ[args__]] := True;
 numQ[FR$deltaZ[args__]] := True;
 
-CnumQ[FR$deltat[args__]] := True; 
-numQ[FR$deltat[args__]] := True; 
+CnumQ[FR$deltat[args__]] := True;
+numQ[FR$deltat[args__]] := True;
 
 
 CnumQ[FR$delta[args__]] := True;
 numQ[FR$delta[args__]] := True;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*del*)
 
 
@@ -739,7 +739,7 @@ TensDot /: TensDot[a1_, as__][ii_, jj_] TensDot[b1_, bs__][jj_, kk_] :=
   TensDot[a1, as, b1, bs][ii, kk]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Gamma matrices*)
 
 
@@ -977,12 +977,13 @@ TensDot[Ga[mu_?((#=!=5)&)],Ga[nu_?((#=!=5)&)],Ga[rho_?((#=!=5)&)], Ga[5]][s_, s_
 TensDot[Ga[mu_?((#=!=5)&)],Ga[nu_?((#=!=5)&)],Ga[rho_?((#=!=5)&)]][s_, s_] := 0;
 
 
-GaTensDot[g1__, Ga[nu_], Ga[mu_], g2__][s_, t_] := -GaTensDot[g1, Ga[mu], Ga[nu], g2][s,t] + 2 ME[mu, nu] GaTensDot[g1,g2][s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
+(*Commented for 4F operators at NLO*)
+(*GaTensDot[g1__, Ga[nu_], Ga[mu_], g2__][s_, t_] := -GaTensDot[g1, Ga[mu], Ga[nu], g2][s,t] + 2 ME[mu, nu] GaTensDot[g1,g2][s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
 GaTensDot[g1__, Ga[nu_], Ga[mu_]][s_, t_] := -GaTensDot[g1, Ga[mu], Ga[nu]][s,t] + 2 ME[mu, nu] GaTensDot[g1][s,t] /; (Length[{g1}]>1) && Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
 GaTensDot[Ga[nu_], Ga[mu_], g1__][s_, t_] := -GaTensDot[Ga[mu], Ga[nu], g1][s,t] + 2 ME[mu, nu] GaTensDot[g1][s,t] /; (Length[{g1}]>1) && Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
 GaTensDot[g1_, Ga[nu_], Ga[mu_]][s_, t_] := -GaTensDot[g1, Ga[mu], Ga[nu]][s,t] + 2 ME[mu, nu] GaAlgebra[RemoveGa[g1], s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
 GaTensDot[Ga[nu_], Ga[mu_], g1_][s_, t_] := -GaTensDot[Ga[mu], Ga[nu],g1][s,t] + 2 ME[mu, nu] GaAlgebra[RemoveGa[g1], s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
-GaTensDot[Ga[nu_], Ga[mu_]][s_, t_] := -GaTensDot[Ga[mu], Ga[nu]][s,t] + 2 ME[mu, nu] IndexDelta[s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);
+GaTensDot[Ga[nu_], Ga[mu_]][s_, t_] := -GaTensDot[Ga[mu], Ga[nu]][s,t] + 2 ME[mu, nu] IndexDelta[s,t] /; Not[OrderedQ[{nu, mu}]] && (mu=!= 5) && (nu=!= 5);*)
 
 Ga /: Dot[g1___, Ga[5], ProjP, g2___] := Dot[g1, ProjP, g2];
 Ga /: Dot[g1___, Ga[5], ProjM, g2___] := - Dot[g1, ProjM, g2];
@@ -1035,7 +1036,7 @@ MakeSlashedMatrix[expr_] := Block[{tempexpr},
          FV[kk_, mumu_] TensDot[gg1___, Ga[mumu_], gg2___] :> TensDot[gg1, SlashedP[kk], gg2]}];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Levi - Civita*)
 
 
@@ -1105,7 +1106,7 @@ TensQ[Eps[___]] := True;
 TensQ[Eps] = True;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Metric tensor and four-vectors*)
 
 
@@ -1125,14 +1126,14 @@ SetAttributes[SP, Orderless];
 
 MEME /: func_[x___, mu_, y___]MEME[mu_, nu_] := func[x, nu, y];
 MEME /: func_[x___, nu_, y___]MEME[mu_, nu_] := func[x, mu, y];
-MEME /: func1_[x___, func2_[y___, mu_, z___], u___]MEME[mu_, nu_] := func1[x, func2[y, nu, z], u];
-MEME /: func1_[x___, func2_[y___, nu_, z___], u___]MEME[mu_, nu_] := func1[x, func2[y, mu, z], u];
-MEME /: func1_[x___, func2_[y___, mu_, z___], u___][ind___]MEME[mu_, nu_] := func1[x, func2[y, nu, z], u][ind];
-MEME /: func1_[x___, func2_[y___, nu_, z___], u___][ind___]MEME[mu_, nu_] := func1[x, func2[y, mu, z], u][ind];
-MEME /: func1_[x___, func2_[y___, mu_, z___][ind___], u___]MEME[mu_, nu_] := func1[x, func2[y, nu, z][ind], u];
-MEME /: func1_[x___, func2_[y___, nu_, z___][ind___], u___]MEME[mu_, nu_] := func1[x, func2[y, mu, z][ind], u];
-MEME /: func1_[x___, func2_[y___, mu_, z___][ind1___], u___][ind2___]MEME[mu_, nu_] := func1[x, func2[y, nu, z][ind1], u][ind2];
-MEME /: func1_[x___, func2_[y___, nu_, z___][ind1___], u___][ind2___]MEME[mu_, nu_] := func1[x, func2[y, mu, z][ind1], u][ind2];
+MEME /: func1_[x___, func2_[y___, mu_, zz___], u___]MEME[mu_, nu_] := func1[x, func2[y, nu, zz], u];
+MEME /: func1_[x___, func2_[y___, nu_, zz___], u___]MEME[mu_, nu_] := func1[x, func2[y, mu, zz], u];
+MEME /: func1_[x___, func2_[y___, mu_, zz___], u___][ind___]MEME[mu_, nu_] := func1[x, func2[y, nu, zz], u][ind];
+MEME /: func1_[x___, func2_[y___, nu_, zz___], u___][ind___]MEME[mu_, nu_] := func1[x, func2[y, mu, zz], u][ind];
+MEME /: func1_[x___, func2_[y___, mu_, zz___][ind___], u___]MEME[mu_, nu_] := func1[x, func2[y, nu, zz][ind], u];
+MEME /: func1_[x___, func2_[y___, nu_, zz___][ind___], u___]MEME[mu_, nu_] := func1[x, func2[y, mu, zz][ind], u];
+MEME /: func1_[x___, func2_[y___, mu_, zz___][ind1___], u___][ind2___]MEME[mu_, nu_] := func1[x, func2[y, nu, zz][ind1], u][ind2];
+MEME /: func1_[x___, func2_[y___, nu_, zz___][ind1___], u___][ind2___]MEME[mu_, nu_] := func1[x, func2[y, mu, zz][ind1], u][ind2];
 
 ME /: Power[ME[mu_, nu_], 2] := FR$SpaceTimeDimension;
 ME /: Power[ME[Index[Lorentz, mu__], Index[Lorentz, nu__]], 2] := FR$SpaceTimeDimension;
@@ -1196,7 +1197,7 @@ SortAntiSymTens[dd_[ind__]] := Signature[{ind}] dd @@ Sort[{ind}];
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Hermitian conjugate*)
 
 
@@ -1481,7 +1482,7 @@ HCanti[Power[a_, b_]] := Power[HCanti[a], HCanti[b]];
 HCanti[ProjM][r_,s_] := ProjP[s, r];*)
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Charge conjugation*)
 
 

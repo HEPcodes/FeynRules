@@ -8,7 +8,7 @@
 (*Relabelling of internal indices*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*RelabelExt*)
 
 
@@ -41,7 +41,7 @@ RelabelExt[{parts1_, vertex_}] := Block[{newparts = parts1, extrpls, newvertex},
 (*New sorting routine*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*PrecollectVerticesAccordingToParticles*)
 
 
@@ -52,7 +52,7 @@ RelabelExt[{parts1_, vertex_}] := Block[{newparts = parts1, extrpls, newvertex},
 PrecollectVerticesAccordingToParticles[vertexlist_List] := GatherBy[MakeIdenticalFermions /@ vertexlist, Sort[First/@#[[1]]]&];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GetFermionChainFromVertex*)
 
 
@@ -95,7 +95,7 @@ ExtractFermionsFromParticleList[list_List] := Cases[list, {_?((FermionQ[#] === T
 ExtractBosonsFromParticleList[list_List] := Cases[list, {_?(FermionQ[#] =!= True &), _}];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FindFermionInList*)
 
 
@@ -165,7 +165,7 @@ ReorderFermionOperators[{particles_List, vertex_}, referenceorder_List] := Block
 ]; 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*SortTypeVertexParticles*)
 
 
@@ -300,7 +300,7 @@ ReorderVertexFermionFlows[flowstructure_, num_] := Block[{
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MergeAllVertices*)
 
 
@@ -391,7 +391,7 @@ SelVert::FreeContains = "The options Free and Contains must be a list or an alte
 SelVert::Numeric = "MinAdjacency, MaxAdjacency and Adjacency require numeric inputs. Option ignored.";
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*UnitTesting*)
 
 
@@ -436,7 +436,7 @@ TestSelectVerticesNumeric[opt_] :=  If[Not[IntegerQ[opt]] && Not[opt === Infinit
                                      ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*SelectVertices*)
 
 
@@ -490,7 +490,7 @@ TestSelectVerticesNumeric[opt_] :=  If[Not[IntegerQ[opt]] && Not[opt === Infinit
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*FlavorExpansion*)
 
 
@@ -579,7 +579,7 @@ CheckForMassEigenstates[ vertexlist_ ] := Block[{
 (*Runs*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*AddToRunTable*)
 
 
@@ -591,7 +591,7 @@ Options[AddToRunTable] = {Tag -> ""};
 
 
 AddToRunTable[vertices_List] := Block[{tag, 
-    date = PRIVATE`DateFormat[],
+    date = PRIVATE`FR$DateFormat[],
     number = Length[FR$InterfaceRuns] + 1},
 
     AppendTo[FR$InterfaceRuns, InterfaceRunObject[number, date, tag, vertices]];
@@ -601,7 +601,7 @@ AddToRunTable[vertices_List] := Block[{tag,
     
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*DisplayRuns*)
 
 
@@ -619,7 +619,7 @@ DisplayRuns[] := Block[{header, output},
 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*InterfaceRun*)
 
 
@@ -757,7 +757,7 @@ CheckQuantumNumberConservation[vertices_List, OptionsPattern[]] := Block[{
 (*Multi fermion flows*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*CountFermionFields*)
 
 
@@ -768,7 +768,7 @@ CheckQuantumNumberConservation[vertices_List, OptionsPattern[]] := Block[{
 CountFermionFields[{parts_List,vertex_}] := Length[Select[First/@parts,(FermionQ[#]&&Not[GhostFieldQ[#]===True])&]]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GetMultiFermionOperators*)
 
 
@@ -779,7 +779,7 @@ CountFermionFields[{parts_List,vertex_}] := Length[Select[First/@parts,(FermionQ
 GetMultiFermionOperators[vertexlist_List]:=Select[vertexlist,CountFermionFields[#]>2&]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*SplitVertex*)
 
 
@@ -812,7 +812,7 @@ SplitVertex[{parts_List,expr_}]:=Block[{
 SplitVertices[list_]:=Flatten[SplitVertex/@list];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ComputeFermionFlowForTerm*)
 
 
@@ -874,7 +874,7 @@ ComputeFermionFlowForTerm[split_SplitVertex$Obj]:=Block[{
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*CanonicalizeFlows*)
 
 
@@ -904,7 +904,7 @@ CanonicalizeFlows[fermions_List, nferms_Integer] := Block[{
    
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*PermuteFermionFields*)
 
 
@@ -938,7 +938,7 @@ PermuteFermionFields[vertex_SplitVertex$Obj]:=Block[{
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*CombineFermionFlows*)
 
 
@@ -951,7 +951,7 @@ SumTermsInSplitVertex$Obj[list_]:=If[Length[list]==1,
 CombineFermionFlows[list_List]:=SumTermsInSplitVertex$Obj/@GatherByFirstElement[list];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BreakIntoFermionFlows (Master routine)*)
 
 
@@ -1001,7 +1001,7 @@ Print[multifermionvertices];
    
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*FermionFlows*)
 
 

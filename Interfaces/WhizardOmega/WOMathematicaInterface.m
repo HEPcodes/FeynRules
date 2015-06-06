@@ -1,3 +1,5 @@
+(* ::Package:: *)
+
 (*
 
    $Id: WOMathematicaInterface.m 3666 2012-01-14 17:03:09Z cnspeckn $
@@ -42,7 +44,7 @@ Options[WO`WriteOutput] = {
    WO`WOMaxNcf -> 4,
    WO`WOGauge -> WO`WOUnitarity,
    WO`WOGaugeParameter -> "Rxi",
-   WO`WOWhizardVersion -> "2.0.3",
+   WO`WOWhizardVersion -> "2.2.3",
    WO`WOVerbose -> False,
    WO`WOAutoGauge -> True,
    WO`WOMaxCouplingsPerFile -> 500,
@@ -60,7 +62,7 @@ Options[WO`WriteOutput] = {
 };
 
 Options[WO`WriteExtParams] = {
-   WO`WOWhizardVersion -> "2.0.3",
+   WO`WOWhizardVersion -> "2.2.3",
    WO`WOEParamList -> {},
    WO`WOModelName -> "unknown",
    WO`WOMassList -> {},
@@ -91,7 +93,8 @@ WO`WOWhizardVersion::usage = (""
    <> "   \"1.93\" : >= 1.93\n"
    <> "   \"1.96\" : >= 1.96\n"
    <> "   \"2.0\"  : 2.0 - 2.0.2\n"
-   <> "   \"2.0.3\": 2.0.3 (default)");
+   <> "   \"2.0.3\": 2.0.3 - 2.2.2\n"
+   <> "   \"2.2.3\": 2.2.3 (default)");
 WO`WOVerbose::usage = (""
    <> "Verbose output. At the moment, this enables more detailed information "
    <> "on skipped vertices. Default: False");
@@ -135,7 +138,7 @@ WO`GlobalSetup := Module[{},
    WO`appendAlphas = False;
    WO`gauge = WO`WOUnitarity;
    WO`gsym = "Rxi";
-   WO`whizv = "2.0.3";
+   WO`whizv = "2.2.3";
    WO`verbose = False;
    WO`autogauge = False;
    WO`MaxCouplingsPerFile = 500;
@@ -222,7 +225,7 @@ Protect[Sqrt, Power];
 
 
 WO`WriteOutput[options___]:=Module[{dirName, modelname, onames, frpars, Addpar,
-   reclimit, itlimit, gsymfixed, opts, omegadir, whizdir, opldir, oplotter},
+   reclimit, itlimit, gsymfixed, opts, omegadir, whizdir, opldir, oplotter, WOAddECharge},
    (* Global initializations. *)
    WO`GlobalSetup[];
 
@@ -246,6 +249,13 @@ WO`WriteOutput[options___]:=Module[{dirName, modelname, onames, frpars, Addpar,
    WO`EParamList = WO`WOEParamList /. opts;
    WO`IParamList = WO`WOIParamList /. opts;
    WO`PartList = WO`WOPartList /. opts;
+
+   (* CD, 31.03.2015: Following F. Staub's email, we add the electric charge to the particle list.
+      We define a new local variable WOAddECharge in this module *)
+   WOAddECharge[{class_, plist_}]  := {class, Append[#, Q[class[[2]]]]& /@ plist};
+   WO`PartList = WOAddECharge /@ WO`PartList;
+   (* CD: End change *)
+   
 
    (* Maximum number of color flows *)
    WO`ncfmax = WO`WOMaxNcf /. opts;
@@ -441,7 +451,7 @@ WO`GaugeName[g_] := Switch[g, WO`WOUnitarity, "Unitarity", WO`WOFeynman, "Feynma
 WO`GaugeName[] := WO`GaugeName[WO`gauge];
 
 (* Version query helpers *)
-WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203, _,
+WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,_,
    Throw["BUG: invalid version in WO`whizvn, please report", WO`EAbort]];
 WO`whizvn[] := WO`whizvn[WO`whizv];
 WO`whizv2x[] := WO`whizvn[] >= WO`whizvn["2.0"];
@@ -703,7 +713,10 @@ WO`CopyAux[srcdir_, destdir_] := Module[{CopyHelper},
    ];
    If[WO`whizv2x[],
       CopyHelper[{filea_, fileb_}] := Module[{src, dest, sdir, sfile, ddir, dfile},
-         src = ToFileName[{srcdir, "2.0"}, filea];
+         src=If[WO`whizvn[] > WO`whizvn["2.0.3"],
+            ToFileName[{srcdir, "2.2.3"}, filea],
+            ToFileName[{srcdir, "2.0"}, filea]
+         ];
          dest = ToFileName[destdir, fileb];
          StringReplace[src, RegularExpression[
             "^(.*" <> WO`fileSlashRE <> ")([^" <> WO`fileSlashRE <> "]+)$"] :>
@@ -886,7 +899,7 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
          taglist = pdglist = creplist = lreplist = gslist = msymlist = wsymlist = fsymlist = tsymlist = {};
 
          (* Parse particle description *)
-         ParsePart[{name_, aname_, spin_, prop_, msym_, wsym_, crep_, plabel_, pdg_, descr_, tex_, atex_, gs_}] :=
+         ParsePart[{name_, aname_, spin_, prop_, msym_, wsym_, crep_, plabel_, pdg_, descr_, tex_, atex_, gs_,echarge_}] :=
          Module[{sname, saname, RegisterParticle},
 
             (* Register a particle *)
@@ -2562,7 +2575,7 @@ WO`WriteWhizMdl[file_] := Module[{handle, content, header, params, DoParams, rep
       (* Build the definition block for one particle. TODO: the "parton" property is derived from color, *
        * singlets are no partons, all other particles are partons. This is hackish, but I see no other   *
        * way to do this.                                                                                 *)
-      AppendParticle[{name_, aname_, spin_, prop_, msym_, wsym_, crep_, plabel_, pdg_, descr_, tex_, atex_, gs_}] := Module[
+      AppendParticle[{name_, aname_, spin_, prop_, msym_, wsym_, crep_, plabel_, pdg_, descr_, tex_, atex_, gs_,echarge_}] := Module[
          {thename, thetex, theaname, theatex},
          (* Make sure that we record the particle with positive PDG. *)
          If[pdg > 0,
@@ -2576,9 +2589,10 @@ WO`WriteWhizMdl[file_] := Module[{handle, content, header, params, DoParams, rep
          parts = parts <> "# particle: " <> ToString[descr] <> "\n"
             <> "particle " <> WO`ExtendString[WO`hash["whizname", thename], 10] <> " "
             <> WO`ExtendString[ToString[Abs[pdg]], 8] <> If[MatchQ[crep, T|O], " parton", ""] <> "\n"
-            <> WO`Indent[""
+           <> WO`Indent[""
                <> "spin " <> WO`ExtendString[Switch[spin, S, "0", F, "1/2", V, "1", T, "2"], 3]
-               <> Switch[crep, T, " color 3", O, " color 8", _, ""] <> "\n"
+               <> " charge " <>ToString[InputForm[echarge]]<>" "
+            <> Switch[crep, T, " color 3", O, " color 8", _, ""] <> "\n"
                <> If[WO`whizv2x[], ""
                   <> "name \"" <> ToString[thename] <> "\""
                   <> "\ntex_name \"" <> ToString[thetex] <> "\"\n"

@@ -559,7 +559,7 @@ deltaLag=deltaLag-lag4S;
 deltaLag=ExpandIndices[deltaLag, FlavorExpand->True];
 If[skin,
 Print["Extracting the mass and kinetic terms to simplify them"];
-  lkinmass=ExpandIndices[GetKineticTerms[deltaLag]+GetMassTerms[deltaLag]+ExpandIndices[deltaLag,MaxParticles->1],FlavorExpand->True]; 
+  lkinmass=ExpandIndices[GetKineticTerms[deltaLag]+GetMassTerms[deltaLag]+ExpandIndices[deltaLag,MaxParticles->1],FlavorExpand->True];
   deltaLag=deltaLag-lkinmass;,
   lkinmass=0;
 ];
@@ -664,13 +664,12 @@ paramreno = DeleteCases[paramreno,_?((#[[1]]/.MR$Definitions)===0&)];
 
 
 Print["Internal parameter renormalization"];
-(*Print[paramreno];*)
 massRules=If[Length[FR$RmDblExt]>0,Join[FR$RmDblExt,Cases[InternalParamList,_?(Not[(#[[2]]/.FR$RmDblExt)===#[[2]]]&)]/.FR$RmDblExt],{}];
 InternalParamList = Join[InternalParamList,FR$RmDblExt];
 InternalParamList[[All,2]]=InternalParamList[[All,2]]/.MR$Definitions;
 InternalParamList[[All,2]] = InternalParamList[[All,2]]//.InternalParamList;
 lkinmass=Simplify[lkinmass/.InternalParamList];
-InternalParamList2=InternalParamList; 
+InternalParamList2=InternalParamList;
 InternalParamList[[All,2]] = InternalParamList[[All,2]]/.massRules/.Union[paramreno,((Rule[#[[1]]/.Index[a_,b_]->b,#[[2]]]&)/@paramreno)];
 InternalParamList=(If[Not[#2===0],{#1->#1(1+FR$CT*Simplify[SeriesCoefficient[#2,{FR$CT,0,1}]/Normal[Series[#2,{FR$CT,0,0}]],TimeConstraint->0.02]),
     Conjugate[#1]->Conjugate[#1](1+FR$CT*Conjugate[Simplify[SeriesCoefficient[#2,{FR$CT,0,1}]/Normal[Series[#2,{FR$CT,0,0}]],TimeConstraint->0.02]])},
@@ -699,7 +698,7 @@ If[FR$DoPara,
    deltaLagp=(Replace[#,Times[I*a_Plus]:>PlusI@@a,1]&)/@deltaLagp;
    deltaLagp=(SeriesCoefficient[#,{FR$CT,0,1}]&)/@(deltaLagp/.Dot->RenDot/.RenDot->Dot);
 ];
-deltaLagp=(FR$CT*#&)/@deltaLagp; 
+deltaLagp=(FR$CT*#&)/@deltaLagp;
 
 (*Print[InputForm[deltaLagp]];*)
 If[qcd,deltaLagt=0;lagtmp=0;,
@@ -730,16 +729,17 @@ If[FR$DoPara,
   deltaLag = (Normal[Series[#,{FR$CT,0,1}]]&)/@deltaLag;
 ];
 
-
-(*shift the wave function renormalization constant to absorb the tadpole contribution to the two points vertices*)
-lagtmp = Expand[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]],True]&)]//.InternalParamList2];
-$Output=logfile;
-frtmp=FeynmanRules[lagtmp];
-frtmp=(MomentumReplace[#,1]&)/@MergeVertices[frtmp,FeynmanRules[deltaLag,SelectParticles->frtmp[[All,1,All,1]]]];
-$Output={OutputStream["stdout",1]};
-frtmp[[All,2]] = (Coefficient[#,FR$CT,1]&)/@frtmp[[All,2]];
-frtmp=Flatten[DZmixShift/@frtmp];
-deltaLag = Expand[deltaLag/.frtmp];
+If[qcd,deltaLag=Expand[deltaLag],
+  (*shift the wave function renormalization constant to absorb the tadpole contribution to the two points vertices*)
+  lagtmp = Expand[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]],True]&)]//.InternalParamList2];
+  $Output=logfile;
+  frtmp=FeynmanRules[lagtmp];
+  frtmp=(MomentumReplace[#,1]&)/@MergeVertices[frtmp,FeynmanRules[deltaLag,SelectParticles->frtmp[[All,1,All,1]]]];
+  $Output={OutputStream["stdout",1]};
+  frtmp[[All,2]] = (Coefficient[#,FR$CT,1]&)/@frtmp[[All,2]];
+  frtmp=Flatten[DZmixShift/@frtmp];
+  deltaLag = Expand[deltaLag/.frtmp];
+];
 
 On[Simplify::time];
 Close[logfile];

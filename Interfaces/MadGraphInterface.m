@@ -40,7 +40,7 @@ RemoveGhostsAndGoldstones[vertexlist_] := Block[{templist},
    
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Useful functions*)
 
 
@@ -67,10 +67,10 @@ ExpandTensDotForMG[x_,y_][i_, j_] := Block[{ind1 = Last[$IndList[x]], ind2 = Ext
              output = Sum[x[i, Insert[ind1, kk, 2]] y[Insert[ind2, kk, 2], j], {kk, Length[MRIndexRange[ind1]]}]];
           output];
         
-ExpandTensDotForMG[x_,y_,z__][i_, j_] := Block[{ind1 = Last[$IndList[x]], ind2 = Extract[$IndList[y],-2], output},
+ExpandTensDotForMG[x_,y_,zz__][i_, j_] := Block[{ind1 = Last[$IndList[x]], ind2 = Extract[$IndList[y],-2], output},
           If[MRIndexRange[ind1] =!= MRIndexRange[ind2],
              Message[TensDot::ExpandTensDotForMG];Abort[],
-             output = Sum[x[i, Insert[ind1, kk, 2]] ExpandTensDotForMG[y, z][Insert[ind2, kk, 2], j], {kk, Length[MRIndexRange[ind1]]}]];
+             output = Sum[x[i, Insert[ind1, kk, 2]] ExpandTensDotForMG[y, zz][Insert[ind2, kk, 2], j], {kk, Length[MRIndexRange[ind1]]}]];
           output];
 
 (********************* DUMmies for MG *******************)
@@ -273,7 +273,7 @@ MakeMG4Interaction[{{v1_, v2_ , v3_, v4_}, "VVVV", c_, d_, e_}] := If[(v1 === v2
                                                                    If[v1 === anti[v3], {{v1, v2, v3, v4}, "VVVV", c, {d, "DUM1"}, e}, {{v1, v2, v3, v4}, "VVVV", c, {d, "DUM0"}, e}]]  ;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Writing routines (M. Herquet)*)
 
 
@@ -416,22 +416,22 @@ WriteInteractionsFilesOne[L_,name_] := Module[{myfile, myfile2},
 WriteInteractionsFiles[xx_]:=Module[{myfile, myfile2, lags},
 
       myfile=OpenWrite["interactions.dat"];
-      WriteString[myfile, "#This file has been generated automatically by FeynRules " <> FR$VersionNumber <> "    Date: " <> DateFormat[] <>"\n"];
+      WriteString[myfile, "#This file has been generated automatically by FeynRules " <> FR$VersionNumber <> "    Date: " <> FR$DateFormat[] <>"\n"];
       Close["interactions.dat"];
 
       myfile=OpenWrite["coupl_write.inc"];
       WriteString[myfile, "c This file has been generated automatically by FeynRules\n\n"];
-      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n"];
+      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n"];
       Close["coupl_write.inc"];
 
       myfile=OpenWrite["helas_couplings.inc"];
       WriteString[myfile, "c This file has been generated automatically by FeynRules\n\n"];
-      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n"];
+      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n"];
       Close["helas_couplings.inc"];
 
       myfile=OpenWrite["intparam_definition.inc"];
       WriteString[myfile, "c This file has been generated automatically by FeynRules\n"];
-      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n\n"];
+      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n\n"];
        WriteString[myfile, "c Internal parameters definition :\n"];
  
 
@@ -514,7 +514,7 @@ WriteInteractionsFiles[xx_]:=Module[{myfile, myfile2, lags},
       (* Write couplings .f *)
       myfile=OpenWrite["couplings.f"];
       WriteString[myfile, "c This file has been generated automatically by FeynRules\n\n"];
-      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n"];
+      WriteString[myfile, "\nc Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n"];
       WriteString[myfile, "\n"];
       WriteString[myfile, "      subroutine coup(readlha)\n"];
       WriteString[myfile, "\n"];
@@ -597,7 +597,7 @@ If[MGWidthList =!= {},
    Close["ident_card.dat"]];
 myfile=OpenWrite["param_card.dat"];
 WriteString[myfile, "#This file has been generated automatically by FeynRules\n"];
-WriteString[myfile, "# Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n"];
+WriteString[myfile, "# Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n"];
 WriteBlock[xx_,file_]:=Module[{i},
      WriteString[file,"Block "<>ToString[xx[[1]]]<>"\n"];
      WriteString[file,"  "<>StringJoin[ToString[#]<>" "&/@#[[1]]]
@@ -628,7 +628,7 @@ Close["param_card.dat"];
 
 myfile=OpenWrite["particles.dat"];
 WriteString[myfile, "#This file has been generated automatically by FeynRules\n"];
-WriteString[myfile, "\n# Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n"];
+WriteString[myfile, "\n# Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n"];
 WriteString[myfile, "#This is a special data file which contains particles of the\n"];
 WriteString[myfile, "# Model.The format for entering new particles is\n"];
 WriteString[myfile,
@@ -647,7 +647,7 @@ Close["particles.dat"];
 
 myfile=OpenWrite["input.inc"];
 WriteString[myfile, "c This file has been generated automatically by FeynRules\n"];
-WriteString[myfile, "c Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n\n"];
+WriteString[myfile, "c Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n\n"];
 WriteString[myfile, "c External Parameters :\n"];
 If[MGEParamList =!= {},
    WriteToFortranFile[myfile,
@@ -674,7 +674,7 @@ Close["input.inc"];
 
 myfile=OpenWrite["coupl.inc"];
 WriteString[myfile, "c This file has been generated automatically by FeynRules\n"];
-WriteString[myfile, "c Version: " <> FR$VersionNumber <>  "   Date: " <> DateFormat[] <>"\n\n"];
+WriteString[myfile, "c Version: " <> FR$VersionNumber <>  "   Date: " <> FR$DateFormat[] <>"\n\n"];
 WriteString[myfile,"      double precision G\n"];
 (*WriteString[myfile,"      double complex GG(2)\n"];
 WriteString[myfile,"      common/strong/ GG,G\n\n"];*)

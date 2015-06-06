@@ -546,7 +546,7 @@ MakeIndexSum[expr_?(Head[#]=!=List &)]:=Block[{tmpexprlist,getindlist,IndexSum1}
 (*Generic file writing functions*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteKinIndices[genfile,dirIndOpt]*)
 
 
@@ -578,7 +578,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteSimpRules[genfile]*)
 
 
@@ -600,7 +600,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WritePropagators[genfile,dicacIndOpt]*)
 
 
@@ -684,7 +684,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteGenCouplings[genfile,diracIndOpt]*)
 
 
@@ -748,8 +748,8 @@ WriteStructure[gen_,struc_]:=Module[{struc2,struc3,sumInd,SI},
 		    Do[WriteStructure[gen,struc2[[ff]]],{ff,Length[struc2]}];
 		    sumInd = Union[Cases[(struc2/.Pattern->SI),SI[xx_,yy_]->xx,\[Infinity],Heads->True]];
 		    WriteString[gen,", "];
-		    Do[WriteString[gen,ToString[sumInd[[ff]]]<>","];,{ff,Length[sumInd]-1}];
-		    WriteString[gen,ToString[Last[sumInd]]<>"]"];
+		    Do[WriteString[gen,"{"<>ToString[sumInd[[ff]]]<>",1,4},"];,{ff,Length[sumInd]-1}];
+		    WriteString[gen,"{"<>ToString[Last[sumInd]]<>",1,4}]"];
 		],
 		(*If I forgot something*)
 		_,Print["Warning : the following lorentz structure or part of the lorentz structure is not writen in the generic file"];
@@ -832,7 +832,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteLast[genfile]*)
 
 
@@ -1087,7 +1087,7 @@ Options[WriteFeynArtsOutput] = {FlavorExpand -> False, IndexExpand-> False, MaxP
           Exclude4Scalars -> False, GenericFile -> True, DiracIndices->Automatic, LoopOrder->MR$Null, ApplyMomCons->True};
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteFeynArtsOutput*)
 
 
@@ -1355,7 +1355,7 @@ FR$FeynArtsInterface = False;
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*FARedefineClasses*)
 
 
@@ -1408,7 +1408,7 @@ FARedefineClasses:=Block[{tmp,tmpmass,tmpind,tmppl,tmpelem,tmpsymb},
 (*FeynArts generic coupling *)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FAIDStructure*)
 
 
@@ -1443,7 +1443,7 @@ FAIDStructure[vertextype_, FAPartContent_, vertex_, fc_] := Module[{temp,temp2,t
 ];(*end Module*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FAStructure2*)
 
 
@@ -1553,10 +1553,10 @@ LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, t
                         GaAlgebra[mu___,ProjM] -> GaAlgebra[mu]Proj[1]};
                 temp = Collect[temp, Proj[_], Simplify];
                 temp = {{Coefficient[temp, Proj[1]]}, {Coefficient[temp, Proj[2]]}} //. GaAlgebra[___] -> 1,
-             (******* Scalar couplings: S *********) 
-             (vertextype === "S"), 
-             Print[Style["Warning : tadpole vertices (S), this model should be used with lorentzTadpole.gen",Orange]]; 
- 	        temp = {{temp}}, 
+             (******* Scalar couplings: S *********)
+             (vertextype === "S"),
+                Print[Style["Warning : tadpole vertices (S), this model should be used with lorentzTadpole.gen",Orange]];
+                temp = {{temp}},
              (******* Scalar couplings: SS *********)
              (vertextype === "SS"),
                 temp = temp/.{SP[2,2]->-SP[1,2],SP[1,1]->SP[1,2]};
