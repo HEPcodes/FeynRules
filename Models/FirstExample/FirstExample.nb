@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[     18222,        516]
-NotebookOptionsPosition[     15623,        433]
-NotebookOutlinePosition[     15978,        449]
-CellTagsIndexPosition[     15935,        446]
+NotebookDataLength[     18133,        523]
+NotebookOptionsPosition[     15507,        439]
+NotebookOutlinePosition[     15882,        456]
+CellTagsIndexPosition[     15839,        453]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -339,27 +339,28 @@ Cell["The Feynman rules can be obtained via", "Text",
  CellChangeTimes->{{3.4050568741378717`*^9, 3.405056885654763*^9}}],
 
 Cell[BoxData[
- RowBox[{"vertsQCD", "=", 
-  RowBox[{"FeynmanRules", "[", "L", "]"}]}]], "Input",
+ RowBox[{
+  RowBox[{"vertsQCD", "=", 
+   RowBox[{"FeynmanRules", "[", "L", "]"}]}], ";"}]], "Input",
  CellChangeTimes->{{3.405056890500811*^9, 3.405056893734693*^9}, {
-   3.4234168251956873`*^9, 3.423416830211779*^9}, 3.5916081547365103`*^9}],
+  3.4234168251956873`*^9, 3.423416830211779*^9}}],
 
 Cell["\<\
-The screen output can be turned off using the option ScreenOutput \[Rule] True\
+The screen output can be turned off using the option ScreenOutput \[Rule] \
+False\
 \>", "Text",
  CellChangeTimes->{{3.4050570995652933`*^9, 3.405057124943816*^9}, {
-  3.4050580912612667`*^9, 3.405058092869008*^9}, {3.591608117060586*^9, 
-  3.5916081174044933`*^9}}],
+  3.4050580912612667`*^9, 3.405058092869008*^9}}],
 
 Cell[BoxData[
  RowBox[{
   RowBox[{"vertsQCD", "=", 
    RowBox[{"FeynmanRules", "[", 
     RowBox[{"L", ",", 
-     RowBox[{"ScreenOutput", "\[Rule]", "True"}]}], "]"}]}], ";"}]], "Input",
+     RowBox[{"ScreenOutput", "\[Rule]", "False"}]}], "]"}]}], ";"}]], "Input",\
+
  CellChangeTimes->{{3.4050571316084957`*^9, 3.4050571438894167`*^9}, {
-  3.423416837356469*^9, 3.423416847428377*^9}, {3.5916081147586107`*^9, 
-  3.59160811504548*^9}}],
+  3.423416837356469*^9, 3.423416847428377*^9}}],
 
 Cell["The vertices can be accessed via", "Text",
  CellChangeTimes->{{3.405057149222007*^9, 3.405057158615284*^9}}],
@@ -372,69 +373,75 @@ Cell["FeynmanRules shares all the options of ExpandIndices:", "Text",
  CellChangeTimes->{{3.4126230424107037`*^9, 3.4126230677294893`*^9}}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"MaxParticles", "\[Rule]", "3"}]}], "]"}]], "Input",
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"MaxParticles", "\[Rule]", "3"}]}], "]"}], ";"}]], "Input",
  CellChangeTimes->{{3.412623068854279*^9, 3.412623079338979*^9}, 
-   3.4234168980550003`*^9, 3.591608155390812*^9}],
+   3.4234168980550003`*^9}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"MinParticles", "\[Rule]", "4"}]}], "]"}]], "Input",
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"MinParticles", "\[Rule]", "4"}]}], "]"}], ";"}]], "Input",
  CellChangeTimes->{{3.412623068854279*^9, 3.412623095594975*^9}, 
-   3.42341690427654*^9, 3.591608155940813*^9}],
+   3.42341690427654*^9}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"SelectParticles", "\[Rule]", 
-    RowBox[{"{", 
-     RowBox[{
-      RowBox[{"{", 
-       RowBox[{"G", ",", "G", ",", "G"}], "}"}], ",", 
-      RowBox[{"{", 
-       RowBox[{"G", ",", "G", ",", "G", ",", "G"}], "}"}]}], "}"}]}]}], 
-  "]"}]], "Input",
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"SelectParticles", "\[Rule]", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"G", ",", "G", ",", "G"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"G", ",", "G", ",", "G", ",", "G"}], "}"}]}], "}"}]}]}], 
+   "]"}], ";"}]], "Input",
  CellChangeTimes->{{3.412623068854279*^9, 3.4126231164753*^9}, 
-   3.423416907117125*^9, 3.591608156909391*^9}],
+   3.423416907117125*^9}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"MaxCanonicalDimension", "\[Rule]", "3"}]}], "]"}]], "Input",
- CellChangeTimes->{{3.4234169177082453`*^9, 3.423416925532045*^9}, 
-   3.591608157415678*^9}],
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"MaxCanonicalDimension", "\[Rule]", "3"}]}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.4234169177082453`*^9, 3.423416925532045*^9}}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"MinCanonicalDimension", "\[Rule]", "4"}]}], "]"}]], "Input",
- CellChangeTimes->{{3.4234169335562563`*^9, 3.423416937724022*^9}, 
-   3.591608158236692*^9}],
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"MinCanonicalDimension", "\[Rule]", "4"}]}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.4234169335562563`*^9, 3.423416937724022*^9}}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"Free", "\[Rule]", 
-    RowBox[{"{", "q", "}"}]}]}], "]"}]], "Input",
- CellChangeTimes->{{3.423416944355001*^9, 3.423416947835987*^9}, 
-   3.591608159188581*^9}],
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"Free", "\[Rule]", 
+     RowBox[{"{", "q", "}"}]}]}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.423416944355001*^9, 3.423416947835987*^9}}],
 
 Cell[BoxData[
- RowBox[{"FeynmanRules", "[", 
-  RowBox[{"L", ",", 
-   RowBox[{"Contains", "\[Rule]", 
-    RowBox[{"{", "q", "}"}]}]}], "]"}]], "Input",
- CellChangeTimes->{{3.423416952839855*^9, 3.4234169555482807`*^9}, 
-   3.591608159764638*^9}]
+ RowBox[{
+  RowBox[{"FeynmanRules", "[", 
+   RowBox[{"L", ",", 
+    RowBox[{"Contains", "\[Rule]", 
+     RowBox[{"{", "q", "}"}]}]}], "]"}], ";"}]], "Input",
+ CellChangeTimes->{{3.423416952839855*^9, 3.4234169555482807`*^9}}]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1280, 681},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
-FrontEndVersion->"9.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (January 25, \
-2013)",
+Magnification->1.5,
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (November 6, \
+2010)",
 StyleDefinitions->"Default.nb"
 ]
 (* End of Notebook Content *)
@@ -448,74 +455,74 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[545, 20, 324, 7, 28, "Input"],
-Cell[872, 29, 222, 4, 28, "Input"],
-Cell[1097, 35, 219, 5, 28, "Input"],
+Cell[545, 20, 324, 7, 40, "Input"],
+Cell[872, 29, 222, 4, 40, "Input"],
+Cell[1097, 35, 219, 5, 40, "Input"],
 Cell[CellGroupData[{
-Cell[1341, 44, 129, 1, 92, "Title"],
+Cell[1341, 44, 129, 1, 114, "Title"],
 Cell[CellGroupData[{
-Cell[1495, 49, 99, 1, 80, "Section"],
-Cell[1597, 52, 181, 2, 30, "Text"],
-Cell[1781, 56, 150, 2, 28, "Input"],
-Cell[1934, 60, 471, 11, 125, "Text"],
-Cell[2408, 73, 172, 3, 28, "Input"],
-Cell[2583, 78, 246, 5, 30, "Text"]
+Cell[1495, 49, 99, 1, 100, "Section"],
+Cell[1597, 52, 181, 2, 39, "Text"],
+Cell[1781, 56, 150, 2, 40, "Input"],
+Cell[1934, 60, 471, 11, 174, "Text"],
+Cell[2408, 73, 172, 3, 40, "Input"],
+Cell[2583, 78, 246, 5, 39, "Text"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[2866, 88, 98, 1, 80, "Section"],
-Cell[2967, 91, 233, 3, 30, "Text"],
-Cell[3203, 96, 1060, 26, 28, "Input"],
-Cell[4266, 124, 485, 11, 125, "Text"],
-Cell[4754, 137, 145, 2, 28, "Input"]
+Cell[2866, 88, 98, 1, 100, "Section"],
+Cell[2967, 91, 233, 3, 39, "Text"],
+Cell[3203, 96, 1060, 26, 40, "Input"],
+Cell[4266, 124, 485, 11, 152, "Text"],
+Cell[4754, 137, 145, 2, 40, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[4936, 144, 106, 1, 80, "Section"],
-Cell[5045, 147, 725, 13, 106, "Text"],
+Cell[4936, 144, 106, 1, 100, "Section"],
+Cell[5045, 147, 725, 13, 129, "Text"],
 Cell[CellGroupData[{
-Cell[5795, 164, 114, 1, 44, "Subsection"],
-Cell[5912, 167, 174, 4, 30, "Text"],
-Cell[6089, 173, 249, 4, 63, "Input"],
-Cell[6341, 179, 253, 4, 63, "Input"],
-Cell[6597, 185, 197, 3, 46, "Input"],
-Cell[6797, 190, 186, 3, 46, "Input"],
-Cell[6986, 195, 186, 3, 46, "Input"],
-Cell[7175, 200, 169, 3, 30, "Text"],
-Cell[7347, 205, 315, 5, 80, "Input"]
+Cell[5795, 164, 114, 1, 51, "Subsection"],
+Cell[5912, 167, 174, 4, 39, "Text"],
+Cell[6089, 173, 249, 4, 87, "Input"],
+Cell[6341, 179, 253, 4, 87, "Input"],
+Cell[6597, 185, 197, 3, 64, "Input"],
+Cell[6797, 190, 186, 3, 64, "Input"],
+Cell[6986, 195, 186, 3, 64, "Input"],
+Cell[7175, 200, 169, 3, 39, "Text"],
+Cell[7347, 205, 315, 5, 110, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[7699, 215, 103, 1, 44, "Subsection"],
-Cell[7805, 218, 155, 3, 30, "Text"],
-Cell[7963, 223, 132, 2, 28, "Input"],
-Cell[8098, 227, 224, 5, 68, "Text"],
-Cell[8325, 234, 446, 10, 46, "Input"],
-Cell[8774, 246, 221, 4, 30, "Text"],
-Cell[8998, 252, 244, 5, 28, "Input"],
-Cell[9245, 259, 309, 5, 49, "Text"],
-Cell[9557, 266, 293, 6, 28, "Input"],
-Cell[9853, 274, 348, 6, 30, "Text"],
-Cell[10204, 282, 348, 6, 28, "Input"],
-Cell[10555, 290, 367, 6, 30, "Text"],
-Cell[10925, 298, 397, 7, 28, "Input"],
-Cell[11325, 307, 264, 5, 30, "Text"],
-Cell[11592, 314, 490, 13, 28, "Input"]
+Cell[7699, 215, 103, 1, 51, "Subsection"],
+Cell[7805, 218, 155, 3, 39, "Text"],
+Cell[7963, 223, 132, 2, 60, "Input"],
+Cell[8098, 227, 224, 5, 126, "Text"],
+Cell[8325, 234, 446, 10, 96, "Input"],
+Cell[8774, 246, 221, 4, 58, "Text"],
+Cell[8998, 252, 244, 5, 60, "Input"],
+Cell[9245, 259, 309, 5, 93, "Text"],
+Cell[9557, 266, 293, 6, 60, "Input"],
+Cell[9853, 274, 348, 6, 58, "Text"],
+Cell[10204, 282, 348, 6, 60, "Input"],
+Cell[10555, 290, 367, 6, 58, "Text"],
+Cell[10925, 298, 397, 7, 60, "Input"],
+Cell[11325, 307, 264, 5, 58, "Text"],
+Cell[11592, 314, 490, 13, 60, "Input"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[12131, 333, 163, 2, 80, "Section"],
-Cell[12297, 337, 121, 1, 30, "Text"],
-Cell[12421, 340, 237, 4, 28, "Input"],
-Cell[12661, 346, 272, 5, 30, "Text"],
-Cell[12936, 353, 354, 8, 28, "Input"],
-Cell[13293, 363, 114, 1, 30, "Text"],
-Cell[13410, 366, 151, 2, 28, "Input"],
-Cell[13564, 370, 139, 1, 30, "Text"],
-Cell[13706, 373, 245, 5, 28, "Input"],
-Cell[13954, 380, 242, 5, 28, "Input"],
-Cell[14199, 387, 438, 12, 28, "Input"],
-Cell[14640, 401, 232, 5, 28, "Input"],
-Cell[14875, 408, 232, 5, 28, "Input"],
-Cell[15110, 415, 238, 6, 28, "Input"],
-Cell[15351, 423, 244, 6, 28, "Input"]
+Cell[12131, 333, 163, 2, 150, "Section"],
+Cell[12297, 337, 121, 1, 58, "Text"],
+Cell[12421, 340, 231, 5, 60, "Input"],
+Cell[12655, 347, 224, 5, 58, "Text"],
+Cell[12882, 354, 307, 8, 60, "Input"],
+Cell[13192, 364, 114, 1, 58, "Text"],
+Cell[13309, 367, 151, 2, 60, "Input"],
+Cell[13463, 371, 139, 1, 58, "Text"],
+Cell[13605, 374, 243, 6, 60, "Input"],
+Cell[13851, 382, 240, 6, 60, "Input"],
+Cell[14094, 390, 443, 13, 60, "Input"],
+Cell[14540, 405, 229, 6, 60, "Input"],
+Cell[14772, 413, 229, 6, 60, "Input"],
+Cell[15004, 421, 233, 6, 60, "Input"],
+Cell[15240, 429, 239, 6, 60, "Input"]
 }, Open  ]]
 }, Open  ]]
 }

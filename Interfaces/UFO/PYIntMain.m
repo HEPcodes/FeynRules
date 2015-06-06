@@ -87,6 +87,10 @@ PY$IntIndexCounter = 1;
 << "PYIntVertices.m";
 << "PYCouplingOrders.m";
 << "PYDecays.m";
+<< "PYFormFactors.m";
+<< "PYNLO.m";
+
+
 
 
 (* ::Section::Closed:: *)
@@ -240,7 +244,8 @@ Options[WriteUFO] := Join[Options[FeynmanRules],
      AddDecays    ->  True,
      SimplifyDecays -> False,
      R2Vertices   -> {},
-     UVCounterterms -> {}}] /. {Rule[FlavorExpand, _] :> Rule[FlavorExpand, Automatic]};
+     UVCounterterms -> {},
+     CTParameters -> {}}] /. {Rule[FlavorExpand, _] :> Rule[FlavorExpand, Automatic]};
 
 
 WriteUFO[lagrangians_List, options___] := WriteUFO[Sequence @@ lagrangians, options];
@@ -253,12 +258,14 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
    (* Particles *)
     partlist = PartList,
     simplifydecays = OptionValue[SimplifyDecays],
+   (* form factors*)
+    formfactors,
    (* NLO *)
    PY$R2Vertices = OptionValue[R2Vertices], 
    PY$UVVertices = OptionValue[UVCounterterms],
+   PY$CTparameters = OptionValue[CTParameters],
    IsUFOAtNLO = False, NLOcoupls
    },
-
 
    Print[" --- Universal FeynRules Output (UFO) v " <> UFO$Version <> " ---"];
 
@@ -276,6 +283,9 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
     GenInt$DialogString = {};
     PY$NegativeInteractionOrder = OptionValue[NegativeInteractionOrder];
     PY$NegativeInteractionOrderFound = False;
+
+    (*Simplify If*)
+    PY$UVVertices=PY$UVVertices/.((Rule[#,#/.MR$Definitions]&)/@Union[Cases[PY$UVVertices,_If,\[Infinity]]]);
 
 
    (* Create the output directory *)
@@ -311,6 +321,7 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
 
    (* Check the particles *)
    partlist = CheckPythonParticles[partlist];
+
 
    (* Check the paramaters *)
    plist = CheckPythonParameters[eparams, iparams, masslist, widthlist];
@@ -375,14 +386,30 @@ WriteUFO[lagrangians___, OptionsPattern[]] := Block[{lags = {lagrangians}, verti
        vertices = Join[vertices, PY$R2Vertices];
       ];
 
+
+
     If[PY$UVVertices =!= {},
+       (*To avoid that IPL and IF are inside a conjugate*)
+       PY$UVVertices = PY$UVVertices//.{Conjugate[aa_Plus]:>Conjugate/@aa,Conjugate[aa_Times]:>Conjugate/@aa}/.Conjugate[xx_IPL]:>xx/.Conjugate[If[xx_,a_,c_]]:>
+         If[xx,Conjugate[a],Conjugate[c]];
+
        IsUFOAtNLO = True;
        PY$UVVertices = SwitchVertexParticlesFAToFR /@ PY$UVVertices;
        PY$UVVertices = SwitchFromFAToFRVertexConventions /@ PY$UVVertices;
        PY$UVVertices = AddPYR2UVTag[#, "UV"]& /@ PY$UVVertices;
        (* We need to rename the logs, in order to avoid divergences in the flavor expansion *)
-       PY$UVVertices = PY$UVVertices /. Log -> RenormLog /. FR$MU -> 1;
+       PY$UVVertices = PY$UVVertices /. Log -> RenormLog (*/. FR$MU -> 1*);
        vertices = Join[vertices, PY$UVVertices];
+      ];
+
+     If[PY$CTparameters =!= {},
+       (*To avoid that IPL and IF are inside a conjugate*)
+       PY$CTparameters = PY$CTparameters//.{Conjugate[aa_Plus]:>Conjugate/@aa,Conjugate[aa_Times]:>Conjugate/@aa}/.Conjugate[xx_IPL]:>xx/.Conjugate[If[xx_,a_,c_]]:>
+         If[xx,Conjugate[a],Conjugate[c]];
+
+       IsUFOAtNLO = True;
+       PY$CTparameters = SwitchFromFAToFRVertexConventions /@ (PY$CTparameters/.Rule->List);
+       PY$CTparameters = PY$CTparameters /. Log -> RenormLog (*/. FR$MU -> 1*);
       ];
 
 If[$Debug,
@@ -391,8 +418,9 @@ If[$Debug,
 ];
 
    (* Apply simplification rules *)
+(*Print[InputForm[vertices]];*)
    vertices = DeleteCases[VertexSimplify @@@ vertices, {_, 0}];
-   
+
    (*vertices = MergeSortedVertices[vertices];*)
    vertices = MergeAllVertices[vertices];
  
@@ -416,6 +444,7 @@ If[$Debug,
 
   (* Check if vertices only contain mass eigenstates *)
   CheckMassEigenstates[vertices];
+
 
   (* Remove ghosts and goldstones, if required *)
   If[OptionValue[RemoveGhosts],
@@ -457,6 +486,7 @@ If[$Debug,
 (* Compute Decays                             *)
 (* * * * * * * * * * * * * * * * * * * * * * * *)
 
+Print[OptionValue[AddDecays]];
    If[OptionValue[AddDecays],
       decays = GetUFODecays[vertices //. {PYR2UVTag[_] :> 0}, SimplifyDecays -> simplifydecays];
       ];
@@ -491,10 +521,16 @@ If[$Debug,
    (* Then, we make all particles outgoing *)
    vertices = MakeOutgoingParticles /@ vertices;
 
+   formfactors = If[FR$FormFactors =!= {},
+                    MatchFormFactorsToVertexList[vertices, Ingoing -> False],
+                    {}
+                   ];
+
    (* We now separate into Lorentz, color and coupling structures , anmd create PY$LorentzObjects and PY$CouplObjects*)
    Print["    - Splitting vertices into building blocks."];
    vertices = PYSplitVertices[vertices];
-
+(*Print["after split"];
+Print[InputForm[vertices]];*)
 
    (* Color optimization *)
    (*vertices = OptimizeColors @@@ vertices;*)
@@ -507,8 +543,9 @@ If[$Debug,
       vertices = OptimizeUFOVertices[vertices, PY$CouplObjects, PY$LorentzObjects];
      ]; 
 
-   (* Formatting *) 
-   PY$LorentzObjects = PY$LorentzObjects/. LorentzObject[Lname_, Lspins_, Lexpr_]:>LorentzObject[Lname, Lspins, Lexpr,{}];
+   (* Add the form factors to the lorentz objects *)
+
+   PY$LorentzObjects = AddFormFactorsToLorentzObject /@ PY$LorentzObjects;
 
 (* * * * * * * * * * * * * * * * * * * * * * * *)
 (* NLO module                                 *)
@@ -577,6 +614,13 @@ If[$Debug,
       WriteUFODecays[decays];   
       ];
 
+
+   (* Create form_factors.py*)
+   If[FR$FormFactors =!= {},
+      WritePYFormFactors[formfactors]
+      ];
+
+
    (* Create CT_couplings.py *)
    If[PY$R2CouplObjects =!= {},
      If[$Debug,
@@ -598,9 +642,5 @@ If[$Debug,
 
 
 ];
-   
-   
-
-   
-    
+ 
 

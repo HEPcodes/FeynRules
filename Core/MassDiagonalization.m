@@ -57,7 +57,7 @@ SelfConjugateQ[fi_?(FieldQ[#]===True&)[inds__]]:=SelfConjugateQ[fi];
 (*Testing unit for the mixing declaration + declaration of the mixing parameters*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Core testing function*)
 
 
@@ -115,7 +115,7 @@ CheckBasis[mbasis_,gbasis_]:=Block[{lg,lm,maprules},
 ];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*When a symbol is given: checking the sattelite rules + declaration of the parameter if relevant*)
 
 
@@ -557,7 +557,7 @@ RotatePseudoscalar[mbasis_,gbasis_,Val_]:=Block[{rule, MyModule},
 (*Rotation of four-component fermionic fields*)
 
 
-Listize[exp_]:=  DeleteCases[If[Head[exp]===Plus, List@@exp,{exp}],0|0.];
+Listize[exp_]:=  If[Head[exp]===Plus, List@@exp,{exp}];
 
 
 Modulize[MyRule[a_,b_],MyModule_]:=Block[{idx},
@@ -891,7 +891,7 @@ SpecialExpandIndices[lag_]:=Block[{tmplag=Expand[lag]/.del[__]->0,vevrules},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExpandIndices2*)
 
 
@@ -980,7 +980,7 @@ ExpandIndices2[lag_]:=Block[{tmplag=Expand[lag]/.Dot->FR$Dot/.FR$Dot->Dot, mufmu
 (*Tree-level mass matrices*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Derivative with respect to a field*)
 
 
@@ -1001,13 +1001,13 @@ Derf[HC[a_],fi_]:=HC[Derf[a,fi]];
 Derf[fi_?(Head[#]===Symbol&),fi2_]:=Derf[fi[],fi2];
 Derf[fi_,fi2_?(Head[#]===Symbol&)]:=Derf[fi,fi2[]];
 
-Derf[fi1_?(FieldQ[#]===True&)[inds1___],fi2_?(FieldQ[#]===True&)[inds2___]]:=If[fi1=!=fi2,0,Inner[IndexDelta2,{inds1},{inds2},Times]];
+Derf[fi1_?(FieldQ[#]===True&)[inds1___],fi2_?(FieldQ[#]===True&)[inds2___]]:=If[fi1=!=fi2,0,Inner[IndexDelta,{inds1},{inds2},Times]];
 
 
 Derf[0,_]=0;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Core function*)
 
 
@@ -1019,15 +1019,13 @@ ComputeMassMatrix2[lagr_,b1_,b2_]:=Block[{mat,nsize = Length[b1],bases, tmplag,m
   tmplag = Expand[tmplag//.FR$UnitarySimplifications/.Pow->Power];
   tmplag = Expand[tmplag//.FR$UnitarySimplifications/.Pow->Power];
   mat = Table[Derf[Derf[tmplag,b1[[iii]]],b2[[jjj]]],{iii,nsize},{jjj,nsize}];
-  mat = mat/.Index[type_,Index[type_,a_]]->Index[type,a]/.IndexDelta2->IndexDelta;
-  mat = Expand[mat]//.{ME[__]->1,IndexDelta[a_(!NumericQ[#]&),b_(!NumericQ[#]&)] IndexDelta[a_(!NumericQ[#]&),c_(!NumericQ[#]&)]:> IndexDelta[b,c]};
-  mat = mat/.IndexDelta[a_?(!NumericQ[#]&),a_(!NumericQ[#]&)]->1];
+  mat = Expand[mat]//.{ME[__]->1,IndexDelta[a_,b_] IndexDelta[a_,c_]:> IndexDelta[b,c]}/.IndexDelta[__]->1];
   mat=ApplyDefinitions/@(ApplyDefinitions/@mat);
   Return[mat];
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Wrapper:  TreeLevelMassMatrix*)
 
 
@@ -1103,7 +1101,7 @@ TreeLevelMassMatrix[Mix[id_],lagr_,OptionsPattern[]]:=Block[{gbasis,gbasis2,tag=
   ]];
 
   (* MUF case *)
-  If[id==="MUF",
+  If[id==="MUF",     
     tmpmat1=ComputeMassMatrix2[rotlagr,gbasis,gbasis2];
     If[And@@((FermionQ[#]===True&)/@gbasis), Return[-tmpmat1]];
     If[And@@((VectorFieldQ[#]===True&)/@gbasis), Return[tmpmat1]];
@@ -1260,7 +1258,7 @@ MassBasis[id_,"PS"] := (MassBasis/.FR$MixingRules[Mix[id]])[[2]];
 MassBasis[id_] := If[Type[id]==="SPS", Message[MassDiag::GBSPS]; Abort[], MassBasis/.FR$MixingRules[Mix[id]]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Getting back a block name*)
 
 
@@ -1320,7 +1318,7 @@ BlockName[id_] := Block[{resu,mmix},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Getting back a matrix symbol*)
 
 
@@ -1374,7 +1372,7 @@ MassMatrix[id_,"R"]:=MassMatrix[id];
 MassMatrix[id_]:=If[Type[id]==="SPS", Message[MassDiag::GBSPS]; Abort[],If[MemberQ[FR$MassMatrices,id], Simplify[ReturnMat[ToString[id]]],"Matrix not computed."]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Getting back the value of a mixing matrix*)
 
 
@@ -1424,7 +1422,7 @@ MixMatrix[id_] := Block[{resu},
 ];  
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Summary function*)
 
 

@@ -87,13 +87,25 @@ GetInds[namelist_][xx___,Index[name_,n_],yy___]:=GetInds[namelist][xx,yy] /; Not
 
 MakeIndexSumPI[lisi_List] := MakeIndexSumPI /@ lisi;
 
-MakeIndexSumPI[expr_?(Head[#]=!=List &),name_]:=Block[{tmpexprlist,getindlist,joingetindlist,sumindlist},
+MakeIndexSumPI[expr_?(Head[#]=!=List &),name_]:=Block[{tmpexprlist,getindlist,joingetindlist,sumindlist,tenslist,idSum,indlist},
    tmpexprlist=Expand[expr];
    tmpexprlist=If[Head[tmpexprlist]===Plus,List@@tmpexprlist,{tmpexprlist}];
    getindlist=GetInds[name][#]&/@tmpexprlist;
    getindlist=getindlist//.GetInds[_]:>GI //. GI[exp___]:>Sort[List[exp]]/.{}->1;
    joingetindlist = Union[getindlist];
    sumindlist = joingetindlist/. Index[nam_,k_]:>{k,First[MRIndexRange[Index[nam]]],Last[MRIndexRange[Index[nam]]]};
+   (*Expand the indices of the tensors and remove the zero entries first one (tensor) by one *)
+   tenslist=Cases[tmpexprlist/.Conjugate->Identity,_?TensQ,\[Infinity]];
+   For[kk=1,kk<=Length[tenslist],kk++,
+     indlist=Cases[sumindlist,_?(Not[FreeQ[tenslist[[kk]],#[[1]]]]&),{2}];
+     sumindlist=DeleteCases[sumindlist,_?(Not[FreeQ[tenslist[[kk]],#[[1]]]]&),{2}];
+     If[Length[indlist]>0,
+       tmpexprlist=idSum[tmpexprlist,Sequence@@indlist]/.idSum->Sum;
+       tmpexprlist=ApplyDefinitions[tmpexprlist/.{Conjugate[a_?TensQ][x__]->Conjugate[a[x]]}];
+     ];
+   ];
+   tmpexprlist=tmpexprlist//.{Conjugate[tt_?(TensQ)[ind__]] -> Conjugate[tt][ind]};
+
    tmpexprlist = Plus @@ Table[Plus @@ Extract[tmpexprlist, Position[getindlist, joingetindlist[[kk]]], IndSum[#, Sequence @@ sumindlist[[kk]]]&], {kk, Length[joingetindlist]}];
    tmpexprlist=tmpexprlist /. IndSum -> IndSumOpt1;
    tmpexprlist=tmpexprlist /. IndSumOpt1 -> IndSumOpt2;
@@ -212,7 +224,7 @@ ReleaseASIndex[temp_] := temp //. {ASTensor[yy_][ASIndex[name_, i1_], ASIndex[na
                     h_[ind11___,g_[ind1___, ASTensor[yy_][ASIndex[name_, i1_], ASIndex[name_, i2_]], ind2___], ind22___] * aa_ :> ReplaceIndex[h[ind11,g[ind1, yy[NTIndex[name, i1]], ind2],ind22] * aa,i2,i1]};
 
 
-PutIndices[expr_, flavorexpandQ_, flavorexpandlist_] := 
+PutIndices[expr_, flavorexpandQ_, flavorexpandlist_,nodef___] := 
   Module[{temp, output, ExpandIndices, Dotdone, StartPutIndices, StartPutIndices2, SaturateIndices, AddIndexToField, SatInd, ContinuePutIndices, PutInd, 
           ReorderIndicesNames, SatIndName, flavexp, HCPutIndices, PutIndName, SaturateIndexNames, PutFieldIndices, DiagProd2, tempflavexp, tempnoflavexp, 
           lab999, FRFuncQ, flavexplabel, flavexpblanklist, $AppliedRules = False},   
@@ -227,8 +239,6 @@ PutIndices[expr_, flavorexpandQ_, flavorexpandlist_] :=
 (* Index restoration *)
     temp = temp /. Dot -> RestoreFermionIndices /. RestoreFermionIndices -> Dot /. HCPI -> HC /. TP[t_][as__, i_, j_] :> t[as,j,i]; 
 
-(*Print[FullForm[temp]];*)
-
     temp = temp //. {del1[Dot[psi1_,psi2_],mu_] :> Dot[del[psi1,mu],psi2], del2[Dot[psi1_,psi2_],mu_] :> Dot[psi1, del[psi2, mu]]};
 
     temp = temp //. {Conjugate[tt_?(TensQ)[ind__]] -> Conjugate[tt][ind]};
@@ -239,7 +249,8 @@ PutIndices[expr_, flavorexpandQ_, flavorexpandlist_] :=
       than applying it on every term.
 *)
 (*    temp = Expand[temp];*)
-    temp = If[Head[temp]===Plus,Expand/@temp,Expand[temp]];
+    temp = If[Head[temp]===Plus,FieldExpand/@temp,FieldExpand[temp]];
+
 
 (* Modifications by A. Alloul 12/11/2012:
    1) Modified the  line below
@@ -247,10 +258,8 @@ PutIndices[expr_, flavorexpandQ_, flavorexpandlist_] :=
       than applying it on every term.
 *)
 (*    temp = ApplyDefinitions[temp];*)
-    temp = If[Head[temp]===Plus,ApplyDefinitions/@temp,ApplyDefinitions[temp]];
 
-(*Print["ga :: ",temp];
-Print[FullForm[temp]];*)
+    If[nodef=!=True,temp = If[Head[temp]===Plus,ApplyDefinitions/@temp,ApplyDefinitions[temp]]];
 
     temp = temp //. {HC -> HCPutIndices} //. {HCPutIndices[t_?(TensQ)][ind___] -> HCPutIndices[t[ind]]};
     temp = PrePutIndices[temp];
@@ -261,7 +270,7 @@ Print[FullForm[temp]];*)
       than applying it on every term.
 *)
 (*    temp = Expand[temp]; *)
-    temp = If[Head[temp]===Plus,Expand/@temp,Expand[temp]]; 
+    temp = If[Head[temp]===Plus,FieldExpand/@temp,FieldExpand[temp]]; 
 
 (* Index restoration for Eps and co. *)
     FRFuncQ[xx_] := (TensQ[xx] === True_) || (FieldQ[xx] === True) || (xx === del) || (xx ===ME) || (xx === IndexDelta) || (xx == FV) || (xx === Eps);
@@ -277,21 +286,15 @@ Print[FullForm[temp]];*)
       than applying it on every term.
 *)
 (*    temp = Expand[temp]; *)
-    temp =If[Head[temp]===Plus,Expand/@temp,Expand[temp]];
+    temp =If[Head[temp]===Plus,FieldExpand/@temp,FieldExpand[temp]];
 
 (* Release AllowSummation *)
-
-(*Print["inside"];
-Print[temp];*)
 
     temp = ReleaseASIndex[temp];
 
   (*  temp = temp //. ASNT[Index] -> Index;*)
     temp = temp /. DiagProd2 -> DiagProd;
-(*Print[temp];*)
 
-(*Print["    Before Rules:"];
-Print[temp];*)
 
 (* Modifications by A. Alloul 12/11/2012:
    1) Modified the  line below
@@ -299,26 +302,21 @@ Print[temp];*)
       than applying it on every term.
 *)
 (*    temp = ApplyDefinitions[temp];*)
-    temp =If[Head[temp]===Plus,ApplyDefinitions/@temp,ApplyDefinitions[temp]];
-
-(*Print["    Before Expansion:"];*)
-(*Print[temp];*)
+    If[nodef=!=True,temp =If[Head[temp]===Plus,ApplyDefinitions/@temp,ApplyDefinitions[temp]]];
 
     If[flavorexpandQ, (*Print["Expanding flavors..."];*) 
        flavexpblanklist = Index[#,__]& /@ flavorexpandlist;
        If[Not[And@@ (FreeQ[temp, #]& /@ flavexpblanklist)],
-       Label[flavexplabel];
+             Label[flavexplabel];
              If[Head[temp] === Plus, tempflavexp = Select[Expand[temp], Not[ListFreeQ[#, flavexpblanklist]]&];
                                      tempnoflavexp = Expand[temp - tempflavexp],
                                      tempflavexp = temp; tempnoflavexp = 0];
 
              tempflavexp = tempflavexp //. Index[name_, xx_?NumericQ] :> Done[Index][name, xx] /; MemberQ[flavorexpandlist, name];
-(*Print[FullForm[tempflavexp]];*)
-             tempflavexp = MR$IndexExpand[tempflavexp, flavorexpandlist];
+             tempflavexp = If[Head[tempflavexp]===Plus,(MR$IndexExpand[#, flavorexpandlist]&)/@tempflavexp,MR$IndexExpand[tempflavexp, flavorexpandlist]];
 
              tempflavexp = tempflavexp /. Done[Index] :> Index;
 
-(*Print[tempflavexp];*)
 
 (* Modifications by A. Alloul 12/11/2012:
    1) Modified the  line below
@@ -328,15 +326,14 @@ Print[temp];*)
 (*    temp = ApplyDefinitions[tempflavexp];*)
              tempflavexp = If[Head[tempflavexp]===Plus,ApplyDefinitions/@tempflavexp,ApplyDefinitions[tempflavexp]];
 
-(*Print[tempflavexp];*)
 (* Modifications by A. Alloul 12/11/2012: Same reasons as above. Original version commented *)
              (*If[Not[$AppliedRules], tempnoflavexp = ApplyDefinitions[tempnoflavexp]; $AppliedRules = True];*)
                If[Not[$AppliedRules], tempnoflavexp = If[Head[tempnoflavexp]===Plus,ApplyDefinitions/@tempnoflavexp,ApplyDefinitions[tempnoflavexp]]; $AppliedRules = True];
              temp = Expand[tempflavexp + tempnoflavexp];
-             If[Not[And@@(FreeQ[temp, Index[#, _?(Not[NumericQ[#]]&)]]& /@ flavorexpandlist)], Goto[flavexplabel]]]];
+             If[Not[And@@(FreeQ[temp, Index[#, _?(Not[NumericQ[#]]&)]]& /@ flavorexpandlist)], Goto[flavexplabel]]
+       ](*endn if Not...*)
+    ];(*end if flavorexpandQ*)
     temp = temp //. {Conjugate[tt_?(TensQ)][ind__] -> Conjugate[tt[ind]]};
-(*Print["    After Expansion:"];*)
-(*Print[temp];*)
 
     temp  = PrePutIndices[temp //. f_?(FieldQ)[] -> f];
 

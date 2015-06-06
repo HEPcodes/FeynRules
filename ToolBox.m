@@ -169,7 +169,7 @@ SelectFieldContent[lagrangian_, FClist_, options___] := ExpandIndices[lagrangian
 (* ::Text:: *)
 (*CheckQuantumNumbers[L] checks if all quantum numbers are conserved in the lagrangian L.*)
 (**)
-(*Options: *)
+(*Options:*)
 (*1) FlavorExpand*)
 (*2) MaxParticles*)
 (*3) MinParticles*)
@@ -256,7 +256,7 @@ CheckDiagonalMassTerms[lagrangian_, options___] := Block[{lag, DMT = True, tmp =
          fcl1=KillDoubles[fcl];
          Do[tmp=Append[tmp,Plus@@((lag[[#]]&)@@@Position[fcl,fcl1[[nfcl]]])],{nfcl,Length[fcl1]}];
             Do[If[fcl1[[$kk,1]] =!= anti[fcl1[[$kk,2]]],
-                  tmptmp = tmp[[$kk]] //. psi_?FieldQ -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
+                  tmptmp = tmp[[$kk]] //. psi_?FieldQ -> 1 //. (ProjP|ProjM)[_,_] -> 1/2; 
                   If[Not[NumericQ[NumericalValue[tmptmp]]],Print["Warning: not numerical value encountered. Unable to decide whether mass term is diagonal"]];
                   If[(Abs[NumericalValue[tmptmp]] < N[10^(-8)])=!=True, DMT = False;
                      Print["Non diagonal mass term found: ", tmp[[$kk]]]]],
@@ -293,7 +293,7 @@ CheckDiagonalKineticTerms[lagrangian_, options___] := Block[{lag, DKT = True, fc
       Do[tmp=Append[tmp,Plus@@((lag[[#]]&)@@@Position[fcl,fcl1[[nfcl]]])],{nfcl,Length[fcl1]}];
          Do[If[fcl1[[$kk,1]] =!= anti[fcl1[[$kk,2]]],
                tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1 //.TensDot[Ga[_],ProjM|ProjP][_,_]->1/2//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
-               If[Not[NumericQ[NumericalValue[tmptmp]]],Print["Warning: not numerical value encountered. Unable to decide whether kinetic term is diagonal"]];
+               If[Not[NumericQ[NumericalValue[tmptmp]]], Print["Warning: not numerical value encountered. Unable to decide whether kinetic term is diagonal"]];
                If[(NumericalValue[tmptmp] < N[10^(-8)])=!=True, DKT = False;
                   Print["Non diagonal kinetic term found: ", tmp[[$kk]]]]],
             {$kk, Length[tmp]}];
@@ -385,9 +385,9 @@ MomentumReplace[{parts_, vert_}, n_] := Block[{momentumrules, nparts = Length[pa
 (*ApplyMomentumConservation*)
 
 
-ApplyMomentumConservationSimplify[vert_] := Block[{tempvert = Expand[vert],templength,curvert},
+ApplyMomentumConservationSimplify[vert_] := Block[{tempvert = Expand[vert,_?(Not[FreeQ[#,FV]]||Not[FreeQ[#,SP]]||Not[FreeQ[#,SlashedP]]&)],templength,curvert},
    templength=Length[tempvert[[2]]];
-   Do[curvert=Expand[MomentumReplace[tempvert,$kk]];
+   Do[curvert=Expand[MomentumReplace[tempvert,$kk],_?(Not[FreeQ[#,FV]]||Not[FreeQ[#,SP]]||Not[FreeQ[#,SlashedP]]&)]; (*pattern added by celine*)
       If[Length[curvert[[2]]]<templength,tempvert=curvert;templength=Length[tempvert[[2]]]],
       {$kk,1,Length[vert[[1]]]}];
    tempvert];
@@ -414,8 +414,9 @@ CheckHermiticity[lagrangian_, options___] := Block[{tempoptions, results, llag, 
      Print["Checking for hermiticity by calculating the Feynman rules contained in L-HC[L]."];
      Print["If the lagrangian is hermitian, then the number of vertices should be zero."];
      (* Improvements added by Benj *)
-     llag = OptimizeIndex[ExpandIndices[lagrangian]]/.{Eps[args__] :> Signature[{args} ] Eps[Sequence @@ Sort[{args}]]}; (* CD: Added ExpandIndices *)
+     llag = OptimizeIndex[ExpandIndices[lagrangian]]/.{Eps[args__] :> Signature[{args} ] Eps[Sequence @@ Sort[{args}]]};  (* CD: Added ExpandIndices *)
      hcllag = OptimizeIndex[ExpandIndices[HC[lagrangian]]]/.{Eps[args__] :> Signature[{args} ] Eps[Sequence @@ Sort[{args}]]};
+
      (* End of improvements added by Benj *)
      results = Simplify[FeynmanRules[ llag - hcllag, options, ScreenOutput -> False]];
      If[results === {}, Print["The lagrangian is hermitian."],
@@ -518,7 +519,7 @@ GetMassSpectrum[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fcl1,tmp={},tmpt
       fcl=fcl1/._?GhostFieldQ->"U"/.{_?ScalarFieldQ->"S",_?VectorFieldQ->"V",_?DiracFieldQ->"F",_?MajoranaFieldQ->"F",_?Spin2FieldQ->"T"};
       (* Loop over all terms *)
       Do[Which[fcl[[$nn]] === {"S","S"},
-            tmpterm=tmp[[$nn]]/._?FieldQ->1;
+            tmpterm=tmp[[$nn]]/.{FR$deltat[xx_]->FR$deltat[xx],_?FieldQ->1};
                numtmp = NumericalValue[tmpterm];
                If[Not[NumericQ[numtmp]], Print["Warning: non numerical value encountered for ", ToString[fcl1[[$nn]]], ". Unable to get numerical value."]];
                If[(Re[numtmp]>0)&&(Im[numtmp]<N[10^(-12)]), Print["Warning: mass term for ", ToString[fcl1[[$nn]]], "seems not to have the correct sign."]];
@@ -532,7 +533,7 @@ GetMassSpectrum[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fcl1,tmp={},tmpt
                parttmp=If[AntiFieldQ[fcl1[[$nn,1]]], anti[fcl1[[$nn,1]]], fcl1[[$nn,1]]];
                res=Append[res,{parttmp,mval,mnumval}],
          fcl[[$nn]] === {"F","F"},
-               tmpterm=tmp[[$nn]]/._?FieldQ->1/.Dot[1,1]->1/.(ProjP|ProjM)[__]->1/2;
+               tmpterm=tmp[[$nn]]/.{FR$deltat[xx_]->FR$deltat[xx],_?FieldQ->1}/.Dot[1,1]->1/.(ProjP|ProjM)[__]->1/2;
                numtmp = NumericalValue[tmpterm];
                If[Not[NumericQ[numtmp]], Print["Warning: non numerical value encountered for ", ToString[fcl1[[$nn]]], ". Unable to get numerical value."]];
                If[(Re[numtmp]>0)&&(Im[numtmp]<N[10^(-12)]), Print["Warning: mass term for ", ToString[fcl1[[$nn]]], "seems not to have the correct sign."]];
@@ -545,7 +546,7 @@ GetMassSpectrum[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fcl1,tmp={},tmpt
                If[Re[mnumval]<N[10^(-10)],mnumval=0.];
                res=Append[res,{parttmp,mval,mnumval}],
          fcl[[$nn]] === {"U","U"},
-               tmpterm=tmp[[$nn]]/._?FieldQ->1/.Dot[1,1]->1;
+               tmpterm=tmp[[$nn]]/.{FR$deltat[xx_]->FR$deltat[xx],_?FieldQ->1}/.Dot[1,1]->1;
                numtmp = NumericalValue[tmpterm];
                If[Not[NumericQ[numtmp]], Print["Warning: non numerical value encountered for ", ToString[fcl1[[$nn]]], ". Unable to get numerical value."]];
                If[(Re[numtmp]>0)&&(Im[numtmp]<N[10^(-12)]), Print["Warning: mass term for ", ToString[fcl1[[$nn]]], "seems not to have the correct sign."]];
@@ -555,7 +556,7 @@ GetMassSpectrum[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fcl1,tmp={},tmpt
                parttmp=If[AntiFieldQ[fcl1[[$nn,1]]], anti[fcl1[[$nn,1]]], fcl1[[$nn,1]]];
                res=Append[res,{parttmp,mval,mnumval}],
          fcl[[$nn]] === {"V","V"},
-               tmpterm=tmp[[$nn]]/._?FieldQ->1;
+               tmpterm=tmp[[$nn]]/.{FR$deltat[xx_]->FR$deltat[xx],_?FieldQ->1};
                numtmp = NumericalValue[tmpterm];
                If[Not[NumericQ[numtmp]], Print["Warning: non numerical value encountered for ", ToString[fcl1[[$nn]]], ". Unable to get numerical value."]];
                If[(Re[numtmp]<0)&&(Im[numtmp]<N[10^(-12)]), Print["Warning: mass term for ", ToString[fcl1[[$nn]]], "seems not to have the correct sign."]];

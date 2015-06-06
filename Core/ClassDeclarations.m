@@ -323,19 +323,6 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
     (* Go through indices, to unfold them *)
     UnfoldIndices[];
 
-(* BF: OLD MIXINGS: ciao *)
- (*   (* Read out mixings *)
-    (* See if M$MixingDeclarations already exists.
-      If not, initialise it to the empty list *) 
-   If[Not[ValueQ[M$MixingDescriptions]],
-      M$MixingDescriptions = {}
-     ];
-
-   (* Read out the mixings from M$ClassesDescription.
-      The selection is done by requiring that all particle declarations have lists on the 
-      left-hand side. We furthermore check that for a mixing, the lhs must be Dot[ ].
-   *)
-   M$MixingDescriptions = Union[M$MixingDescriptions, Cases[M$ClassesDescription, Except[Equal[_,_List]]]];*)
    M$ClassesDescription = Cases[M$ClassesDescription, Equal[_,_List]];
    (*M$MixingDescriptions = DeleteCases[TestM$MixingDescription /@ M$MixingDescriptions, MR$Null];*)
 
@@ -394,6 +381,12 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
     (* Initialize Interaction order hierarchy *)
     InitializeInteractionOrders[ M$InteractionOrderHierarchy, M$InteractionOrderLimit ];
 
+    (* Declare the form factors *)
+    If[FR$FormFactors =!= {},
+       DeclareFormFactors[M$FormFactors];
+      ];
+
+
     (* Build the FAToFR particle replacement list *)
     BuildFeynArtsToFeynRulesParticles[];
 
@@ -417,7 +410,7 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
 LoadModel[modfile1_String, modfiles___, modfile2_String] := LoadModel[modfile1, modfiles, modfile2, Report -> False]
 
 LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile1, modelfiles}, 
-   loadparams, loadgroups, loadparts, loadindices, loadmixings, loadhier, loadexplimit, loadsuperfields,curDir},
+   loadparams, loadgroups, loadparts, loadindices, loadmixings, loadhier, loadexplimit, loadsuperfields, loadformfactors,curDir},
    
 	(*Parallelize - NC*)
 	If[Global`FR$Parallelize&&Length[Kernels[]]>0,(*Print["2) N_kernels=",Length[Kernels[]]];*)
@@ -444,7 +437,8 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
       loadmixings[kk]     = If[ValueQ[M$MixingsDescription], M$MixingsDescription, {}];
       loadhier[kk]        = If[ValueQ[M$InteractionOrderHierarchy], M$InteractionOrderHierarchy, {}];
       loadexplimit[kk]    = If[ValueQ[M$InteractionOrderLimit], M$InteractionOrderLimit, {}];
-      loadsuperfields[kk] = If[ValueQ[M$Superfields], M$Superfields, {}],
+      loadsuperfields[kk] = If[ValueQ[M$Superfields], M$Superfields, {}];
+      loadformfactors[kk] = If[ValueQ[M$FormFactors], M$FormFactors, {}],
       {kk,Length[frfiles]}];
 
    M$Parameters                 = Join @@ Table[loadparams[kk],{kk,Length[frfiles]}];
@@ -454,6 +448,7 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
    M$InteractionOrderHierarchy  = Join @@ Table[loadhier[kk],{kk,Length[frfiles]}];
    M$InteractionOrderLimit      = Join @@ Table[loadexplimit[kk],{kk,Length[frfiles]}];
    M$Superfields                = Join @@ Table[loadsuperfields[kk],{kk,Length[frfiles]}];
+   M$FormFactors                = Join @@ Table[loadformfactors[kk],{kk,Length[frfiles]}];
 
    (* Make sure only the last one is kept in each case *)
    M$InteractionOrderHierarchy = OverwriteInteractionOrders[M$InteractionOrderHierarchy, Type -> "Hierachy"];
@@ -461,7 +456,7 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
 
    
 
-   Clear[loadparts,loadgroups,loadparams];
+   Clear[loadparts,loadgroups,loadparams,loadformfactors];
    loadparams = KillDoubles[M$Parameters/.Equal[x_,_]->x];
    If[Length[loadparams] != Length[M$Parameters], Message[MergeModels::Params]];
 
@@ -470,6 +465,9 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
 
    loadparts = KillDoubles[M$ClassesDescription/.Equal[x_,_]->x];
    If[Length[loadparts] != Length[M$ClassesDescription], Message[MergeModels::Particles]];
+
+   loadformfactors = KillDoubles[M$FormFactors/.Equal[x_,_]->x];
+   If[Length[loadformfactors] != Length[M$FormFactors], Message[MergeModels::FormFactors]];
 
    LoadModel["MergedModel",rule];
 
@@ -544,6 +542,7 @@ CleanParamLists[] := Block[{
    },
 
    eplsave = epl;
+
    ipl = MapAt[# //. MR$Restrictions /. InvParamRules //.PRIVATE`$TensIndRules/.{f_?(PRIVATE`NoTensQ[#] === True &)[ind__?(FreeQ[##, NTIndex]&)] :> PRIVATE`NoTensPutInd[f, {ind}]} /. NTIndex -> Index //. MR$Restrictions/. Index[PRIVATE`DUMMY, a_] :> a  //. ParamRules &, #, 1]& /@ IParamList; 
    IParamList = Intersection[IParamList, ipl];
    IParamList = MapAt[# //. MR$Restrictions /. InvParamRules //.PRIVATE`$TensIndRules/.{f_?(PRIVATE`NoTensQ[#] === True &)[ind__?(FreeQ[##, NTIndex]&)] :> PRIVATE`NoTensPutInd[f, {ind}]} /. NTIndex -> Index //. MR$Restrictions/. Index[PRIVATE`DUMMY, a_] :> a  //. ParamRules &, #, 2]& /@ IParamList; 
@@ -599,7 +598,7 @@ AddDefinition[Rule[x_,y_]|RuleDelayed[x_,y_],options___]:=Block[{temprule1,tempr
   (* Update internal parameters *)
   tempipl=tempipl/.InvParamRules;
   (*tempipl=DeleteCases[tempipl,_?(((#[[1]]//.temprule2)=!=#[[1]])||((#[[1]]//.RuleDelayed[x,y])=!=#[[1]])&)];*)
-  tempipl = MapAt[# //. Rule[x,y] //. temprule4 &, #, 2]& /@ tempipl;
+  tempipl = MapAt[# //. RuleDelayed[x,y] //. temprule4 &, #, 2]& /@ tempipl;
   IParamList=tempipl/.ParamRules;
 
   (* Update the exernal params *)
@@ -703,12 +702,12 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
    FR$restrictionCounter = 0;
 
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
+      UpdateFRDistributedVariables[]
      ];
    Print["Loading restrictions from ", filename, " : ", Dynamic[FR$restrictionCounter]," / ",Length[M$Restrictions]];
    AddDefinition[#,Output->False]&/@M$Restrictions;
    If[Global`FR$Parallelize,
-      UpdateFRDistributedVariables[]; SetSharedVariable[MR$Definitions];
+      UpdateFRDistributedVariables[]
      ];
 
 
@@ -1604,7 +1603,7 @@ $DefaultAntiPartName[name_, type_] := (ToString[name] <> "~") /; MemberQ[{CS, F,
 $DefaultAntiPartName[name_, type_] := Hold[ToString[name]] /; MemberQ[{RS, M, RV, RR, T},type];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Declaration*)
 
 

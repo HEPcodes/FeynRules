@@ -81,8 +81,15 @@ ShiftConstants[input_] := Module[{temp = First[input][[2]]},If[Length[input]>1,R
 ReassemblePlus[input_] := Module[{TempL = Length[input],TempI = Replace[input,List->Plus,1,Heads->True]},If[TempL>1,{TempI[[1]],TempI[[2]]/TempL},First[input]]]
 PutTogether[input_] := If[Length[Union[Cases[input[[All,1]],Index[Spin,Ext[a_]],\[Infinity]]]]<3,Drop[ReassemblePlus /@ ShiftConstants /@ input ,1],Drop[ input ,1]]
 
+(*Test if two lorentz structures are the same up to the name of the summed indices*)
+SameLorentzQ[l1_,l2_]:=MatchQ[l1,l2/.Index[Spin,x_?(FreeQ[#,Ext]&)]->Index[Spin,PatternX[x,_]]/.PatternX->Pattern]
+
 (* Structure list uses the above to make a list of just lorentzes,colors,couplings *) 
-FullSplitL[input_] := PutTogether/@gatherLikes/@((assemble/@RoutineL/@(Multpad*(PYVertexList[input]+Addpad)))/.Multpad->1)
+FullSplitL[input_] := Block[{FSLtemp,FSLgather},
+FSLtemp = ((assemble/@RoutineL/@(Multpad*(PYVertexList[input]+Addpad)))/.Multpad->1);
+FSLgather=PutTogether/@gatherLikes/@FSLtemp;
+If[Length[Union[Flatten[FSLgather[[All,All,1]]],SameTest->SameLorentzQ]]<Length[Union[Flatten[FSLtemp[[All,All,1]]],SameTest->SameLorentzQ]],FSLgather,(Drop[#,1]&)/@FSLtemp]
+];
 FullSplitC[input_] := assemble/@RoutineC/@(Multpad*input)/.Multpad->1
 (*StructureList[input_] := Map[Take[#,{1,1}]&,FullSplitL[input],{2}]
 ElseList[input_] := Map[Take[#,{2,2}]&,FullSplitL[input],{2}]

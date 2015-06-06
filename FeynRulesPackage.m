@@ -12,8 +12,8 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "2.0.31";
-FR$VersionDate = "11 November 2014";
+FR$VersionNumber = "=.2.4";
+FR$VersionDate = "13 January 2015";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];
@@ -114,6 +114,14 @@ FR$OptimizeParams::usage = "bla";
 GetOrder::usage = "bla";
 
 FR$MakeWeylToDirac::usage = "Internal FR variable";
+
+
+M$FormFactors::usage = "The list of all form factor classes defined in the model file.";
+
+
+FR$FExpand::usage = "If true, the full expansion is perform to obtain vertices and so on"
+
+If[Global`FR$FullExpand===False,FR$FExpand=False,FR$FExpand=True];
 
 
 (* ::Subsection:: *)
@@ -258,7 +266,7 @@ PartSymbol::usage = "PartSymbol is the inverse of PartName.";
 Chirality::usage = "Property of the Weyl fermion classes. Left for (1/2, 0) and Right for (0,1/2) fermions. The default is Left.";
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Gauge group class properties*)
 
 
@@ -313,7 +321,7 @@ FR$ReprMap::usage = "Mapping representations and antirepresentations (necessary 
 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Parameter class properties*)
 
 
@@ -450,6 +458,8 @@ SelectParticles::usage = "Option of FeynmanRules. SelectParticles -> {{\[Phi]1, 
 {\[Phi]1, \[Phi]2,...}, etc.";
 
 Exclude4Scalars::usage = "Options of FeynmanRules. If True, then no quartic scalar interactions are computed.";
+
+ApplyMomCons::usage = "Options of FeynmanRules. If True, momentum conservation is used to simplify the vertices.";
 
 PrintLagrangian::usage = "Option of WriteTeXOutput. If set to false, the lagrangian will not be exported into the TeX file. The default value is True.";
 
@@ -780,7 +790,7 @@ NumericalValue::usage = "NumericalValue[param] returns the numerical value of a 
 MR$FlavorList::usage = "List containing all flavor indices deined in the model file.";
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Other usefull symbols and functions*)
 
 
@@ -1047,6 +1057,8 @@ GaugeGroupTest::usage="Test the consistency of the gauge group options, in the c
 
 SuperCurrent::usage="Compute the supercurrent associated to a SUSY Lagrangian.";
 
+FR$Sugra=1;
+
 
 (* ::Subsection:: *)
 (*Loop stuff*)
@@ -1058,9 +1070,13 @@ FR$deltaZ::usage="Wave function renormalization constants.";
 
 FR$delta::usage="Parameter renormalization constants.";
 
+FR$deltat::usage="tadpole renormalization constants."; 
+
 FieldRenormalization::usage="Derive renormalized field from bare field.";
 
 ParameterRenormalization::usage="Derive renormalized parameters from bare paramneters.";
+
+TadpoleRenormalization::usage="field shifts for the renormalisation of the tadpole"; 
 
 ExtractCounterterms::usage="Main function to extract the counterterms from an expression.";
 
@@ -1083,21 +1099,33 @@ FR$Cond::usage = "Internal FeynRules symbol for the condition function FR$Cond[a
 FR$CT::usage = "FeynRules symbole for the one-loop counterterms expansion";
 
 OnShellRenormalization::usage = "return the renormalized Lagrangian in the on-shell scheme, i.e. all the masses are considered as external parameters. The 
-options are QCDOnly, FlavorMixing, Only2Point";
+options are QCDOnly, FlavorMixing, Only2Point, Simplify2pt and Exclude4ScalarsCT";
 
 QCDOnly::usage = "If True, the on-shell renormalization is only done for the field having QCD interactions and the couplings with non-zero QDC interaction order.
  The default is False.";
 
-FlavorMixing::usage = "If True, wave function renormalization include mixing between the different flavors. The default is True.";
+FlavorMixing::usage = "If True, wave function renormalization include mixing between all the different fields with same quantum numbers. If a list of pairs of particle names (classmember 
+ should be used if present), only the mixing between the pair of particles is allowed. The default is True.";
 
 Only2Point::usage = "If True, only the mass and field are renormalized and not the other independent couplings. The default is False.";
+
+Simplify2pt::usage="If True, the mass and kinetic terms are simplified using the value of the internal parameter before renormalization is performed. 
+Default is True";
+
+Exclude4ScalarsCT::usage="if True, the four scalar terms are keep in the lagrangian but not renormalized. Default is False";
 
 
 numQ[FR$Eps]=True;
 CnumQ[FR$Eps]=False;
 
 
-(* ::Subsection::Closed:: *)
+R2Vertices::usage = "Option of WriteUFO. The list of R2 vertices, as they come out of FeynArts. The default is an empty list.";
+UVCounterterms::usage = "Option of WriteUFO. The list of UV counterterms, as they come out of FeynArts. The default is an empty list.";
+CTParameters::usage = "Option of WriteUFO. The list of CT paramters, as they come out of FeynArts. The default is an empty list.";
+IPL::usage = "Internal variable tagging the particles running insides a loop.";
+
+
+(* ::Subsection:: *)
 (*Color representations*)
 
 
@@ -1118,10 +1146,6 @@ See arXiv:0909.2666 for details and conventions.";
 K3bar::usage = "Symbol used to denote the complex conjugate of the triplet-triplet-triplet Clebsch-Gordon.\n
 It evaluates to Eps[i,j,k]/Sqrt[2].\n
 See arXiv:0909.2666 for details and conventions.";
-
-
-FR$deltaZ::usage="Renormalization constants";
-
 
 
 (* ::Subsection::Closed:: *)
@@ -1294,11 +1318,19 @@ FR$FeynmanRules::usage="Internal FR coubter";
 FR$IndexExpandCounter::usage="Internal FR coubter";
 
 
+(* ::Subsection:: *)
+(*EFT*)
+
+
+NoDefinitions::usage = "To forbid field rotations";
+
+
+
 (* ::Section:: *)
 (*Error messages and warnings*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*All messages*)
 
 
@@ -1406,6 +1438,8 @@ MergeModels::Params = "Warning: Doubly defined parameter classes.";
 MergeModels::Gauge = "Warning: Doubly defined gauge group classes.";
 
 MergeModels::Particles = "Warning: Doubly defined particle classes.";
+
+MergeModels::FormFactors = "Warning: Doubly defined form factor classes.";
 
 MergeModels::Index = "Warning: Doubly defined indices.";
 
@@ -1544,6 +1578,21 @@ MassDiag::Basisprov = "Please provide two bases.";
 MassDiag::MixingSummaryArgs = "MixingSummary takes a string as argument";
 
 
+(* ::Subsection::Closed:: *)
+(*Form factors*)
+
+
+FormFactor::Equal = "Entry `1` in M$FormFactors is not of the type x == y.";
+FormFactor::Rule = "Options of form factor `1` are not of the type x -> y or x :> y.";
+FormFactor::Option = "Option `1` is not a form factor option.";
+
+FormFactor::Particles = "Form factor `1` has no attribute Particles.";
+FormFactor::Value = "Form factor `1` has no attribute Value.";
+
+FormFactor::Vertex = "Warning: Form factor `1` appears in more than one vertex.";
+FormFactor::VertexParticles = "Warning: Form factor `1` appears inside a vertex which does not match its Particle option.";
+
+
 (* ::Subsection:: *)
 (*NLO*)
 
@@ -1558,7 +1607,7 @@ NLO::ExtMass = "Error : Not all the masses are external parameters.";
 (*Initialisation of the package*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Recursion limit*)
 
 
@@ -1654,6 +1703,9 @@ FR$AdditonalIParamsFromAbbreviations = {};
 $UseFierzIdentities = False;
 
 
+FR$FormFactors = {};
+
+
 (* ::Subsection::Closed:: *)
 (*Initialisation of the superfield variables*)
 
@@ -1743,6 +1795,13 @@ FR$Dot[xx___, Power[s_?((ScalarFieldQ[#] && Not[GhostFieldQ[#] === True])&)[ind_
 FR$Dot[xx___, Power[del[s_?((ScalarFieldQ[#] && Not[GhostFieldQ[#] === True])&)[ind__], mu_],n_], yy___] := Power[del[s[ind], mu],n] FR$Dot[xx, yy]/; Length[{ind}] == Length[$IndList[s]];
 
 
+(* ::Subsection:: *)
+(*FieldExpand*)
+
+
+FieldExpand[x_]:=If[FR$FExpand,Expand[x],Expand[x,_?(Not[FreeQ[#,_?FieldQ]]&)]];
+
+
 (* ::Subsection::Closed:: *)
 (*Timer*)
 
@@ -1806,6 +1865,8 @@ Block[{$Path = {$LocalFeynRulesPath,
     << "Loop.m";
     <<"Decay.m";
     <<"MassDiagonalization.m";
+    <<"FormFactors.m";
+    <<"FAToFR.m";
    
     (* Loading interfaces *)
 
@@ -1820,7 +1881,6 @@ Block[{$Path = {$LocalFeynRulesPath,
     << "SuSpectInterface.m";
     << "AspergeInterface.m";
     End[];
-
     FR$Message={True,True,True,True,True,True};
  ];
 
@@ -1865,7 +1925,7 @@ Protect[LoadModel, FeynmanRules, ReadAll, FlavorExpand, MaxParticles, MinParticl
         Orthogonal, Hermitian, TensorClass, Description, TeX, BlockName, AllowSummation, InteractionOrder, QCD, QED, ComplexParameter, ScreenOutput, Name, 
         MinCanonicalDimension, MaxCanonicalDimension, TeXOutput, WriteMGOutput, WriteSHOutput, WriteCHOutput, WriteFeynArtsOutput, ConservedQuantumNumbers, MASS, DECAY, 
         ZERO, NoUnfold, FRBlock, NoValue, NoPDG, NoBlockName, PutIndices, PrePutIndices, GetFieldContent, PrintLagrangian, FR$VersionNumber,FR$VersionDate,GenericFile,DiracIndices, 
-        Sextet]
+        Sextet,FieldExpand,FR$FExpand]
 
 
 

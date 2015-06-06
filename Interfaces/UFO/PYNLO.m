@@ -155,6 +155,7 @@ CreatePYLoopParticles[loopparts_List, repllist_:FeynArtsToFeynRulesParticles] :=
    loopy = Union[loopy];
    loopy = PYLoopParticles @@ loopy;
 
+
    Return[loopy];
 ];
    
@@ -305,25 +306,17 @@ ProcessNLOVertices[R2verts_List, R2coupls_List, UVverts_List, UVcoupls_List] := 
    optimizedrenamingrulesR2, optimizedrenamingrulesUV
    },
 
-Print["Process"];
-Print["a"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
 
    (* Rename the internal loop particles in the couplings *)
    R2C = R2C //. IPL -> CreatePYLoopParticles;
    UVC = UVC //. IPL -> CreatePYLoopParticles;
-Print["b"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
+
 
 
    (* Collect couplings according to loop particles *)
    R2C = Flatten[GatherByLoopParticles/@ R2C];
    UVC = Flatten[GatherByLoopParticles /@ UVC];
-Print["c"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
+
 
    (* Build the replacement list *)
    PYNLO$R2CouplingRename = CreateNewNamesForR2UVCouplingObject[R2C, "R2"];
@@ -335,18 +328,14 @@ Print[FreeQ[UVC,RenormLog]];
    (* Rename *)
    R2C = RenameNLOCoupling[#, PYNLO$R2CouplingRename]& /@ R2C;
    UVC = RenameNLOCoupling[#, PYNLO$UVCouplingRename]& /@ UVC;
-Print["d"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
+
 
 
    (* Modify the vertices to pull out the loop particles
       then merge the two lists, after adding the tag *)
    R2V = AddLoopParticlesToVertex[#, R2C, "R2"]& /@ R2V;
    UVV = AddLoopParticlesToVertex[#, UVC, "UV"]& /@ UVV;
-Print["e"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
+
 
    R2V = Join[R2V, UVV];
 
@@ -354,18 +343,52 @@ Print[FreeQ[UVC,RenormLog]];
    R2C = Drop[#, 2]& /@ R2C;
    UVC = Drop[#, 2]& /@ UVC;
    R2C = KillDoubles[Join[R2C, UVC]];
-Print["f"];
-Print[FreeQ[UVC,Log]];
-Print[FreeQ[UVC,RenormLog]];
-Print["f"];
-Print[FreeQ[R2C,Log]];
-Print[FreeQ[R2C,RenormLog]];
+
    
 
    Return[{R2V, R2C}];
 ];
    
    
+
+
+(* ::Section:: *)
+(*WritePYCTParameters*)
+
+
+(* ::Text:: *)
+(*WritePYCTParameters[ list ] writes all the couplings in list to CT_parameters.py*)
+
+
+WritePYCTParamters[list_] := Block[{outfile},
+
+   (* Prepare the log file *)
+   AppendTo[GenInt$LogFile, "#"];
+   AppendTo[GenInt$LogFile, "# CTCoupling definitions"];
+   AppendTo[GenInt$LogFile, "#"];
+   AppendTo[GenInt$LogFile, ""];
+
+   (* Write couplings.py *)
+   DeleteFileIfExists["CT_parameters.py"];
+   outfile = OpenWrite["CT_parameters.py"];
+
+   WritePYFRHeader[outfile];
+   WriteString[outfile, "from object_library import all_CTparameters, CTParameter\n"];
+   WriteString[outfile, "\nfrom function_library import ", Sequence @@ Riffle[PY$NewCMathFunctions, ", "], "\n\n"];
+   WriteString[outfile, "\n\n"];
+
+
+   WriteParameterObject[outfile, #]& /@ (CreateCTParamterObjectEntry /@ list);
+   
+   Close[outfile];
+  
+   AppendTo[GenInt$LogFile, "   * " <> If[Length[list] == 1, "1 CTparameter", ToString[Length[list]] <> " CTparameters"] <> " written."];
+   TestQ[FileExistsQ, "CT_parameters.py", "   * CT_parameters.py written.", "   * CT_parameters.py not written"];
+
+   (* Write the log file *)
+   WriteToLogFile[GenInt$LogFileName];
+
+]; 
 
 
 (* ::Section:: *)
@@ -393,6 +416,8 @@ WritePYCTCouplings[list_] := Block[{outfile},
    WriteString[outfile, "\nfrom function_library import ", Sequence @@ Riffle[PY$NewCMathFunctions, ", "], "\n\n"];
    WriteString[outfile, "\n\n"];
 
+(*Print["In WPYCTCoupl"];
+Print[InputForm[list]];Print[InputForm[CreateCouplingObjectEntry /@ list]];*)
 
    WriteCouplingObject[outfile, #]& /@ (CreateCouplingObjectEntry /@ list);
    

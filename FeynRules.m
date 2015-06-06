@@ -38,7 +38,6 @@ If[FR$Loaded =!= True,
 		];
 	];
 	(*End Parallelize - NC*)
-
 	
 ,
 	Print["Package already loaded..."]];

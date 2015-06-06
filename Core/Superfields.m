@@ -612,7 +612,7 @@ tmp];
 (* Let us note that:*)
 (*   *  alpha and alphadot are the uncontracted spin indices (where relevant).*)
 (*   * mu is the Lorent index of the vectorial component of the superfield (if relevant).*)
-(*   * the fermion flux is always (theta something) or (something thetabar)*)
+(*   * the fermion flux is always (theta . something) or (thetabar . something)*)
 
 
 SF2Components[Plus[a_,b__]]:=Module[{mu,alpha,alphadot},SF2Components[a,mu,alpha,alphadot] + SF2Components[Plus[b],mu,alpha,alphadot]];
@@ -637,9 +637,9 @@ SF2Components[exp_?(Head[#]=!=Plus&),mu_,alpha_,alphadot_] := Module[{tmp, resu,
    If[MatchQ[tmp,Plus[_,__]],tmp=Expand[tmp]/.Plus[a_,b__]->List[a,b]; tmp=Plus@@(ToGrassmannBasis/@tmp),tmp=ToGrassmannBasis[tmp]];
 
 (* Simplify Lie algebra *)
-   Do[
+   If[FR$Sugra=!=-1,Do[
      If[!(Abelian/.MR$GaugeGroupRules[MR$GaugeGroupList[[ll]]]),tmp=SimplifyLieAlgebra[Expand[tmp],MR$GaugeGroupList[[ll]]]],
-  {ll,1,Length[MR$GaugeGroupList]}];Clear[ll];
+  {ll,1,Length[MR$GaugeGroupList]}];Clear[ll];];
 
    (* Collect the components of the expanded superfield *)
    resu = List[tmp,ComponentList[tmp,mu,alpha,alphadot]];
@@ -649,7 +649,7 @@ SF2Components[exp_?(Head[#]=!=Plus&),mu_,alpha_,alphadot_] := Module[{tmp, resu,
 resu];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Superfield definitions*)
 
 
@@ -735,8 +735,8 @@ ExpandLCSF[sp0_,sp12_,aux_,inds_List] := Module[{sp1,sp2,indsF,str=y},
 ExpandVSF[spin12_,spin1_,aux_,inds_List] := Module[{sp1,sp2dot,sp3,sp4dot,mu,indsD},
    indsD :=Sequence@@DeleteCases[inds,Null | {}];
    nc[theta[sp1],thetabar[sp2dot]] si[mu,sp3,sp4dot] Ueps[sp3,sp1]Ueps[sp4dot,sp2dot] spin1[mu,indsD] + 
-   I Ueps[sp4dot,sp2dot] Ueps[sp3,sp1] nc[theta[sp1],theta[sp3],thetabar[sp4dot],HC[spin12][sp2dot,indsD]]-
-   I Ueps[sp1,sp3] Ueps[sp2dot,sp4dot] nc[thetabar[sp2dot],thetabar[sp4dot],theta[sp3],spin12[sp1,indsD]]+
+   FR$Sugra*I Ueps[sp4dot,sp2dot] Ueps[sp3,sp1] nc[theta[sp1],theta[sp3],thetabar[sp4dot],HC[spin12][sp2dot,indsD]]-
+   FR$Sugra*I Ueps[sp1,sp3] Ueps[sp2dot,sp4dot] nc[thetabar[sp2dot],thetabar[sp4dot],theta[sp3],spin12[sp1,indsD]]+
    1/2 Ueps[sp2dot,sp4dot] Ueps[sp3,sp1] nc[theta[sp1],theta[sp3],thetabar[sp2dot],thetabar[sp4dot]] aux[indsD] /.a_[]:>a
 ];
 
@@ -748,11 +748,11 @@ ExpandVSF[spin12_,spin1_,aux_,inds_List] := Module[{sp1,sp2dot,sp3,sp4dot,mu,ind
 X2Y[field_,inds_List, t_] := Module[{mu,sp1,sp2,sp3dot,sp4dot,tmp},
    tmp = Which[t===y, 
                  field[Sequence@@inds]-
-                 I si[mu,sp2,sp3dot] nc[theta[sp1],thetabar[sp4dot],del[field[Sequence@@inds],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot]-
+                 FR$Sugra*I si[mu,sp2,sp3dot] nc[theta[sp1],thetabar[sp4dot],del[field[Sequence@@inds],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot]-
                  1/4 nc[theta[sp1],theta[sp2],thetabar[sp3dot],thetabar[sp4dot],del[del[field[Sequence@@inds],mu],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot],
                t===yc,
                  field[Sequence@@inds]+
-                 I si[mu,sp2,sp3dot] nc[theta[sp1],thetabar[sp4dot],del[field[Sequence@@inds],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot]-
+                 FR$Sugra*I si[mu,sp2,sp3dot] nc[theta[sp1],thetabar[sp4dot],del[field[Sequence@@inds],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot]-
                  1/4 nc[theta[sp1],theta[sp2],thetabar[sp3dot],thetabar[sp4dot],del[del[field[Sequence@@inds],mu],mu]]*Ueps[sp2,sp1]*Ueps[sp3dot,sp4dot]
    ];
    tmp/.{field[Sequence[]]->field,field[{}]->field}
@@ -1140,7 +1140,7 @@ SuperfieldStrengthL[SFstr_String,alpha_,AdjI_]:=Module[{Sfield=Symbol[SFstr],iii
     fff_ GaugeOper[Index[GaugeInd,indx_],kk_,ll_] GaugeOper[Index[GaugeInd,AdjI],ll_,kk_]:>ReplaceAll[fff,indx->AdjI]}];
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*SuperfieldStrengthL[ superfield, spin index, gauge index, gauge index ]*)
 
 
@@ -1268,7 +1268,7 @@ SuperfieldStrengthR[SFstr_String,alphadot_]:=Module[{Sfield, tmp,sp1,sp2},
 (* Final simplifications *)
    $OptIndex+=100;
    tmp=Tonc[ToGrassmannBasis[tmp]];
-   tmp = Expand[tmp/4];
+   tmp = Expand[FR$Sugra*tmp/4];
 tmp];
 
 
@@ -1291,7 +1291,7 @@ SuperfieldStrengthR[SFstr_String,alpha_,AdjI_]:=Module[{Sfield=Symbol[SFstr],iii
     fff_ GaugeOper[Index[GaugeInd,indx_],kk_,ll_] GaugeOper[Index[GaugeInd,AdjI],ll_,kk_]:>ReplaceAll[fff,indx->AdjI]}];
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*SuperfieldStrengthR[superfield , spin index, gauge index, gauge index]*)
 
 
@@ -1372,7 +1372,7 @@ SuperfieldStrengthR[SFstr_String,alphadot_,GaugeI_,GaugeJ_]:=Module[{Sfield=Symb
    tmp=Expand[-tmp/4];
 
 (* Lie algebra *)
-  tmp=Expand[tmp/.{GaugeOper[aa_,b_,c_]GaugeOper[bb_,c_,d_]:> Module[{eee}, 
+  tmp=Expand[FR$Sugra*tmp/.{GaugeOper[aa_,b_,c_]GaugeOper[bb_,c_,d_]:> Module[{eee}, 
     I/2 Fstr[aa,bb,Index[GaugeInd,eee]] GaugeOper[Index[GaugeInd,eee],b,d] +
     1/2 Dstr[aa,bb,Index[GaugeInd,eee]] GaugeOper[Index[GaugeInd,eee],b,d] + 
     IndexDelta[aa,bb] IndexDelta[b,d]/(2*Sqrt[Length[IndexRange[Index[GaugeInd]]/.{NoUnfold[ar_]->ar,Unfold[ar_]->ar}]+1])]}];
@@ -1431,7 +1431,7 @@ DSUSY[exp_,alpha_]:=Module[{tmp, tmp1, tmp2, mu, sp1dot,sp2dot,dd},
    tmp2=-I si[mu,alpha,sp1dot]Ueps[sp1dot,sp2dot] nc[thetabar[sp2dot],ddel[exp,mu]];
    tmp2 = tmp2//.ddel->del;
 
-   tmp=Expand[tmp1+tmp2];
+   tmp=Expand[tmp1+FR$Sugra*tmp2];
 
 (* Simplifications *)
    tmp=Expand[ReplaceRepeated[tmp,nc[___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___]->0]];
@@ -1449,7 +1449,7 @@ DSUSYBar[exp_,alphadot_]:=Module[{tmp, tmp1, tmp2, mu, sp1,sp2,dd},
 
 (* Derivative with respect to the Grassmann variable *)
    tmp1=dd*nc[exp] /.nc[ff__]:>Module[{ii},Plus@@((Table[nc[Sequence@@(MapAt[(-1)^(ii+1) Dthbar,{ff},ii])],{ii,Length[{ff}]}])/.(-Dthbar)[i_]:>-Dthbar[i])]/dd;
-   tmp1=Expand[tmp1]//.Plus[ff__]:>Plus@@((ReplaceRepeated[#,Dthbar[thetabar[sp_]]:>Deps[sp,alphadot]])&/@{ff})/.dd->0;
+   tmp1=Expand[tmp1]//.Plus[ff__]:>Plus@@((ReplaceRepeated[#,Dthbar[thetabar[sp_]]:>FR$Sugra*Deps[sp,alphadot]])&/@{ff})/.dd->0;
 
 (* I theta sigma term *)
    tmp2=-I si[mu,sp1,alphadot]Ueps[sp1,sp2] nc[theta[sp2],ddel[exp,mu]];
@@ -1479,12 +1479,15 @@ QSUSY[exp_,alpha_]:=Module[{tmp,tmp1,tmp2,mu,sp1dot,sp2dot,dd},
   tmp2= si[mu,alpha,sp1dot]Ueps[sp1dot,sp2dot] nc[thetabar[sp2dot],ddel[exp,mu]];
   tmp2=tmp2//.ddel->del;
 
-  tmp=Expand[tmp1+tmp2];
+  tmp=Expand[tmp1+FR$Sugra*tmp2];
 
 (* Simplifcations *)
   tmp=Expand[ReplaceRepeated[tmp,nc[___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___]->0]];
   tmp=ReplaceRepeated[tmp,nc[___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___]->0];
   tmp=Expand[tmp]/.EDelta[a_,b_] nc[ff___,field_[b_,inds___],gg___] -> nc[ff,field[a,inds],gg];
+
+(* sugra case *)
+  If[FR$Sugra===-1,tmp = Expand[I*tmp]];
 
 tmp];
 
@@ -1493,7 +1496,7 @@ QSUSYBar[exp_,alphadot_]:=Module[{tmp,tmp1,tmp2,mu,sp1,sp2,dd},
 
 (*I*Derivative with respect to the Grassmann variable*)
   tmp1=I*dd*nc[exp]/.nc[ff__]:>Module[{ii},Plus@@((Table[nc[Sequence@@(MapAt[(-1)^(ii+1) Dthbar,{ff},ii])],{ii,Length[{ff}]}])/.(-Dthbar)[i_]:>-Dthbar[i])]/dd;
-  tmp1=Expand[tmp1]//.Plus[ff__]:>Plus@@((ReplaceRepeated[#,Dthbar[thetabar[sp_]]:>Deps[sp,alphadot]])&/@{ff})/.dd->0;
+  tmp1=Expand[tmp1]//.Plus[ff__]:>Plus@@((ReplaceRepeated[#,Dthbar[thetabar[sp_]]:>FR$Sugra*Deps[sp,alphadot]])&/@{ff})/.dd->0;
 
 (*-theta sigma term*)
   tmp2=- si[mu,sp1,alphadot]Ueps[sp1,sp2] nc[theta[sp2],ddel[exp,mu]];
@@ -1505,6 +1508,9 @@ QSUSYBar[exp_,alphadot_]:=Module[{tmp,tmp1,tmp2,mu,sp1,sp2,dd},
   tmp=Expand[ReplaceRepeated[tmp,nc[___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___]->0]];
   tmp=ReplaceRepeated[tmp,nc[___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___,a_?(FermionQ[#]===True&)[__],___]->0];
   tmp=Expand[tmp]/.EDelta[a_,b_] nc[ff___,field_[b_,inds___],gg___] -> nc[ff,field[a,inds],gg];
+
+(* sugra case *)
+  If[FR$Sugra===-1,tmp = Expand[-I*tmp]];
 
 tmp];
 
@@ -1638,7 +1644,7 @@ SimplifyLieAlgebra[exp_, GrName_] := Module[{tmp, AdjOper,GrRep,ID,struc,t1,t2},
 OptimizeIndex[t1+t2]/.Index[Type_,a_]->a];
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Get the fields present in an expression*)
 
 
@@ -1721,7 +1727,7 @@ OptimizeIndex[sum_Plus,Param_List:{}]:=OptimizeIndex[#,Param]& /@ sum;
 
 
 OptimizeIndex[exp_?(Head[#]=!=Plus&),Param_List:{}]:=Block[{tmpexp},
-  tmpexp=Expand[exp];
+  tmpexp=If[FR$FExpand,Expand[exp],Expand[exp,Indices]]; (*indices added by celine*)
   If[Head[tmpexp]===Plus,OptimizeIndex[tmpexp,Param],OptimizeIndex2[tmpexp,Param]]];
 
 
@@ -1867,7 +1873,7 @@ ToIndexList[exp_]:=Block[{res,MyTens},
 res];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Get the type of the indices of a given field or a given parameter*)
 
 
@@ -1894,7 +1900,7 @@ IndexType[param_?(NoTensQ[#]===True&)]:= (Indices/.(MR$ParameterRules[param]))/.
 SolveEqMotionFD[exp_]:=SolveEqMotionF[SolveEqMotionD[exp]];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*D-terms: SolveEqMotionD[ expression ]*)
 
 

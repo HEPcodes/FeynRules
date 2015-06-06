@@ -16,8 +16,8 @@ M$ModelName = "Standard Model";
 
 M$Information = {
   Authors      -> {"N. Christensen", "C. Duhr", "B. Fuks"}, 
-  Version      -> "1.4.5",
-  Date         -> "21. 11. 2012",
+  Version      -> "1.4.6",
+  Date         -> "15. 04. 2014",
   Institutions -> {"Michigan State University", "Universite catholique de Louvain (CP3)", "IPHC Strasbourg / University of Strasbourg"},
   Emails       -> {"neil@pa.msu.edu", "claude.duhr@uclouvain.be", "benjamin.fuks@cnrs.in2p3.fr"},
   URLs         -> "http://feynrules.phys.ucl.ac.be/view/Main/StandardModel"
@@ -26,9 +26,18 @@ M$Information = {
 FeynmanGauge = True;
 
 (* ************************** *)
+(* ***** NLO Variables ****** *)
+(******************************)
+
+FR$LoopSwitches = {{Gf, MW}};
+FR$RmDblExt = { ymb -> MB, ymc -> MC, ymdo -> MD, yme -> Me, 
+   ymm -> MMU, yms -> MS, ymt -> MT, ymtau -> MTA, ymup -> MU};
+
+(* ************************** *)
 (* *****  Change  log   ***** *)
 (* ************************** *)
 
+(* v1.4.6: NLO variable added.                                               *)
 (* v1.4.5: Added widths for ghosts.                                          *)
 (* v1.4.4: Changed widths of goldstone bosons to be the same as for the W and Z bosons *)
 (* v1.4.3: Updated conventions for the symmetric structure constants of SU3. *)
@@ -215,6 +224,7 @@ M$ClassesDescription = {
     SelfConjugate   -> False,
     Indices         -> {Index[Gluon]},
     Ghost           -> G,
+    PDG             -> 82,
     QuantumNumbers  ->{GhostNumber -> 1}, 
     Mass            -> 0,
     Width	    -> 0,

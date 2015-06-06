@@ -76,7 +76,7 @@ ApplyDefinitions[expr_] := Block[{temp},
    temp = temp //.ExpPower -> Times;
    temp = temp /. Dot -> FR$Dot /. FR$Dot -> Dot; 
 (*   temp = ReleaseASIndex[temp];*)
-   temp = NameIndices[Expand[temp]]]
+   temp = NameIndices[FieldExpand[temp]]]
 
 
 ReplaceIndex[expr_, x_, y_] := expr //. {x :> y};
@@ -218,17 +218,24 @@ FromVertexTerm[expr_, CreaList_, kin_] := Block[{temp, temp2, temp3, output, old
 
     temp = ToCheckOperatorChain[expr]; 
     temp3 = I temp /. ToOperatorChain -> (OperatorChain @@ Join[List[##], CreaList] &);
-    temp3 = Expand[temp3 /. uwave[___] :> 1];
+    temp3 = FieldExpand[temp3 /. uwave[___] :> 1];
 
     temp3 = temp3 //. NTIdelta -> delta;
     temp3 = temp3 /. MRIndexDelta -> delta;
 
-    temp3 = LorentzContract[Expand[temp3]];
-
-    temp3 = Factor[Expand[temp3]];
+    If[FR$FExpand,
+      temp3 = LorentzContract[Expand[temp3]]; 
+      Off[Simplify::time];
+      temp3 = If[$VersionNumber>8,Factor[Expand[temp3]],Simplify[Expand[temp3],TimeConstraint->0.01]]; 
+      On[Simplify::time];
+      ,
+      temp3 = LorentzContract[Expand[temp3,_?(Not[FreeQ[#,Lorentz]]&&Not[FreeQ[#,Spin]]&&Not[FreeQ[#,FV]]&&Not[FreeQ[#,Ga]]&&Not[FreeQ[#,ME]]&&Not[FreeQ[#,Eps]]&)]];(*pattern added by celine*)
+      temp3 = Expand[temp3,Indices]; (*Indices added by celine*)
+    ];
     temp3 = temp3 /. {dd_?(SymTensQ[#] === True &)[ind__] :> SortSymTens[dd][ind], dd_?(AntiSymTensQ[#] === True &)[ind__] :> SortAntiSymTens[dd][ind],
                             ff_?(StrucConstQ[#] === True &) :> SortStrucConst[ff]};
-    temp3 = Expand[temp3];
+
+    temp3 = If[FR$FExpand,Expand[temp3],Expand[temp3,Indices]];
     temp3 = temp3 //. {nt_?(NoTensQ)[NTIndex[name_, jj_]] tt_[ind1___, Index[name_, jj_, kk_], ind2___] :> nt[NTI[name, jj,kk]] tt[ind1, Index[name,jj,kk],ind2],
              func_[xx___, nt_?(NoTensQ)[NTIndex[name_, jj_]], yy___] tt_[ind1___, Index[name_, jj_, kk_], ind2___] :> func[xx, nt[NTI[name, jj,kk]], yy] tt[ind1, Index[name,jj,kk],ind2],
              func1_[xx1___, func2_[xx2___, nt_?(NoTensQ)[NTIndex[name_, jj_]], yy2___], yy1___] tt_[ind1___, Index[name_, jj_, kk_], ind2___] :> func1[xx1, func2[xx2, nt[NTI[name, jj,kk]], yy2], yy1] tt[ind1, Index[name,jj,kk],ind2],
@@ -243,18 +250,22 @@ FromVertexTerm[expr_, CreaList_, kin_] := Block[{temp, temp2, temp3, output, old
     temp3 = temp3 /. IntDone -> Identity;
 
     $IterationLimit = old$IterationLimit;
-    temp3 = Expand[temp3];
+    temp3 = FieldExpand[temp3];
     output = temp3];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Index handling*)
 
 
 LorentzContract[expr_] := Block[{output, temp},
       (*temp = Expand[expr] //. {ME -> MEME, FV -> FVFV};
       output = Factor[temp] //. {MEME -> ME, FVFV -> FV}];*)
-    Expand[expr]/.{ME->MEME,FV->FVFV}/.{MEME->ME,FVFV->FV}];
+    If[FR$FExpand,
+       Expand[expr]/.{ME->MEME,FV->FVFV}/.{MEME->ME,FVFV->FV}
+       ,
+       Expand[expr,_?(Not[FreeQ[#,FV]]&&Not[FreeQ[#,ME]]&&Not[FreeQ[#,Ga]]&)]/.{ME->MEME,FV->FVFV}/.{MEME->ME,FVFV->FV}]
+];
 
 ReplaceFieldIndex[f_[ind___], l1_List, l2_List] := Block[{output, temp},
     If[Length[l1] != Length[l2], Message[Sym::NoSym]; Abort[]];

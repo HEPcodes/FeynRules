@@ -100,7 +100,7 @@ PYSplitVertices[vertices_] := Block[{
                         ];
        split1 = Join @@ WaitAll[split1];
       ];
-    lorentzstruc = Map[Take[#,{1,1}]&, split1, {2}];
+    lorentzstruc = Map[Take[#,{1,1}]&, split1, {2}];  
     If[Global`FR$Parallelize === False,
        split2 = FullSplitC[Map[Take[#,{2,2}]&, split1, {2}]],
        (* else, parallellize *)
@@ -114,8 +114,7 @@ PYSplitVertices[vertices_] := Block[{
       ];
     colorstruc = Map[Take[#,{1,1}]&, split2, {2}];    
     couplstruc = Map[Take[#,{2,2}]&, split2, {2}] //. reversenumberrpls; 
-
-    
+   
 
 (*    colorstruc = ColorList[verts];
     lorentzstruc = StructureList[verts];
@@ -124,7 +123,6 @@ PYSplitVertices[vertices_] := Block[{
     (* we add the particles spins to the Lorentz structures, and we tag Lorentz and couplings as LorentzObjects and CouplingObjects respectively*)
     lorentzstruc = StrictInner[PrependToLines, lorentzstruc, (ParticleToSpin[#1]& @@@ #)& /@ particles, List];
     couplstruc = ({CouplingObject[#]}& @@@ #)& /@ couplstruc;
-
 
     (* We convolve them back into an object {colors, lorentzes, couplings} per vertex *)
 
@@ -839,7 +837,7 @@ CheckForNegativeInteractionOrders[vector_?VectorQ, coupling_] := Block[{name, or
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*CreateLorentzObjectEntry*)
 
 
@@ -926,7 +924,7 @@ WriteLorentzObject[file_, LorentzObject[name_String, entries_List]] := Block[{},
    
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*WritePYLorentz*)
 
 
@@ -949,6 +947,10 @@ WritePYLorentz[list_] := Block[{outfile},
    WritePYFRHeader[outfile];
    WriteString[outfile, "from object_library import all_lorentz, Lorentz\n"];
    WriteString[outfile, "\nfrom function_library import ", Sequence @@ Riffle[PY$NewCMathFunctions, ", "], "\n"];
+   WriteString[outfile, "try:\n"];
+   WriteString[outfile, "   import form_factors as ForFac \n"];
+   WriteString[outfile, "except ImportError:\n"];
+   WriteString[outfile, "   pass\n"];
    WriteString[outfile, "\n\n"];
 
    WriteLorentzObject[outfile, #]& /@ (CreateLorentzObjectEntry /@ list);
@@ -1013,7 +1015,6 @@ CreateCouplingObjectEntry[CouplingObject[name_, expr_], laurentseries_:False] :=
             PYString[PythonForm[exp]]
            ];
       
-
    
 
    (* and finally we introduce the Python notation *)
@@ -1034,7 +1035,8 @@ CreateCouplingObjectEntry[CouplingObject[name_, expr_], laurentseries_:False] :=
 
 
 LaurentSeriesCoefficientExtractor[pow_, sum_Plus] := LaurentSeriesCoefficientExtractor[pow, #]& /@ sum;
-LaurentSeriesCoefficientExtractor[pow_, coeff_ FR$Eps^n_] := LaurentSeriesCoefficientExtractor[pow FR$Eps^n, coeff];
+LaurentSeriesCoefficientExtractor[pow_, coeff_?(FreeQ[#,FR$Eps]&) FR$Eps^n_] := LaurentSeriesCoefficientExtractor[pow FR$Eps^n, coeff];
+LaurentSeriesCoefficientExtractor[pow_, exp_?(Not[FreeQ[#,FR$Eps]]&)] := LaurentSeriesCoefficientExtractor[pow , Normal[Series[exp,{FR$Eps,0,1}]]];
 
 
 CombineLaurentSeriesCoefficients[list_List] := Block[{
@@ -1081,8 +1083,9 @@ CreatePYLaurentSeriesDic[laurentseries_] := Block[{
    laurser = Sort[laurser, #1[[1]] <= #2[[1]]&];
 
    (* We reintroduce the renomalisation logs *)
-   laurser = laurser /.RenormLog[1]->0 //. RenormLog[x_] :> Log[x/FR$MU];
-   laurser[[All,2]]=GatherIf/@laurser[[All,2]]/.If[a_==0,x_,y_]->FR$Cond[a,x,y];
+   laurser = laurser /.RenormLog[1]->0 //. RenormLog[x_] :> Log[x(*/FR$MU*)];
+   laurser[[All,2]]=GatherIf/@laurser[[All,2]]/.If[a_==0,b_,c_]->If[a,c,b]; (*Special Madgraph case*)
+   laurser=laurser/.Log->RenormLog;
    
    (* Convert everything to strong *)
    laurser = {ToString[#1], PYString[PythonForm[#2]]}& @@@ laurser;

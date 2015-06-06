@@ -134,7 +134,7 @@ Conjugate[t_?(HermitianQ)[i_,j_]] := t[j,i];
 Protect[Conjugate];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Mass*)
 
 
@@ -172,7 +172,8 @@ Conjugate[IndexDelta[ind__]] := IndexDelta[ind];
 Conjugate[IndexDelta][ind__] := IndexDelta[ind];
 Protect[Conjugate];
 
-IndexDelta[Except[Index[Spin, _], i1_], Except[Index[Spin, _], i2_]] := IndexDelta[i2,i1] /; Not[OrderedQ[{i1,i2}]];
+(*second condition added to avoid conflict with IndexDelta[a_?(FreeQ[#,Ext]&), Index[name_, Ext[k_]]] := IndexDelta[Index[name,Ext[k]], a]; *)
+IndexDelta[Except[Index[Spin, _], i1_], Except[Index[Spin, _], i2_]] := IndexDelta[i2,i1] /; Not[OrderedQ[{i1,i2}]]&&(FreeQ[i2,Ext]&&FreeQ[i1,Ext]||Not[FreeQ[i2,Ext]]&&Not[FreeQ[i1,Ext]]);
 
 IndexDelta[a_?(FreeQ[#,Index]&), Index[name_, b_]] := IndexDelta[Index[name, a], Index[name, b]];
 IndexDelta[Index[name_, b_], a_?(FreeQ[#,Index]&)] := IndexDelta[Index[name, a], Index[name, b]];
@@ -212,7 +213,7 @@ IndexDelta /: IndexDelta[xx_, xx_, yy_] ff_?(NoTensQ[#] =!= True &)[aa___, yy_, 
 del[IndexDelta[_, _], _] := 0;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*numQ*)
 
 
@@ -274,12 +275,15 @@ numQ[TensDot[xx_, yy___][i_,j_]] := True;
 CnumQ[FR$deltaZ[args__]] := True;
 numQ[FR$deltaZ[args__]] := True;
 
+CnumQ[FR$deltat[args__]] := True; 
+numQ[FR$deltat[args__]] := True; 
+
 
 CnumQ[FR$delta[args__]] := True;
 numQ[FR$delta[args__]] := True;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*del*)
 
 
@@ -1022,7 +1026,7 @@ ProjM /: ProjM[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[Pro
 ProjM /: ProjM[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, ProjM[mu]][u, r];
 
 MakeSlashedMatrix[expr_] := Block[{tempexpr},
-   tempexpr = Expand[expr];
+   tempexpr = If[FR$FExpand,Expand[expr],Expand[Expand[Expand[expr,Lorentz],FV],TensDot]];
    tempexpr = tempexpr /. {TensDot[g1__, delta, g2___] :> TensDot[g1,g2],
          TensDot[g1___, delta, g2__] :> TensDot[g1,g2],
          TensDot[delta] :> delta};
@@ -1070,7 +1074,7 @@ Eps[xx___, Index[name_, i_?NumericQ], yy___] := Eps[xx, i, yy];
 (* Benj: problem with the global sign. I changed it to match Peskin and Schroeder *)
 Eps /: Eps[___, i_,___,i_,___] := 0;
 Eps /: Eps[ i_,k_,l_,j_] Eps[ i_,g_,h_,j_] := -2 (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
-Eps /: Eps[ k_,i_,l_,j_] Eps[ i_,g_,h_,j_] := 2 (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
+Eps /: Eps[ k_,i_,l_,j_] Eps[ i_,g_,h_,j_] := 2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ k_,l_,i_,j_] Eps[ i_,g_,h_,j_] := -2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ k_,l_,j_,i_] Eps[ i_,g_,h_,j_] := 2 (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ i_,k_,l_,j_] Eps[ g_,i_,h_,j_] := 2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);

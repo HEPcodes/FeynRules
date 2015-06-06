@@ -25,19 +25,22 @@ FieldRenormalization[field_]:=RenField[field,{}];
 (*The list of indices must be given as a second argument*)
 
 
-RenField[field_,inds__List]:=Block[{rfield=field,NewIndices,FreeIndices, ColorIndicesRules, fsym,MixList, spi, result,myRule},
+RenField[field_,inds__List]:=Block[{rfield=field,NewIndices,FreeIndices, ColorIndicesRules, fsym,MixList, spi, result,myRule,ffla},
   (* Restore the types of the indices *)
   FreeIndices=Inner[Index,$IndList[field]/.Index[aa_]->aa,inds/.Index[_,bb_]->bb,List];
   ColorIndicesRules=(myRule[#/.Index[typ_,bla_]->Index[typ,Blank[]],#]&/@Cases[FreeIndices,Index[Colour,_]|Index[Gluon,_]])/.myRule->Rule;
 
-  (* Create new indices and remove Spin and Lorentz indices from the list (the renormalization constants do not carry them) *)
-  NewIndices=DeleteCases[FreeIndices/.Inner[Rule,inds,Table[Unique["idx"],{Length[inds]}],List],Index[Lorentz|Spin,__]];
+  (* Create new id for a new flavor index *)
+  NewIndices=Unique["idx"];
 
   (* Compute the list of fields which may mix with 'field' at the one-loop level *)
   If[AntiFieldQ[field]===True,rfield=anti[field]];
   fsym=Plus@@Extract[MR$ClassesList,Position[ClassName/.MR$ClassesRules[#]&/@ MR$ClassesList,rfield]];
-  MixList=ClassName/.MR$ClassesRules[#]&/@  (DeleteCases[MR$ClassesList,_?( (Unphysical/.MR$ClassesRules[#])===True || 
-    $IndList[(ClassName/.MR$ClassesRules[#])]=!=$IndList[rfield]|| (QuantumNumbers/.MR$ClassesRules[#])=!=(QuantumNumbers/.MR$ClassesRules[fsym])&)]); 
+  MixList={ClassName,FlavorIndex}/.MR$ClassesRules[#]&/@  (DeleteCases[MR$ClassesList,_?( (Unphysical/.MR$ClassesRules[#])===True || 
+    DeleteCases[$IndList[(ClassName/.MR$ClassesRules[#])],Index[(FlavorIndex/.MR$ClassesRules[#])]]=!=DeleteCases[$IndList[rfield],Index[(FlavorIndex/.MR$ClassesRules[fsym])]]|| 
+   (QuantumNumbers/.MR$ClassesRules[#])=!=(QuantumNumbers/.MR$ClassesRules[fsym])&)]); 
+
+  ffla=FlavorIndex/.MR$ClassesRules[fsym];
 
   (* Replace the bare 'field' by the corresponding renormalized quantity *)
   result=Which[
@@ -45,22 +48,17 @@ RenField[field_,inds__List]:=Block[{rfield=field,NewIndices,FreeIndices, ColorIn
     FermionQ[rfield]===True && GhostFieldQ[rfield]=!=True, 
       spi=Index[Spin,Unique["sp"]];
       Plus@@ List[ rfield[Sequence@@FreeIndices], 
-        Sequence@@ (1/2 FR$deltaZ[{rfield,#},
-          Inner[List,DeleteCases[FreeIndices,Index[Spin,_]|Index[Colour,_]],DeleteCases[NewIndices,Index[Colour,_]],List],"L"] *
-          ProjM[FreeIndices[[1]],spi] #[spi,Sequence@@NewIndices]/.ColorIndicesRules&/@MixList), 
-        Sequence@@ (1/2 FR$deltaZ[{rfield,#},
-          Inner[List,DeleteCases[FreeIndices,Index[Spin,_]|Index[Colour,_]],DeleteCases[NewIndices,Index[Colour,_]],List],"R"] *
-          ProjP[FreeIndices[[1]],spi] #[spi,Sequence@@NewIndices]/.ColorIndicesRules&/@MixList)],
-    (* Vector fields *)
-    VectorFieldQ[rfield]===True, 
-      Plus@@ List[ rfield[Sequence@@FreeIndices],Sequence@@ (1/2 FR$deltaZ[{rfield,#},
-        Inner[List,DeleteCases[FreeIndices,Index[Lorentz,_]|Index[Gluon,_]],DeleteCases[NewIndices,Index[Gluon,_]],List]] *
-        (#[FreeIndices[[1]],Sequence@@NewIndices]/.ColorIndicesRules)&/@MixList)],
-    (* Scalar fields and ghosts*)
-    ScalarFieldQ[rfield]===True,
-    Plus@@ List[ rfield[Sequence@@FreeIndices]/.rfield[]->rfield,Sequence@@ (1/2 FR$deltaZ[{rfield,#},
-        Inner[List,DeleteCases[FreeIndices,Index[Colour,_] | Index[Gluon,_]],DeleteCases[NewIndices,Index[Colour,_]| Index[Gluon,_]],List]] *
-        (#[Sequence@@NewIndices]/.#[]->#/.ColorIndicesRules)&/@MixList)]
+        Sequence@@ (1/2 FR$deltaZ[{rfield,#[[1]]},
+          {DeleteCases[Append[Cases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]]},"L"] * ProjM[FreeIndices[[1]],spi]
+          #[[1]][spi,Sequence@@DeleteCases[Append[DeleteCases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]|Index[Spin,_]]]&/@MixList), 
+        Sequence@@ (1/2 FR$deltaZ[{rfield,#[[1]]},
+          {DeleteCases[Append[Cases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]]},"R"] * ProjP[FreeIndices[[1]],spi]
+          #[[1]][spi,Sequence@@DeleteCases[Append[DeleteCases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]|Index[Spin,_]]]&/@MixList)],
+    (* Vector and scalar fields *)
+    VectorFieldQ[rfield]===True||ScalarFieldQ[rfield]===True,
+    Plus@@ List[ rfield[Sequence@@FreeIndices]/.rfield[]->rfield,Sequence@@ (1/2 FR$deltaZ[{rfield,#[[1]]},
+        {DeleteCases[Append[Cases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]]}] *
+        (#[[1]][Sequence@@DeleteCases[Append[DeleteCases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]]]/.#[[1]][]->#[[1]])&/@MixList)]
   ]; 
 
   If[AntiFieldQ[field]===True,result=result/.{rfield->field,FR$deltaZ[args__]->Conjugate[FR$deltaZ[args]],ProjP[a_,b_]->ProjM[b,a],ProjM[a_,b_]->ProjP[b,a]}];
@@ -85,13 +83,7 @@ FieldRenormalization[]:=Block[{MyModule,MyRuleDelayed},
   ren=FieldRenormalization[bare]; 
 
   (* Gets the summed indices appearing in the renormalized field *)
-  SummedInds=DeleteCases[List@@ren/.Index[_,aaa_]->aaa,bare]/.{
-    FR$deltaZ[_List,args_,opt___]:>IDX[Sequence@@Flatten[args]], 
-    ProjP[args__]->IDX[args],ProjM[args__]->IDX[args],
-    fi_?(FieldQ[#]===True&)[args__]->IDX[args]}; 
-  SummedInds=SummedInds//.{IDX[]->1,IDX[aaa__] IDX[bbb__]->IDX[aaa,bbb],fi_?(FieldQ[#]===True&)->1};
-  SummedInds=DeleteCases[SummedInds,_?(NumericQ[#]&)];
-  SummedInds=Union@@((SummedInds//.muf_ IDX[aaa__] :>Cases[Tally[{aaa}],{_,2}])/.List[a_,2]->a);
+  SummedInds=Complement[Union[Cases[ren,Index[a_,b_]->b,\[Infinity]]],Inds];
 
   (* Prepare the replacement rule *)
   Inds=(MyPattern[#,Blank[]]&/@Inds);
@@ -169,7 +161,56 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
+(*Tadpole renormalization*)
+
+
+(* ::Subsection:: *)
+(*Derive all the field shifts *)
+
+
+(* ::Text:: *)
+(*This produces a list of rules allowing to replace the fields with a vev by temself and a tadpole*)
+
+
+TadpoleRenormalization[]:=Block[{tadrep={},vevtmp,vevfi,tadrules,vevkk,vevll},
+tadrep={};
+For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
+  (*get the properties of the field with the vev*)
+  vevtmp=Cases[M$ClassesDescription,_?(Not[FreeQ[#,If[Depth[M$vevs[[vevkk,1]]]>1,ClassName->Head[M$vevs[[vevkk,1]]],ClassName->M$vevs[[vevkk,1]]]]]&)];
+  (*Abort if the field is not in the classes description*)
+  If[Length[vevtmp]<1,Print[Style["Error : not all field in M$vevs are properly declared",Red]];Abort[]];
+  (*Abort if the class description of that fields does contain its definition*)
+  If[FreeQ[vevtmp,Definitions],Print[Style["Error : not all field in M$vevs are properly defined",Red]];Abort[]];
+  (*the field after replacing it by its definition*)
+  vevfi=M$vevs[[vevkk,1]]/.(Definitions/.vevtmp[[1,2]]);
+  (*switch depending how many physical fields appear in vevfi*)
+  Switch[Length[Cases[vevfi,_?FieldQ,\[Infinity]]],
+    1,tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];,
+    (*shift the scalar or the pseudo scalar depending if the vev has a real or imaginary coefficient*)
+    2,If[Im[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0,
+       If[Im[Coefficient[vevfi,Cases[vevfi,_?FieldQ,\[Infinity]][[1]]]]===0&&SelfConjugateQ[Cases[vevfi,_?FieldQ,\[Infinity]][[1]]],
+         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];,
+         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[2]];
+       ],
+       If[Im[Coefficient[vevfi,Cases[vevfi,_?FieldQ,\[Infinity]][[1]]]]===0&&SelfConjugateQ[Cases[vevfi,_?FieldQ,\[Infinity]][[1]]],
+         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[2]];,
+         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];
+       ];
+     ],
+    _,Print[Style["Error : Unphysical fields with a vev are assumed to depend on 2 fields at most for the renormalization of the tadpole",Red]];Abort[]];
+tadrules=Cases[{ExpandIndices[tadrules,FlavorExpand->True]},_?FieldQ,\[Infinity]];
+  For[vevll=1,vevll<=Length[tadrules],vevll++,
+    tadrep=Append[tadrep,tadrules[[vevll]]->tadrules[[vevll]]-FR$CT*FR$deltat[tadrules[[vevll]]]/( Union[
+    Cases[M$ClassesDescription,{c___,ClassName->tadrules[[vevll]],b___}:>(Mass/.{c,b})[[1]],2],
+    Cases[M$ClassesDescription,{c___,ClassMembers->{xx___,tadrules[[vevll]],yy___},b___}:>(Mass/.{c,b})[[-Length[{yy}]-1,1]],2]][[1]])^2];
+  ];
+];
+tadrep
+];
+
+
+(* ::Section:: *)
 (*Perturbative expansion of the renormalization constants*)
 
 
@@ -177,7 +218,7 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 (*This function perturbatively expand renormalization constants, factorizing out the couplings as well as canonical 2 Pi factors. All the new constants are added to the parameter list of the model.*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*This function prepares the addition of a renormalization constants to the parameter lists*)
 
 
@@ -260,7 +301,7 @@ AddRenConstToLists[deltaprm_List,param_,order_,orderlist_List]:=Block[{PrmFlag,r
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Adding a renormalization constant to the parameter lists, once everything has been prepared *)
 
 
@@ -368,6 +409,10 @@ resu];
 (*Extraction of the counterterm Lagrangian*)
 
 
+(* ::Subsection::Closed:: *)
+(*ExtractCounterterms*)
+
+
 ExtractCounterterms[lagr_,ExpOrder_List]:=Block[{NewOrder,ExpLag,WaveFunctions,PrmToRenormList,GrpMat,MyRuleDelayed},
   (* Initialization *)
   Print["Extraction of the counterterm Lagrangian."];
@@ -441,9 +486,20 @@ Plus@@ExpLag];
 (*On-shell renormalisation*)
 
 
+IndExpand[var_,ind_]:=Block[{indlistIE,indlist2IE,idIE},
+indlistIE=Table[ToExpression["ind"<>ToString[kk]],{kk,Length[ind]}];
+indlist2IE=Table[{indlistIE[[kk]],Length[IndexRange[ind[[kk]]]]},{kk,Length[ind]}];
+idIE=Table[Index[ind[[kk,1]],indlistIE[[kk]]],{kk,Length[ind]}];
+Table@@Prepend[indlist2IE,var@@idIE]
+]
+
+
 InternalRule[param_]:=If[FreeQ[param,Indices],
 	If[FreeQ[param,Value],Definitions/.param[[2]],param[[1]]->Value/.param[[2]]],
-	(Head[#[[1]]]@@Index@@@Transpose[{(Indices/.param[[2]])[[All,1]],List@@#[[1]]}]->#[[2]]&)/@(If[FreeQ[param,Value],Definitions,Value]/.param[[2]])];
+    (Rule[#,(#/.Index[a_,b_]->b)/.(If[FreeQ[param,Definitions],
+      Value,
+      If[FreeQ[param,Value],Definitions,Join[Definitions,Value]]]/.param[[2]])]&)/@Flatten[IndExpand[param[[1]],(Indices/.param[[2]])]]
+];
 
 
 PlusI[x__]:=Plus@@(I*List[x])
@@ -458,15 +514,68 @@ RenDot[c_,a_FR$deltaZ*b_]:=a*RenDot[c,b];
 RenDot[a_FR$deltaZ*b_,c_]:=a*RenDot[b,c];
 
 
-Options[OnShellRenormalization] = {QCDOnly->False,FlavorMixing->True,Only2Point->False};
+Dmshift[x_]:=Block[{FR$delta2},If[GhostFieldQ[x[[1]]]||GoldstoneQ[x[[1]]],
+  {},
+  If[FreeQ[x,FR$delta],{},Solve[(x[[2]]/.{FR$deltat[_]->0,FR$delta[zz__]->FR$delta2[zz]}//Simplify)==(x[[2]]),{Cases[x[[2]],_FR$delta,\[Infinity]][[1]]}]/.FR$delta2->FR$delta],
+  If[FreeQ[x,FR$delta],{},Solve[(x[[2]]/.{FR$deltat[_]->0,FR$delta[zz__]->FR$delta2[zz]}//Simplify)==(x[[2]]),{Cases[x[[2]],_FR$delta,\[Infinity]][[1]]}]/.FR$delta2->FR$delta]
+]];
+
+AntiField2Field[x_]:=If[AntiFieldQ[x],anti[x],x];
+
+DZmixShift[fr_]:=Module[{xx,fi=AntiField2Field/@fr[[1,All,1]]},
+{FR$deltaZ[fi,{{}}]->FR$deltaZ[fi,{{}}]+xx,FR$deltaZ[Reverse[fi],{{}}]->FR$deltaZ[Reverse[fi],{{}}]-xx}/.Solve[
+  (Coefficient[fr[[2]],SP[2,2],0]/.FR$deltat[__]->0)==(Coefficient[fr[[2]],SP[2,2],0]/.{FR$deltaZ[fi,{{}}]->FR$deltaZ[fi,{{}}]+xx,
+  FR$deltaZ[Reverse[fi],{{}}]->FR$deltaZ[Reverse[fi],{{}}]-xx}),xx][[1]]
+];
+
+
+Options[OnShellRenormalization] = {QCDOnly->False,FlavorMixing->True,Only2Point->False,Simplify2pt->True,Exclude4ScalarsCT->False};
 
 
 OnShellRenormalization[Lag_,options___]:=Module[{FieldRenoList,ExternalParamList,InternalParamList,internalMasses,massRules, deltaLagp,deltaLag,classname, classmembers,
-flavor,fi,paramreno,FreeM,Patbis,qcd,flm,only2,qcdind,qcdclasses,kk1,extNotMass},
+flavor,fi,paramreno,FreeM,Patbis,qcd,flm,only2,qcdind,qcdclasses,kk1,extNotMass,cvar,tmppara,itp,tmp,tmpRule,lkinmass,GetnFlavor,extfla,MassFreeQ,skin,no4S,lag4S,Pow,
+deltaLagt,massspec,replist,InternalParamList2,lagtmp,frtmp,logfile},
 
+Off[Simplify::time];
 qcd=QCDOnly/.{options}/.Options[OnShellRenormalization];
 flm=FlavorMixing/.{options}/.Options[OnShellRenormalization];
 only2=Only2Point/.{options}/.Options[OnShellRenormalization];
+skin=Simplify2pt/.{options}/.Options[OnShellRenormalization];
+no4S=Exclude4ScalarsCT/.{options}/.Options[OnShellRenormalization];
+
+logfile=OpenWrite[];
+
+If[Length[FR$RmDblExt]===0,FR$RmDblExt={};];
+
+deltaLag=Expand[Lag];
+If[no4S,
+  Print["Putting 4 scalars term aside for the renormalization"];
+  lag4S=Total[Cases[deltaLag,_?((Count[#//.{Dot->Times,Power[a_,b_Integer]:>Pow@@Table[a,{b}],del[a_,b_]:>Identity[a]},_?ScalarFieldQ,\[Infinity]])>3&)]];
+  ,
+  lag4S=0;
+];
+deltaLag=deltaLag-lag4S;
+
+deltaLag=ExpandIndices[deltaLag, FlavorExpand->True];
+If[skin,
+Print["Extracting the mass and kinetic terms to simplify them"];
+  lkinmass=ExpandIndices[GetKineticTerms[deltaLag]+GetMassTerms[deltaLag]+ExpandIndices[deltaLag,MaxParticles->1],FlavorExpand->True]; 
+  deltaLag=deltaLag-lkinmass;,
+  lkinmass=0;
+];
+  
+
+GetnFlavor[field_,n_,x_]:=If[AntiFieldQ[field],
+  If[x==2,anti,Identity][((ClassMembers/.(Cases[M$ClassesDescription,_?(Not[FreeQ[#,ClassName->anti[field]]]&)][[1,2]]))[[n]])],
+  (ClassMembers/.(Cases[M$ClassesDescription,_?(Not[FreeQ[#,ClassName->field]]&)][[1,2]]))[[n]]];
+
+MassFreeQ[x_]:=And@@((FreeQ[x,#]&)/@MassList[[2,All,2]]);
+
+FR$DoPara=If[Global`FR$Parallelize && Length[Lag]>10 && $KernelCount>1,True,False];
+
+(*list of complex variables*)
+cvar=Flatten[({#[___],#}&)/@Cases[M$Parameters,_?(Not[FreeQ[#,ComplexParameter->True]]||
+  (Not[FreeQ[#,Indices]]&&FreeQ[#,Orthogonal->True]&&FreeQ[#,ComplexParameter->False])&)][[All,1]]];
 
 qcdind=(Representations/.Flatten[Cases[M$GaugeGroups,_?(Not[FreeQ[#,gs]]&),{2}]])[[All,2]];
 qcdclasses=DeleteCases[DeleteCases[M$ClassesDescription,_?(Not[FreeQ[#,Unphysical->True]]||Not[FreeQ[#,Ghost]]&)],
@@ -491,31 +600,41 @@ For[fi=1,fi<=Length[FieldRenoList],fi++,
     classname=Head[FieldRenoList[[fi,1]]];
     {classmembers,flavor}={ClassMembers,FlavorIndex}/.Join[Cases[M$ClassesDescription,_?(Not[FreeQ[#,ClassName->classname]]&),{2}],
                                                           Cases[M$ClassesDescription,_?(Not[FreeQ[#,ClassName->anti[classname]]]&),{2}]][[1]];
+    
+   extfla=Cases[FieldRenoList[[fi,1]],Index[flavor,a_]->a][[1,1]];
 
-    If[flm,
-      FieldRenoList[[fi]]=DeleteCases[FieldRenoList[[fi]],Index[flavor,_],\[Infinity]]Table[1,{jj,Length[classmembers]}];
+      FieldRenoList[[fi]]=Table[FieldRenoList[[fi]],{jj,Length[classmembers]}];
       For[kk1=1,kk1<=Length[classmembers],kk1++,
-        FieldRenoList[[fi,kk1,1]]=FieldRenoList[[fi,kk1,1]]/.{classname->If[Not[AntiFieldQ[classname]],classmembers[[kk1]],anti[classmembers[[kk1]]]]};
-        FieldRenoList[[fi,kk1,2,2]]=(Coefficient[Refine[FieldRenoList[[fi,kk1,2,2]],Assumptions->{FR$CT\[Element]Reals}],FR$CT,0]/.
+        FieldRenoList[[fi,kk1,1]]=DeleteCases[FieldRenoList[[fi,kk1,1]],Index[flavor,_]]/.{classname->If[Not[AntiFieldQ[classname]],classmembers[[kk1]],anti[classmembers[[kk1]]]]};
+        FieldRenoList[[fi,kk1,2,2]]=(DeleteCases[Coefficient[Refine[FieldRenoList[[fi,kk1,2,2]],Assumptions->{FR$CT\[Element]Reals}],FR$CT,0],Index[flavor,extfla]]/.
             If[Not[AntiFieldQ[classname]],{classname->classmembers[[kk1]]}, {classname->anti[classmembers[[kk1]]]}])+ 
-          FR$CT*Total[Table[(Coefficient[Refine[FieldRenoList[[fi,kk1,2,2]],Assumptions->{FR$CT\[Element]Reals}],FR$CT,1]/.
-            If[Not[AntiFieldQ[classname]],{classname,classname},anti/@{classname,classname}]->{classmembers[[kk1]],classmembers[[kk2]]})/.
-            If[Not[AntiFieldQ[classname]],classname->classmembers[[kk2]],classname->anti[classmembers[[kk2]]]],{kk2,1,Length[classmembers]}]];
+          FR$CT*(Coefficient[Refine[FieldRenoList[[fi,kk1,2,2]],Assumptions->{FR$CT\[Element]Reals}],FR$CT,1]/.
+            If[Not[AntiFieldQ[classname]],FR$deltaZ[{classname,b_},{{Index[flavor,extfla],c___}},d___]->FR$deltaZ[{classmembers[[kk1]],b},{{c}},d],FR$deltaZ[{anti[classname],b_},{{Index[flavor,extfla],c___}},d___]->FR$deltaZ[{classmembers[[kk1]],b},{{c}},d]]);
       ];
-      ,
-      FieldRenoList[[fi]]=Table[DeleteCases[FieldRenoList[[fi]],Index[flavor,_],\[Infinity]]/.If[Not[AntiFieldQ[classname]],classname->classmembers[[kk]],
-        {classname->anti[classmembers[[kk]]],anti[classname]->classmembers[[kk]]}],{kk,Length[classmembers]}];
-    ];
   ];
 ];
 FieldRenoList=Flatten[FieldRenoList];
+
+FieldRenoList[[All,2,2]] = FieldRenoList[[All,2,2]]/.{FR$deltaZ[{a_,b_},{{c_}},d___]*b_[in___,c_,e___]:>
+  Sum[FR$deltaZ[{a,GetnFlavor[b,kk,1]},{{}},d](GetnFlavor[b,kk,2])[in,e],{kk,Length[IndexRange[Index[c[[1]]]]]}],
+  Conjugate[FR$deltaZ[{a_,bbar_},{{c_}},d___]]*b_[in___,c_,e___]:>
+  Sum[Conjugate[FR$deltaZ[{a,GetnFlavor[b,kk,1]},{{}},d]](GetnFlavor[b,kk,2])[in,e],{kk,Length[IndexRange[Index[c[[1]]]]]}]/;anti[bbar]==b};
+FieldRenoList=FieldRenoList/.x_[]:>x/;FieldQ[x];
+
+If[Not[flm],
+  Print["No mixing allowed for the renormalization"];
+  FieldRenoList[[All,2,2]]=FieldRenoList[[All,2,2]]/.{FR$deltaZ[{a_,b_},z__]:>0/;Not[a===b]};,
+  Print["All mixing allowed for the renormalization"];,
+  Print["Some mixing allowed for the renormalization"];
+  FieldRenoList[[All,2,2]]=FieldRenoList[[All,2,2]]/.{FR$deltaZ[{a_,b_},z__]:>0/;Not[a===b]&&FreeQ[flm,{a,b}]&&FreeQ[flm,{b,a}]};
+];
+
 If[qcd,FieldRenoList=DeleteCases[FieldRenoList,_?(FreeQ[qcdclasses,Head[#[[1]]]]&&FreeQ[qcdclasses,anti[Head[#[[1]]]]]&)];];
 (*Print[FieldRenoList];*)
 
 Print["renormalizing the parameters"];
 
 InternalParamList=Cases[M$Parameters,xx_?(Not[FreeQ[#,Internal]]&)];
-
 
 (*Replacement rules for the internal parameters*)
 InternalParamList=Flatten[InternalRule/@InternalParamList];
@@ -527,39 +646,105 @@ If[Length[FR$LoopSwitches]>0,
 ];
 
 (*List of external parameters that should be renormalized*)
-ExternalParamList=DeleteCases[M$Parameters,_?(FreeQ[#,External]&)][[All,1]];
+ExternalParamList=DeleteCases[M$Parameters,_?(FreeQ[#,External]&)][[All]];
+ExternalParamList=Flatten[(If[FreeQ[#,Indices],#[[1]],IndExpand[#[[1]],(Indices/.#[[2]])]]&)/@ExternalParamList];
 If[Length[FR$LoopSwitches]>0,ExternalParamList=ExternalParamList/.Rule@@@FR$LoopSwitches;];
-extNotMass=Cases[ExternalParamList/.FR$RmDblExt,_?(FreeQ[(Mass/.#&)/@M$ClassesDescription[[All,2]],#]&)];
+extNotMass=Cases[ExternalParamList/.FR$RmDblExt,_?MassFreeQ];
 If[qcd,extNotMass=DeleteCases[extNotMass,_?(FreeQ[Cases[M$Parameters,#=={x__}],QCD]&)]];
 
 (*renormalization of the masses only*)
+Print["renormalizing the masses"];
 paramreno=((#->#+FR$CT*FR$delta[{#},{}])&)/@If[qcd,DeleteCases[Union[MassList[[2,All,2]]],_?(FreeQ[qcdclasses,#]&)],Union[MassList[[2,All,2]]]];
 
-If[Not[only2],Print["not only 2 point"];paramreno=Join[paramreno,((#->#+FR$CT*FR$delta[{#},{}])&)/@extNotMass];];
+If[Not[only2],
+  Print["renormalizing the other external parameters"];
+  paramreno=Join[paramreno,((#->(#+FR$CT*FR$delta[{#},{}]/.Pattern->Identity))&)/@extNotMass];];
 
+paramreno = DeleteCases[paramreno,_?((#[[1]]/.MR$Definitions)===0&)];
+
+
+Print["Internal parameter renormalization"];
 (*Print[paramreno];*)
 massRules=If[Length[FR$RmDblExt]>0,Join[FR$RmDblExt,Cases[InternalParamList,_?(Not[(#[[2]]/.FR$RmDblExt)===#[[2]]]&)]/.FR$RmDblExt],{}];
+InternalParamList = Join[InternalParamList,FR$RmDblExt];
+InternalParamList[[All,2]]=InternalParamList[[All,2]]/.MR$Definitions;
 InternalParamList[[All,2]] = InternalParamList[[All,2]]//.InternalParamList;
-InternalParamList[[All,2]] = InternalParamList[[All,2]]/.massRules/.paramreno;
-InternalParamList=(#1->If[Not[#2===0],(#1/.Pattern->Patbis/.{Patbis[a_,b__]->a})(Simplify[Normal[Series[#2,{FR$CT,0,1}]]/Normal[Series[#2,{FR$CT,0,0}]]]),#2]&)@@@(InternalParamList);
-Print["Internal parameter renormalization"];
-(*Print[InternalParamList];*)
+lkinmass=Simplify[lkinmass/.InternalParamList];
+InternalParamList2=InternalParamList; 
+InternalParamList[[All,2]] = InternalParamList[[All,2]]/.massRules/.Union[paramreno,((Rule[#[[1]]/.Index[a_,b_]->b,#[[2]]]&)/@paramreno)];
+InternalParamList=(If[Not[#2===0],{#1->#1(1+FR$CT*Simplify[SeriesCoefficient[#2,{FR$CT,0,1}]/Normal[Series[#2,{FR$CT,0,0}]],TimeConstraint->0.02]),
+    Conjugate[#1]->Conjugate[#1](1+FR$CT*Conjugate[Simplify[SeriesCoefficient[#2,{FR$CT,0,1}]/Normal[Series[#2,{FR$CT,0,0}]],TimeConstraint->0.02]])},
+  #1->#2]&)@@@(InternalParamList);
+InternalParamList=Flatten[InternalParamList/.Conjugate[FR$delta[a__]]->FR$delta[a]];
 
 Print["renormalizing the Lagrangian"];
-deltaLag=ExpandIndices[Lag, FlavorExpand->True];
-Print["with the masses"];
-deltaLagp=Refine[ComplexExpand[(deltaLag//.massRules/.paramreno/.InternalParamList),FR$CT]/.Im[FR$CT]->0, Assumptions->{FR$CT>0}];
-(*Print[Length[deltaLagp]];*)
-deltaLagp=Replace[deltaLagp,Times[I*a_Plus]:>PlusI@@a,1];
-deltaLagp=(Coefficient[Normal[Series[#,{FR$CT,0,1}]],FR$CT]&)/@deltaLagp/.Dot->RenDot/.RenDot->Dot;
-(*Print[deltaLagp];*)
+deltaLag = deltaLag+Expand[lkinmass];
+(*Replace vanishing parameters*)
+deltaLag = deltaLag/.(Cases[InternalParamList/.Rule->tmpRule,tmpRule[_,0]]/.tmpRule->Rule);
+
+Print["with the parameters"];
+If[FR$DoPara, 
+   DistributeDefinitions[massRules,paramreno,InternalParamList,PlusI];
+   tmp=Table[tmppara=deltaLag[[itp]];
+     ParallelSubmit[{itp,tmppara},(Expand[(#(*//.massRules*)/.paramreno/.InternalParamList),FR$CT]&)[tmppara]],{itp,Length[deltaLag]}];
+   deltaLagp=Plus@@(WaitAll[tmp]/.FR$CT^n_Integer:>0/;n>1);
+   tmp=Table[tmppara=deltaLagp[[itp]];
+     ParallelSubmit[{itp,tmppara},(Replace[#,Times[I*a_Plus]:>PlusI@@a,1]&)[tmppara]],{itp,Length[deltaLagp]}];
+   deltaLagp=Plus@@WaitAll[tmp];
+   tmp=Table[tmppara=deltaLagp[[itp]]/.Dot->RenDot/.RenDot->Dot;
+     ParallelSubmit[{itp,tmppara},(SeriesCoefficient[#,{FR$CT,0,1}]&)[tmppara]],{itp,Length[deltaLagp]}];
+   deltaLagp=Plus@@WaitAll[tmp];
+   ,
+   deltaLagp=((Expand[(#(*//.massRules*)/.paramreno/.InternalParamList),FR$CT]&)/@deltaLag)/.FR$CT^n_Integer:>0/;n>1;
+   deltaLagp=(Replace[#,Times[I*a_Plus]:>PlusI@@a,1]&)/@deltaLagp;
+   deltaLagp=(SeriesCoefficient[#,{FR$CT,0,1}]&)/@(deltaLagp/.Dot->RenDot/.RenDot->Dot);
+];
+deltaLagp=(FR$CT*#&)/@deltaLagp; 
+
+(*Print[InputForm[deltaLagp]];*)
+If[qcd,deltaLagt=0;lagtmp=0;,
+  Print["with the tadpoles"];
+  deltaLagt=(Coefficient[#,FR$CT]&)/@(deltaLag/.TadpoleRenormalization[])*FR$CT;
+  $Output=logfile;
+  lagtmp = DeleteCases[Expand[GetMassTerms[deltaLagt+deltaLagp]],_?(Not[FreeQ[#,_?GhostFieldQ]]&)];
+  massspec=GetMassSpectrum[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Not[Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]]]]&)]];
+  $Output={OutputStream["stdout",1]};
+  replist=Flatten[(Dmshift/@massspec[[1,2;;,{1,2}]])];
+  deltaLagp=Expand[(#/.replist&)/@deltaLagp];
+  deltaLagt = (*Factor[*)Expand[deltaLagt+DeleteCases[deltaLagp,_?(FreeQ[#,FR$deltat]&)]/.InternalParamList2](*]*);
+  If[Not[FreeQ[InternalParamList2[[All,1]],ee]],
+    deltaLagt=deltaLagt/.Solve[Cases[InternalParamList2/.Rule->tmpRule,tmpRule[ee,bb_]->ee==bb][[1]],{aEWM1}][[1]]/.{Sqrt[ee^2]->ee,Power[ee^2,Rational[n_Integer,2]]->ee^n}];
+  deltaLagp = deltaLagp/.FR$deltat[_]->0;
+];
+
 Print["with the fields"];
-deltaLag=Refine[ComplexExpand[(deltaLag//.massRules)/.FieldRenoList], Assumptions->{FR$CT>0}]/.Dot->RenDot/.RenDot->Dot/.Conjugate[FR$deltaZ[{x_,x_},y___]]->FR$deltaZ[{x,x},y];
+deltaLag=Refine[ComplexExpand[(deltaLag(*//.massRules*))/.FieldRenoList,cvar,TargetFunctions->{Conjugate}], Assumptions->{FR$CT>0}]/.Dot->RenDot/.
+  RenDot->Dot/.Conjugate[FR$deltaZ[{x_,x_},y___]]->FR$deltaZ[{x,x},y];
 deltaLag=deltaLag/.{FR$CT^2->0,FR$CT^3->0,FR$CT^4->0};
 deltaLag=Replace[deltaLag,Times[I*a_Plus]:>PlusI@@a,1];
-test=deltaLag;(*Print[Length[deltaLag]];*)
-deltaLag = (Normal[Series[#,{FR$CT,0,1}]]&)/@deltaLag;
+If[FR$DoPara,
+  tmp=Table[tmppara=deltaLag[[itp]];
+     ParallelSubmit[{itp,tmppara},Normal[Series[tmppara,{FR$CT,0,1}]]],{itp,Length[deltaLag]}];
+  deltaLag=Plus@@WaitAll[tmp];
+  ,
+  deltaLag = (Normal[Series[#,{FR$CT,0,1}]]&)/@deltaLag;
+];
 
-Return[deltaLag+deltaLagp*FR$CT]
+
+(*shift the wave function renormalization constant to absorb the tadpole contribution to the two points vertices*)
+lagtmp = Expand[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]],True]&)]//.InternalParamList2];
+$Output=logfile;
+frtmp=FeynmanRules[lagtmp];
+frtmp=(MomentumReplace[#,1]&)/@MergeVertices[frtmp,FeynmanRules[deltaLag,SelectParticles->frtmp[[All,1,All,1]]]];
+$Output={OutputStream["stdout",1]};
+frtmp[[All,2]] = (Coefficient[#,FR$CT,1]&)/@frtmp[[All,2]];
+frtmp=Flatten[DZmixShift/@frtmp];
+deltaLag = Expand[deltaLag/.frtmp];
+
+On[Simplify::time];
+Close[logfile];
+DeleteFile[logfile[[1]]];
+
+Return[deltaLag+lag4S+deltaLagp+deltaLagt]
 
 ];

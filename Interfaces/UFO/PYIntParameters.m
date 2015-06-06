@@ -61,7 +61,7 @@ ReorderEParamEntry[{lhablock_, lhanumber_, name_, ios__,  value_, type_, descrip
 ReorderMassOrWidthEntry[{lhablock_, lhanumber_, name_, value_}] := {name, name /. ParamRules, False, value, ToString[lhablock] <> " of particle " <> ToString[lhanumber[[1]]], ToString[name, TeXForm], lhablock, lhanumber, {}};
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*ReorderIParamEntry*)
 
 
@@ -124,7 +124,6 @@ ChangeEParameterConventions[eparamlist_, masslist_, widthlist_] := Block[{newlis
     (** ADDED BY BENJ: removing extra mass parameters when several particles have the same masses **)
     newmasslist = Delete[newmasslist,List/@Flatten[Drop[Position[newmasslist[[All,2]],#],-1]&/@ DeleteCases[Tally[newmasslist[[All,2]]],{_,1}][[All,1]]]];
     (** END BENJ **)
-
 (*    (* If the same symbol is used for more than one mass, only keep the first *)
 Print[newmasslist];
     newmasslist = RemoveDuplicateMassesOrWidthsForUFO[newmasslist];
@@ -160,7 +159,7 @@ Print[newmasslist];*)
     ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ChangeIParameterConventions*)
 
 
@@ -390,6 +389,30 @@ CreateParameterObjectEntry[paramdef_] := Block[{dicout},
 
     (* Return and exit *)
     FRDebug["CreateParticleObjectEntry", dicout];
+    Return[dicout]
+
+];
+             
+
+
+(* ::Subsection:: *)
+(*CreateCTParameterObjectEntry*)
+
+
+(* ::Text:: *)
+(*CreateCTParameterObjectEntry[ list ] takes a definition list for a single eparam and prepends to each entry the PY dic name. *)
+(*The output is a matrix of python strings and/or integers.*)
+
+
+CreateCTParameterObjectEntry[paramdef_] := Block[{dicout},
+   
+   dicout = {{"name",         PYString[MakeString[paramdef[[1]]]]},
+             {"type",         "'complex'"},
+             {"value",        paramdef[[2]]},
+             {"texname",      PYString[PYTeXString[paramdef[[1]]]]}};
+
+    (* Return and exit *)
+    FRDebug["CreateCTParticleObjectEntry", dicout];
     Return[dicout]
 
 ];

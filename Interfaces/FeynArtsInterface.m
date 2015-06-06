@@ -73,7 +73,7 @@ b___*TensDot[a__][Index[Spin,Ext[ss1_]],Index[Spin,Ext[ss2_]]]/;OddQ[Length[List
 b___*TensDot[a__][Index[Spin,Ext[ss1_]],Index[Spin,Ext[ss2_]]]/;EvenQ[Length[List[a]]]->b*TensDot[Sequence@@Reverse[List[a]]][Index[Spin,Ext[ss2]],Index[Spin,Ext[ss1]]]};
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*LSymmetrize[particles,  structure]*)
 
 
@@ -186,7 +186,7 @@ ReOrderFCforFA[ll__] := Module[{ReOrderFunc, temp, output,vt, AntiToEnd},
               temp]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Particle renaming*)
 
 
@@ -493,7 +493,7 @@ FACouplingRenaming[favertices_] := Block[{vertListTmp = {}, vertN = 1},
 MakeFAExtIndex[Index[name_, Ext[k__]], fcl_,part_] := Block[{tempk, firstk, indlist, output, fcltemp = fcl,parttemp},
       fcltemp = fcltemp //. $Maj->Identity;
       fcltemp = fcltemp //. {x___, f_?AntiFieldQ, y___} :> {x, anti[f], y};
-      fcltemp = fcltemp /. FA$MemberToClass;
+      fcltemp = fcltemp //. FA$MemberToClass;
       fcltemp = fcltemp //. FA$ClassToName;
       tempk = StringJoin @@ (ToString /@ {k});
       firstk = If[Length[{k}] > 1, First[[{k}]], k];
@@ -546,7 +546,7 @@ MakeIndexSum[expr_?(Head[#]=!=List &)]:=Block[{tmpexprlist,getindlist,IndexSum1}
 (*Generic file writing functions*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteKinIndices[genfile,dirIndOpt]*)
 
 
@@ -600,7 +600,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WritePropagators[genfile,dicacIndOpt]*)
 
 
@@ -684,7 +684,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteGenCouplings[genfile,diracIndOpt]*)
 
 
@@ -832,7 +832,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteLast[genfile]*)
 
 
@@ -884,11 +884,11 @@ Format[ FourVector[a_, b_] ] := a[b]
 );
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Write .Mod file*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteFAHeader*)
 
 
@@ -959,7 +959,7 @@ WriteFAParticleDefinition[outfile_] := Block[{},
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteFAGaugeXi*)
 
 
@@ -1078,16 +1078,16 @@ WriteFACouplingDefinitions[outfile_] := Block[{},
 (*WriteFeynArtsOutput*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Options*)
 
 
 Options[WriteFeynArtsOutput] = {FlavorExpand -> False, IndexExpand-> False, MaxParticles -> Automatic, MinParticles -> Automatic, 
           MaxCanonicalDimension -> Automatic, MinCanonicalDimension -> Automatic, SelectParticles -> Automatic, Output :> StringReplace[M$ModelName <> "_FA",{" "-> "_"}],CouplingRename->True,
-          Exclude4Scalars -> False, GenericFile -> True, DiracIndices->Automatic, LoopOrder->MR$Null};
+          Exclude4Scalars -> False, GenericFile -> True, DiracIndices->Automatic, LoopOrder->MR$Null, ApplyMomCons->True};
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteFeynArtsOutput*)
 
 
@@ -1099,14 +1099,15 @@ WriteFeynArtsOutput[lags__] := WriteFeynArtsOutput[{lags}] /; (And @@ ((Head[#] 
 
 WriteFeynArtsOutput[{lags__}, options___] := Block[{vertlength,verttype,tempclass, vertlistFA,genFileOpt,diracIndOpt,couplRenameOpt,j,vertN=1, 
 													WFAflavexp, defname,outfile, genfile, temp, tempoutfile, tempoptions, tempxi, Rulli, 
-													Massdone = {}, vertexlistFA, FlatDot, LoopOpt,CTlags,orderOpt,MyPat,mylags = {lags},CTcnt=0},
+													Massdone = {}, vertexlistFA, FlatDot, LoopOpt,CTlags,orderOpt,MyPat,mylags = {lags},CTcnt=0,tmp,tmppara,wfoit},
       Print[" - - - FeynRules interface to FeynArts - - -"];
-      Print["      C. Degrande C. Duhr, 2011"];
+      Print["      C. Degrande C. Duhr, 2013"];
       Print["      Counterterms: B. Fuks, 2012"];
 
       (* ***** Set Options ****** *)
 
       FA$FlavExpCheck = True;
+      If[FlavorExpand/.{options},FA$FlavExpCheck = False;];
 
 	  (*Rename?*)
 	  couplRenameOpt=CouplingRename/.{options}/.Options[WriteFeynArtsOutput];
@@ -1179,7 +1180,10 @@ FR$FeynArtsInterface = True;
          Do[Print["Calculating Feynman rules for ", defname[[kmg]]];
          FeynmanRules[mylags[[kmg]], Sequence @@ FilterRules[tempoptions,Options[FeynmanRules]], Name -> defname[[kmg]], ScreenOutput -> False, FlavorExpand -> True],         
          {kmg, Length[defname]}]];
+
          If[LoopOpt, FR$Loop=False];
+
+
 
 FR$FeynArtsInterface = False;
 
@@ -1187,6 +1191,8 @@ FR$FeynArtsInterface = False;
       (* Merge vertices together *)
          vertexlistFA = MergeVertices @@ Table[Vertices[kmg],{kmg, defname}];
          If[LoopOpt,vertexlistFA = KillBil/@vertexlistFA];
+         vertexlistFA = vertexlistFA/.T[Index[Gluon, gl_], Index[Colour, Ext[a_]], Index[Colour, Ext[c_]]]*T[Index[Gluon, gl_], Index[Colour, Ext[b_]], Index[Colour, Ext[d_]]]-> 
+           1/2( IndexDelta[Index[Colour, Ext[a]],Index[Colour, Ext[d]]]IndexDelta[Index[Colour, Ext[b]],Index[Colour, Ext[c]]]-1/3  IndexDelta[Index[Colour, Ext[a]],Index[Colour, Ext[c]]]IndexDelta[Index[Colour, Ext[b]],Index[Colour, Ext[d]]]);
       
       (* Transform them into FA format *)
       vertexlistFA = CreateFAVertexList /@ vertexlistFA;
@@ -1228,26 +1234,48 @@ FR$FeynArtsInterface = False;
 		vertexlistFA = vertexlistFA/.TensDot->FlatDot/.FlatDot->TensDot;
         vertexlistFA = OrderEps[LorentzContract[ExpandAll[vertexlistFA]]//.{Times[aa___,Eps[bb___,dd_,cc___],ee___,FV[ff_,dd_],hh___]->Times[aa,Eps[bb,FV[ff],cc],ee,hh]}];
   	  vertexlistFA = ExpandAll[vertexlistFA]/.FV[bbb_,cc_]TensDot[eee___,Ga[cc_],fff___][ss1_,ss2_]:>TensDot[eee,SlashedP[bbb],fff][ss1,ss2];
-
-Print["Identifying the Lorentz structures"];
+ 
         FAIDStructure @@@ vertexlistFA;
 
-Print["Symmetrizing the Lorentz structure"];
 		structurelistFA = LSymmetrize @@@ structurelistFA;
 
-Print["Obtaining their coefficients"];
-		vertexlistFA = (FAStructure2 @@@ vertexlistFA)/.CSPRL->1;
-Print["splitting done"];
-(*Print[vertexlistFA];*)
+        If[FR$DoPara, 
+        SetSharedFunction[FAStructure2];SetSharedVariable[structurelistFA];
+        DistributeDefinitions[FR$LoopOrder];
+        tmp=Table[tmppara=vertexlistFA[[wfoit]];ParallelSubmit[{wfoit,tmppara},FAStructure2 @@ tmppara],{wfoit,Length[vertexlistFA]}];
+        vertexlistFA=WaitAll[tmp]/.CSPRL->1;
         (*Split the tree-level and counterterms and put them as two different entries*)
-        vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0]],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
+        tmp=Table[tmppara=vertexlistFA[[wfoit]];
+          ParallelSubmit[{wfoit,tmppara},({#1,Join[Simplify[Coefficient[#2,FR$CT,0],TimeConstraint->0.01],Coefficient[#2,FR$CT,1],2]}&) @@ tmppara],
+          {wfoit,Length[vertexlistFA]}];
+        vertexlistFA=WaitAll[tmp];
+        (*Remove the tree-level component for the vertices with two legs or less*)
+        tmp=Table[tmppara=vertexlistFA[[wfoit]];
+          ParallelSubmit[{wfoit,tmppara},(If[Length[#1]>2,{#1,#2},{#1,Transpose[{#2[[All,1]]*0,#2[[All,2]]}]}]&) @@ tmppara],
+          {wfoit,Length[vertexlistFA]}];
+        vertexlistFA=WaitAll[tmp];
+        ,(*FR$DoPara=False*)
+		vertexlistFA = (FAStructure2 @@@ vertexlistFA)/.CSPRL->1;
+
+        (*Split the tree-level and counterterms and put them as two different entries*)
+        vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0],TimeConstraint->0.01],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
         (*Remove the tree-level component for the vertices with two legs or less*)
         vertexlistFA = (If[Length[#1]>2,{#1,#2},{#1,Transpose[{#2[[All,1]]*0,#2[[All,2]]}]}]&)@@@vertexlistFA;
+        ];(*end if FR$DoPara*)
+
         vertexlistFA = DeleteCases[vertexlistFA,{a_,_?(Union[#]==={{0,0}}&)}];
 
         vertexlistFA = DeleteCases[vertexlistFA, {_,_,_, 0 ,___}|{_,_,_,{0,0},___}];,
         (* else *)
-		vertexlistFA = LorentzGenCouplings @@@ vertexlistFA;
+
+        If[FR$DoPara,      
+          (*SetSharedVariable[vertexlistFA];*)
+          DistributeDefinitions[LorentzGenCouplings];
+          tmp=Table[tmppara=vertexlistFA[[wfoit]];ParallelSubmit[{wfoit,tmppara},LorentzGenCouplings @@ tmppara],{wfoit,Length[vertexlistFA]}];
+          vertexlistFA=WaitAll[tmp];,
+          vertexlistFA = LorentzGenCouplings @@@ vertexlistFA;];
+
+
         (*Split the tree-level and counterterms and put them as two different entries*)
         vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0]],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
         (*Remove the tree-level component for the vertices with two legs or less*)
@@ -1264,6 +1292,7 @@ Print["splitting done"];
 
       (* ******************** *)
       (* The GaugeXi function *)
+
       tempxi = DeleteCases[Rulli[#,GaugeXi[Name2Field[#/.(Reverse/@FA$MemberToClass)]]]&/@ FA$ClassesList,Rulli[x_,GaugeXi[x_]]];
 
 
@@ -1281,6 +1310,7 @@ Print["Writing FeynArts model file into directory ", tempoutfile];
       WriteFACouplings[outfile, vertexlistFA];
       If[couplRenameOpt, WriteFACouplingDefinitions[outfile]];
       Close[outfile];
+
 
 
 (* **********   Writing the parameter file file  ********** *)  
@@ -1325,7 +1355,7 @@ FR$FeynArtsInterface = False;
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*FARedefineClasses*)
 
 
@@ -1413,15 +1443,14 @@ FAIDStructure[vertextype_, FAPartContent_, vertex_, fc_] := Module[{temp,temp2,t
 ];(*end Module*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FAStructure2*)
 
 
 FAStructure2[vertextype_, FAPartContent_, vertex_, fc_] := Module[{temp, ReturnConst, $HCHELAS, tempFApc, output,temp2},
-
 	temp = vertex /. {T[aa_, ii_, jj_] -> SUNT[aa, ii, jj], T[aa_] -> SUNT[aa], f[aa_, bb_, cc_] -> SUNF[aa,bb,cc], ee -> EL, gs -> GS};
 	temp = Expand[temp/.{SUNF[Aaa__,Bbb_,Ccc_]SUNT[Ccc_,Iii_,Jjj_]->-I(SUNT[Aaa,Bbb,Iii,Jjj]-SUNT[Bbb,Aaa,Iii,Jjj])}];
-	temp = temp//.{SUNT[Aaa__,Iii_,Jjj_]SUNT[Bbb__,Jjj_,Kkk_]->SUNT[Aaa,Bbb,Iii,Kkk]};
+	temp = temp//.{SUNT[Aaa__,Index[Colour,Iii_],Index[Colour,Jjj_]]SUNT[Bbb__,Index[Colour,Jjj_],Index[Colour,Kkk_]]->SUNT[Aaa,Bbb,Index[Colour,Iii],Index[Colour,Kkk]]};
 	temp = Expand[temp];
 
 	ReturnConst[pat_] := Module[{epsind,perm,xx,kk,pos,remain,sign,epscoef,ll,newpat,newsign,res,aa,bb,cc,dd},
@@ -1469,13 +1498,15 @@ If[Length[Cases[temp,yx_?(FreeQ[#,Spin]&&FreeQ[#,Lorentz]&&FreeQ[#,SP]&)*newpat-
     temp = temp //. Index[name_, k__] :> MakeFAIntIndex[Index[name, k]];
     If[Not[FreeQ[temp, Index[_, _?(Not[NumericQ[#]]&)]]], temp = MakeIndexSum[temp]];
     temp = temp /. {Index[_, k_] -> k};
-    temp = If[$VersionNumber<9,Simplify[Expand[temp],TimeConstraint->0.01],Factor[Expand[temp]]];
+    Off[Simplify::time];
+    temp = If[$VersionNumber>8,Factor[Expand[temp]],Simplify[Expand[temp],TimeConstraint->0.001]];
+    On[Simplify::time];
     tempFApc = First /@ FAPartContent;
     output = {tempFApc, temp}
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*LorentzGenCouplings*)
 
 
@@ -1485,10 +1516,11 @@ If[Length[Cases[temp,yx_?(FreeQ[#,Spin]&&FreeQ[#,Lorentz]&&FreeQ[#,SP]&)*newpat-
 
 LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, temp1, temp2, temp3, output, $HCHELAS, tempFApc, done, deltflavind, GaAlgebraDone},   
 
-  temp = vertex //. IndexDelta[Index[Spin, s_], Index[Spin, r_]] -> 1;
+  temp = vertex; //. IndexDelta[Index[Spin, s_], Index[Spin, r_]] -> 1;
 
       (* We have to rename the color matrix T into SUNT for FormCalc to run properly.*)
       temp = temp /. {T[aa_, ii_, jj_] -> SUNT[aa, ii, jj], T[aa_] -> SUNT[aa], f[aa_, bb_, cc_] -> SUNF[aa,bb,cc], ee -> EL, gs -> GS};
+      temp = Expand[temp]//.{SUNT[Aaa__,Index[Colour,Iii_],Index[Colour,Jjj_]]SUNT[Bbb__,Index[Colour,Jjj_],Index[Colour,Kkk_]]->SUNT[Aaa,Bbb,Index[Colour,Iii],Index[Colour,Kkk]]};
 
 (* 
    Here comes the filter, that will check whether the vertices are compliant with the Loretnz.gen structure.
@@ -1507,6 +1539,7 @@ LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, t
                               ProjM[__]->Proj[1],ProjP[__]->Proj[2]};
                 temp = {{Coefficient[temp, Proj[1,1]]}, {Coefficient[temp, Proj[2,2]]},{Coefficient[temp, Proj[1]]}, {Coefficient[temp, Proj[2]]}} //. GaAlgebra[___] -> 1,(******* Fermion couplings: FFV and FFS *********)
             (vertextype === "FFV") || (vertextype === "FFS"), 
+                temp = temp //. IndexDelta[Index[Spin, s_], Index[Spin, r_]] -> 1;
                 temp = temp //. TensDot[t1_?($TensClass[#] === MR$GammaMatrices &), t2___][r_,s_] -> GaAlgebra[t1, t2, r, s];
                 temp = Expand[temp*GaAlgebra[]];
                 temp = temp /. GaAlgebra[xx__, r_, s_] -> GaAlgebra[xx];
@@ -1520,6 +1553,10 @@ LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, t
                         GaAlgebra[mu___,ProjM] -> GaAlgebra[mu]Proj[1]};
                 temp = Collect[temp, Proj[_], Simplify];
                 temp = {{Coefficient[temp, Proj[1]]}, {Coefficient[temp, Proj[2]]}} //. GaAlgebra[___] -> 1,
+             (******* Scalar couplings: S *********) 
+             (vertextype === "S"), 
+             Print[Style["Warning : tadpole vertices (S), this model should be used with lorentzTadpole.gen",Orange]]; 
+ 	        temp = {{temp}}, 
              (******* Scalar couplings: SS *********)
              (vertextype === "SS"),
                 temp = temp/.{SP[2,2]->-SP[1,2],SP[1,1]->SP[1,2]};
@@ -1605,7 +1642,9 @@ LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, t
       If[Not[FreeQ[temp, Index[_, _?(Not[NumericQ[#]]&)]]], temp = MakeIndexSum[temp]];
 
       temp = temp /. {Index[_, k_] -> k};
-      temp = Factor[Expand[temp]];
+      Off[Simplify::time];
+      temp = If[$VersionNumber>8,Factor[Expand[temp]],Simplify[Expand[temp],TimeConstraint->0.001]];
+      On[Simplify::time];
 
       tempFApc = First /@ FAPartContent;
 

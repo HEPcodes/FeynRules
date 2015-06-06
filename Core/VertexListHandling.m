@@ -4,11 +4,11 @@
 (*Vertex List handling*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Relabelling of internal indices*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RelabelExt*)
 
 
@@ -165,7 +165,7 @@ ReorderFermionOperators[{particles_List, vertex_}, referenceorder_List] := Block
 ]; 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SortTypeVertexParticles*)
 
 
@@ -191,11 +191,12 @@ SortVertexParticles[list_List] := Block[{referenceparts = list[[1,1]],
            Return[RelabelExt[{Join[ghosts, bosons], list[[1,2]]}]]
            ];
         (* If there are multiple contributions, add them up *)
-        Return[RelabelExt[{Join[ghosts, bosons], Plus @@ vertices}]];
+        all=(RelabelExt[{Join[ExtractGhostsFromParticleList[#1], Sort[ExtractBosonsFromParticleList[#1]]], #2}]&)@@@all;
+        If[Length[Union[all[[All,1]]]]<2,Return[{ all[[1,1]],Plus@@all[[All,2]] }], Print[Style["Error : vertex not merged correctly",Red]];];
        ];
 
     (* We can now already put the bosons into the right order *)
-    all = RelabelExt[{Join[ExtractFermionsFromParticleList[#1],bosons,ghosts],#2}]& @@@ all;
+    all = RelabelExt[{Join[ExtractFermionsFromParticleList[#1],Sort[ExtractBosonsFromParticleList[#1]],ExtractGhostsFromParticleList[#1]],#2}]& @@@ all;
 
     (* For the fermions, we want to go to same flows in all contributions.
        In other words, we need to reorder the creation operators into the same
@@ -205,7 +206,7 @@ SortVertexParticles[list_List] := Block[{referenceparts = list[[1,1]],
     (* At this stage all the contributions have the same order for the creation
        operators, so we cann add them up *)
     If[Length[all] > 1,
-       all = RelabelExt[{all[[1,1]], Plus @@ all[[All,2]]}],
+       all = If[Length[Union[all[[All,1]]]]<2, RelabelExt[{all[[1,1]], Plus @@ all[[All,2]]}], Print[Style["Error : vertex not merged correctly",Red]];];,
        all = all[[1]]
       ];
 

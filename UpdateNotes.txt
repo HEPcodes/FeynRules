@@ -1,91 +1,172 @@
-Update notes for FeynRules 2.0.x
+Update notes for FeynRules 2.1.x
 
-2406 2.0.31 11-11-14 fuks:       Bug with the parallelization and 
-                                restrictions fixed 
+2411 =.2.4 13-01-15 degrande:   Tadpole reno added see referee comment 
 
-2402 2.0.30 24-10-14 fuks:       Bug fix in the mass diagonalization package 
-                                (thanks to Santosh Rai) 
+2398 =.2.3 14-10-14 degrande:   bug fix for IndexSum 
 
-2397 2.0.29 14-10-14 degrande:   bug fix for IndexSum 
+2379 =.2.2 08-07-14 fuks:       Bugs with the HC function and derivatives 
+                                 of ghost fields 
 
-2392 2.0.28 01-09-14 aalloul:    Bug fix thanks to J-B. Flament in ASperGe 
-                                interface 
+2360 2.1.61 16-05-14 omatt:      Polishing for version 1.0 of NLO 
 
-2388 2.0.27 15-08-14 fuks:       Small issue with the CheckHermiticity 
-                                function when a '0.' term was present in 
-                                the Lagrangian 
+2357 2.1.60 09-05-14 omatt:      renaming of the Exclude4ScalarsCT 
 
-2378 2.0.26 08-07-14 fuks:       Bug with HC of derivatives of ghost fields 
+2355 2.1.59 24-04-14 omatt:      Benj bug fixed, mising semicolon 
 
-2354 2.0.25 22-04-14 fuks:       Bug fix in the check of the kinetic terms 
-                                (thanks to Josh Berger) 
+2353 2.1.58 22-04-14 fuks:       Bug fix in the check of the kinetic terms 
+                                 (thanks to Josh Berger) 
 
-2351 2.0.24 18-04-14 fuks:       OptimizeIndex when tensor fields are 
-                                involved 
+2352 2.1.57 18-04-14 fuks:       OptimizeIndex when tensor fields are 
+                                 involved 
 
-2343 2.0.23 26-03-14 fuks:       Bug fix with the decay package for spin3/2 
-                                fields (thanks to Helmut Eberl) 
+2350 2.1.56 16-04-14 omatt:      NLO polishing including SM at nlo 
 
-2341 2.0.22 26-03-14 aalloul:    Updated the LHA reader in order to allow it 
-                                to read files where decay information is 
-                                not at the end. 
+2350 2.1.55 16-04-14 omatt:      Polishing for the NLO add NLO in SM 
 
-2330 2.0.21 16-03-14 fuks:       Improvement of the optimization of the 
-                                decay package 
+2346 2.1.54 03-04-14 omatt:      bug fixes for restriction and one term reno 
+                                 condition 
 
-2322 2.0.20 04-03-14 fuks:       Freezing the convention corrections for the 
-                                epsilons 
+2346 2.1.53 03-04-14 omatt:      bug fix for restriction and one term reno 
+                                 condition 
 
-2319 2.0.19 04-03-14 fuks:       Making the decay package compliant with 
-                                spin 3/2 fields (thanks to Helmut Eberl) 
+2346 2.1.52 03-04-14 omatt:      bug fix for restrictions and NLO when 
+                                 equation is just a constant 
 
-2315 2.0.18 26-02-14 aalloul:    Adding PythonForm for the Cosecant 
+2342 2.1.51 26-03-14 fuks:       Bug fix with the decay package for spin3/2 
+                                 fields (thanks to Helmut Eberl) 
 
-2312 2.0.17 19-02-14 fuks:       Removing formfactors 
+2340 2.1.50 26-03-14 aalloul:    Updated the LHA reader in order to allow it 
+                                 to read files where decay information is 
+                                 not at the end. 
 
-2306 2.0.16 17-02-14 degrande:   bug fix for the gaugexi in FA interface 
+2335 2.1.49 19-03-14 degrande:   fix bug for EFT at NLO 
 
-2302 2.0.15 13-02-14 aalloul:    Input options ASperGe extended to allow for 
-                                autocompletion in MadGraph thanks to Karen 
+2332 2.1.48 19-03-14 omatt:      bug with the mu fixed and polishing 
 
-2299 2.0.14 12-02-14 aalloul:    Updated several bugs related to ASperGe 
+2329 2.1.47 16-03-14 fuks:       Improvement of the optimization of the 
+                                 decay package 
 
-2297 2.0.13 07-02-14 claudeduhr: Same bug fix as before, but in current 
+2327 2.1.46 13-03-14 degrande:   fix the diagram selection for QCDOnly 
 
-2295 2.0.12 07-02-14 aalloul:    Fixed phase of neutralinos in mass matrices 
+2326 2.1.45 12-03-14 omatt:      Fix the if convention and fix bug for the 
+                                 mssm from benj 
 
-2275 2.0.11 30-01-14 fuks:       Small bug fix in the decay package (thanks 
-                                to Kentarou Mawatari) 
+2325 2.1.44 10-03-14 omatt:      fix bug for the replacement of the indices 
+                                 in the merging of NLO and TL vertices 
 
-2274 2.0.10 30-01-14 fuks:       Small bug fix in the decay package (thanks 
-                                to Kentarou Mawatari) 
+2323 2.1.43 07-03-14 omatt:      modified if syntaxe 
 
-2273 2.0.9 29-01-14 fuks:       Small bug with the Lie algebra 
-                                simplifications in the presence of Epsilon 
-                                in color space (Thanks to Angelo Monteux) 
+2321 2.1.42 04-03-14 fuks:       Freezing the convention corrections for the 
+                                 epsilons 
 
-2249 2.0.8 13-01-14 fuks:       Improving the FA interface (thanks to 
-                                Damien Tant) 
+2318 2.1.41 03-03-14 fuks:       Making the decay package compliant with 
+                                 spin 3/2 fields 
 
-2248 2.0.7 10-01-14 fuks:       Bug fix with the decay package (thanks to 
-                                Dorival Goncalves Netto) 
+2317 2.1.40 03-03-14 omatt:      bug 0 over 0 fixed and cond removed 
 
-2225 2.0.6 26-11-13 fuks:       minor bug in the decay package 
+2317 2.1.39 03-03-14 omatt:      if 0 over 0 bug fix and cond removed` 
 
-2218 2.0.5 09-11-13 fuks:       cleaning of the ff achieved and corrected 
+2316 2.1.38 28-02-14 omatt:      implement limitation of the lorentz 
+                                 structure 
 
-2215 2.0.4 04-11-13 neil:       Added rule for epsilon tensor to CH 
-                                interface. 
+2314 2.1.37 26-02-14 aalloul:    Adding PythonForm to Csc function 
 
-2206 2.0.3 23-10-13 fuks:       Bug fix with the CheckHermiticity routine 
-                                when the lagrangian contains epsilon 
-                                tensors 
+2313 2.1.36 25-02-14 omatt:      bug fix with ctparam and polishing for nlo 
 
-2204 2.0.2 21-10-13 omatt:      bug with multiple interaction order fixed 
+2311 2.1.35 19-02-14 fuks:       rendering the superfield package compatible 
+                                 with sugra conventions 
 
-2200 2.0.1 10-10-13 fuks:       The UFO interfaces now supports one mass 
-                                parameter for several particles 
+2310 2.1.34 18-02-14 omatt:      bug fix in UFO FAToFR for gluon index 
 
-2196 2.0.0 09-10-13 fuks:       Release of version 2.0 
+2309 2.1.33 18-02-14 degrande:   color in FA interface bug and NLO 
+                                 improvement 
 
+2307 2.1.32 17-02-14 degrande:   gaugexi bug and parallel bug for color in 
+                                 decay 
 
+2304 2.1.31 17-02-14 omatt:      NLO improvements for color 
+
+2303 2.1.30 13-02-14 omatt:      Speed improvement necessary for the mssm 
+
+2301 2.1.29 13-02-14 Karen:      ASperGe bug removed in constructor 
+                                 MassMatrix.cpp 
+
+2300 2.1.28 12-02-14 Karen:      Input options ASperGe extended to allow for 
+                                 autocompletion in MadGraph 
+
+2298 2.1.27 12-02-14 aalloul:    Fixed several bugs related to compatibility 
+                                 between ASperGe and the output towards MC 
+                                 generators 
+
+2294 2.1.26 07-02-14 aalloul:    Phase of neutralinos fixed 
+
+2289 2.1.25 05-02-14 omatt:      development for nlo 
+
+2277 2.1.24 30-01-14 fuks:       Small bug fix in the decay package (thanks 
+                                 to Kentarou Mawatari) 
+
+2274 2.1.23 29-01-14 omatt:      remove irrelevant coupling constant for 2 
+                                 pt before solving reno conditions 
+
+2272 2.1.22 29-01-14 fuks:       Small bug with the Lie algebra 
+                                 simplifications in the presence of Epsilon 
+                                 in color space (Thanks to Angelo Monteux) 
+
+2264 2.1.21 27-01-14 omatt:      mixing for renormalization for different 
+                                 flavor indices 
+
+2257 2.1.20 23-01-14 omatt:      More NLO dev and bug fix in UFO interface 
+
+2255 2.1.19 17-01-14 omatt:      NLNLO speed improvment 
+
+2254 2.1.18 15-01-14 omatt:      proper conjugate in UFO interface and NLO 
+                                 for EFT development 
+
+2251 2.1.17 13-01-14 omatt:      speed improvement for NLO 
+
+2250 2.1.16 13-01-14 fuks:       Improving the FA interface (thanks to 
+                                 Damien Tant) 
+
+2247 2.1.15 10-01-14 fuks:       Bug fix with the decay package (thanks 
+                                 Dorival Goncalves Netto) 
+
+2245 2.1.14 08-01-14 omatt:      improvement and a bug fix for nlo 
+
+2244 2.1.13 07-01-14 omatt:      switch for full expansion and speed 
+                                 improvement 
+
+2244 2.1.12 25-12-13 omatt:      factor bug in FA interface and more 
+                                 parallel 
+
+2243 2.1.11 20-12-13 omatt:      parallelizing LorentzGenCouplings in FA 
+                                 interface 
+
+2239 2.1.10 19-12-13 omatt:      bug fix for nlo and speed improvement 
+                                 (limited expand) 
+
+2237 2.1.9 11-12-13 omatt:      Bug fixes for the renoralization and speed 
+                                 improvement 
+
+2226 2.1.8 26-11-13 fuks:       minor bug in the decay package 
+
+2223 2.1.7 25-11-13 omatt:      bug solved for the renormalization of the 
+                                 gluino 
+
+2216 2.1.6 04-11-13 neil:       Added rule for epsilon tensor to CH 
+                                 interface. 
+
+2212 2.1.5 04-11-13 omatt:      complex mass improvement for nlo 
+
+2211 2.1.4 30-10-13 omatt:      cosmetic change and complex mass in NLO 
+
+2205 2.1.3 23-10-13 fuks:       Bug fix with the CheckHermiticity routine 
+                                 when the lagrangian contains epsilon 
+                                 tensors 
+
+2203 2.1.2 21-10-13 omatt:      bug with multiple interaction order fixed 
+                                 and final check for MSSM R2 
+
+2199 2.1.1 09-10-13 fuks:       One mass parameter for several particles is 
+                                 now supported in the UFO interface 
+
+2191 2.1.0 09-10-13 fuks:       Release of version 2.1.0 

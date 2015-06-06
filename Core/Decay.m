@@ -95,7 +95,7 @@ GetMass[partname_]:=Block[{label=ClassToLabel[partname],mass,flavo=GetFlavorInde
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Computation and extraction of the relevant Feynman rules*)
 
 
@@ -290,6 +290,7 @@ CreateAmp[expr_]:=Block[{fields=expr[[1]]/.{fi_?(FieldQ[#]===True&),_?NumericQ}:
   If[CleanAmp[fields[[1,2]], fields[[1,3]],fields[[1,1]]], result=Drop[result,{2}]];
   If[CleanAmp[fields[[1,1]], fields[[1,3]],fields[[1,2]]], result=Drop[result,{1}]];
   result=DeleteCases[result,{_,{0}}];
+
   Return[result];
 ];
 
@@ -424,7 +425,7 @@ PolRules[expr_,masses_]:= Return[expr//.{
 }];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Reduction of the Dirac trace*)
 
 
@@ -603,7 +604,7 @@ Squarify[Amp_,CAmp_,masses_]:=Block[{msq},
       1/(3 masses[[i1]])*FV[Ext[i1],b]*(GLine[SlashedP[i1],Ga[a],args2,args1]+masses[[i1]] GLine[Ga[a],args2,args1])-
       1/(3 masses[[i1]])*FV[Ext[i1],a]*(GLine[SlashedP[i1],Ga[b],args2,args1]+masses[[i1]] GLine[Ga[b],args2,args1])]
   };
-  
+
   msq= msq/.{
     GLine[args1___,Spinor[Spv,Ext[i1_]],Spinor[Spvbar,Ext[i1_]],args2___]:> GLine[args1,SlashedP[i1],args2]-masses[[i1]] GLine[args1,args2],
     GLine[args1___,Spinor[Spu,Ext[i1_]],Spinor[Spubar,Ext[i1_]],args2___]:> GLine[args1,SlashedP[i1],args2]+masses[[i1]] GLine[args1,args2],
@@ -647,7 +648,7 @@ Squarify[Amp_,CAmp_,masses_]:=Block[{msq},
 (*Computing the squared matrix element relevant for the decay width*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Initialization*)
 
 
@@ -679,7 +680,6 @@ CalculateM2Decays[InLag__,OptionsPattern[]]:=Block[{Frules,Mat,Mattmp,tot,lag={I
   Print[Style["Computing the squared matrix elements relevant for the 1->2 decays: ",Orange,Bold]];
   InitDecay[];
 
-
   If[Global`FR$Parallelize && tot>40,
 (*Parallellization*)
     DistributeDefinitions[FR$GrpMat,FR$Spin2Tag];SetSharedVariable[FR$DiracTraceDictionnary];
@@ -698,7 +698,7 @@ CalculateM2Decays[InLag__,OptionsPattern[]]:=Block[{Frules,Mat,Mattmp,tot,lag={I
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Phase space*)
 
 
@@ -746,7 +746,7 @@ ComputeDecays[Msq_List,OptionsPattern[]]:=Block[{tmpmsq=Msq,decays,decaystmp,All
     If[progressindicatorQ, Print[Style["Computing all the partial 1->2 decay widths: ",Orange,Bold], Dynamic[FR$DecayCntb],  " / ", tot]];
     AllDecays=Block[{},FR$DecayCntb++; ComputeDecay[#,Msq,Simplify->SimQ]]&/@tmpmsq[[All,1]]
   ];
-
+ 
   AllDecays = DeleteCases[AllDecays,0];
   AllDecays = MapAt[Sequence @@ #&, #, 2]& /@ AllDecays;
 

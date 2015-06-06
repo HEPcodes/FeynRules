@@ -110,7 +110,6 @@ WritePYCouplingOrders[] := Block[{outfile},
    WriteString[outfile, "from object_library import all_orders, CouplingOrder\n"];
    WriteString[outfile, "\n\n"];
 
-
    WriteCouplingOrderObject[outfile, #]& /@ (CreateCouplingObjectEntry /@ PYConvolveCouplingOrdersLists[FR$InteractionOrderHierarchy,FR$InteractionOrderLimit,FR$InteractionOrderPerturbativeExpansion]);
    
    Close[outfile];

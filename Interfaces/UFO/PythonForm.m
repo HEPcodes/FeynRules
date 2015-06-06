@@ -232,7 +232,7 @@ WritePYObject[file_, name_String, class_String, list_List] := Block[{
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*CreateObjectParticleName*)
 
 
@@ -286,7 +286,7 @@ CreateObjectParticleName[name_String] := Block[{newname,
 (*Testing*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DoubleEntriesQ*)
 
 
@@ -309,7 +309,7 @@ DoubleEntriesQ[list_List, message_String] := Block[{bool},
       
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*TestQ*)
 
 
@@ -353,7 +353,7 @@ TestQ[test_, x_, message1_, message2_] := Block[{bool},
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*CreateDialogBox*)
 
 
@@ -374,7 +374,7 @@ CreateDialogBox[list_List] := Block[{templist},
 (*Creating and deleting files*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FileExistsQ*)
 
 
@@ -387,7 +387,7 @@ If[$VersionNumber < 7,
   ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DeleteFileIfExists*)
 
 
@@ -398,7 +398,7 @@ If[$VersionNumber < 7,
 DeleteFileIfExists[name_String] := If[FileExistsQ[name], DeleteFile[name]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SetOutputDirectory*)
 
 
@@ -442,7 +442,7 @@ PY$InputForm = {Complex[a_,b_] :> a + b * PYComplexI,
                 GreaterEqual[a_,b_]:>PythonForm[a]<>">="<>PythonForm[b],
                 Equal[a_,b_]:>PythonForm[a]<>"=="<>PythonForm[b],
                 Unequal[a_,b_]:>PythonForm[a]<>"<="<>PythonForm[b],
-                If[a_,b_,c_]:>PythonForm[b]<>" if "<>PythonForm[a]<>" else "<>PythonForm[c]};
+                If[a_,b_,c_]:>"( "<> PythonForm[b]<>" if "<>PythonForm[a]<>" else "<>PythonForm[c]<>" )"};
 PY$OutputForm = {"PYTuple" -> "", "ADDSLASH" -> "\\'","\""->"",".and."->" and ",".or."->" or "};
 
 PY$IndexForm = {Index[_, Ext[k_]] :> k,
@@ -602,6 +602,7 @@ SetPythonForm[L$FV, "P"];
 
 SetPythonForm[FR$MU, "MU_R"];
 SetPythonForm[FR$Cond,"cond"];
+SetPythonForm[RenormLog,"reglog"];
 
 
 (* ::Section:: *)

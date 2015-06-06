@@ -27,7 +27,9 @@ Options[FeynmanRules] = {
   SelectParticles -> Automatic,
   Free -> Automatic, 
   Contains -> Automatic,
-  Exclude4Scalars -> False
+  Exclude4Scalars -> False,
+  ApplyMomCons->True,
+  NoDefinitions->False
 };
 
 
@@ -38,16 +40,16 @@ Options[FeynmanRules] = {
 
 
 FeynmanRules[lags__?(Head[#]=!=List&),OptionsPattern[]]:= FeynmanRules[{lags}, TeXOutput->OptionValue[TeXOutput], 
-  ScreenOutput->OptionValue[ScreenOutput], Name->OptionValue[Name], FlavorExpand->OptionValue[FlavorExpand], 
+  ScreenOutput->OptionValue[ScreenOutput], Name->OptionValue[Name], FlavorExpand->OptionValue[FlavorExpand], ApplyMomCons->OptionValue[ApplyMomCons],
   IndexExpand->OptionValue[IndexExpand], FermionFlow->OptionValue[FermionFlow], MinParticles -> OptionValue[MinParticles],
   ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers], MaxParticles->OptionValue[MaxParticles], Free->OptionValue[Free],
   MaxCanonicalDimension -> OptionValue[MaxCanonicalDimension], MinCanonicalDimension -> OptionValue[MinCanonicalDimension], 
-  SelectParticles->OptionValue[SelectParticles], Contains -> OptionValue[Contains], Exclude4Scalars->OptionValue[Exclude4Scalars]];
+  SelectParticles->OptionValue[SelectParticles], Contains -> OptionValue[Contains], Exclude4Scalars->OptionValue[Exclude4Scalars],NoDefinitions->OptionValue[NoDefinitions]];
 
 
 FeynmanRules[{lags__}, OptionsPattern[]] := Block[{FRname=OptionValue[Name],lag,FRoptions,flavopt=OptionValue[FlavorExpand]},
   (* Initialization *)
-  lag=Plus@@( (Expand[#/. Dot -> FR$Dot]/.FR$Dot -> Dot) &/@ {lags} );
+  lag=Plus@@( (FieldExpand[#/. Dot -> FR$Dot]/.FR$Dot -> Dot) &/@ {lags} );
   If[FRname=!=MR$Null,
     If[Not[StringQ[FRname]], FRname=ToString[FRname]];
     FR$Lagrangian[FRname] = lag;
@@ -57,11 +59,11 @@ FeynmanRules[{lags__}, OptionsPattern[]] := Block[{FRname=OptionValue[Name],lag,
 
   (* Calling the main function (parallelization moved inside GetVertices)*)
   If[flavopt==={},flavopt=FR$AutoFlavorExpand];
-  FRoptions=DeleteCases[{Name->FRname, FlavorExpand->flavopt, IndexExpand->OptionValue[IndexExpand],
+  FRoptions=DeleteCases[{Name->FRname, FlavorExpand->flavopt, ApplyMomCons->OptionValue[ApplyMomCons], IndexExpand->OptionValue[IndexExpand],
     FermionFlow->OptionValue[FermionFlow], MinParticles -> OptionValue[MinParticles], MaxParticles->OptionValue[MaxParticles],
     ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers], Free->OptionValue[Free], Contains -> OptionValue[Contains],
     MaxCanonicalDimension -> OptionValue[MaxCanonicalDimension], MinCanonicalDimension -> OptionValue[MinCanonicalDimension],
-    SelectParticles->OptionValue[SelectParticles],  Exclude4Scalars->OptionValue[Exclude4Scalars]},Rule[_,MR$Null]];
+    SelectParticles->OptionValue[SelectParticles],  Exclude4Scalars->OptionValue[Exclude4Scalars],NoDefinitions->OptionValue[NoDefinitions]},Rule[_,MR$Null]];
 
   GetVertices[lag, Sequence@@FRoptions];
 
@@ -80,8 +82,14 @@ FeynmanRules[{lags__}, OptionsPattern[]] := Block[{FRname=OptionValue[Name],lag,
 (*Unitarity Constraints*)
 
 
-    UnitarityConstraints[expr_] := Block[{tempexpr, nonmatrix},
-       tempexpr=If[Head[expr]===Plus,Expand/@expr,Expand[expr]];
+ReplaceRepeatedL0[exp_,rules_]:=Block[{prevexp, newexp=exp},While[prevexp=!=newexp,prevexp=newexp;newexp=Replace[prevexp,rules,{0}]];newexp];
+
+
+UnitarityConstraints[expr_] := Block[{tempexpr, nonmatrix,utime},
+
+       If[FreeQ[expr,Index[a_?(Not[Head[IndexRange[Index[#]]]===NoUnfold]&&Not[#===Lorentz]&&Not[#===Spin]&),b_?(Not[NumericQ[#]]&)]],Return[expr]]; 
+utime=SessionTime[];
+       tempexpr=If[Head[expr]===Plus,If[FR$FExpand,Expand/@expr,(Expand[#,Indices]&)/@expr],If[FR$FExpand,Expand[expr],Expand[expr,Indices]]]; (*Indices added by Celine*)
 (*Block[{tempexpr = Expand/@expr, nonmatrix}*)
 (* Modifications by A. Alloul 12/11/2012:
    1) Modified the above 1 lines 
@@ -89,33 +97,26 @@ FeynmanRules[{lags__}, OptionsPattern[]] := Block[{FRname=OptionValue[Name],lag,
       than applying it on every term.
 *)
 
-        nonmatrix = If[Length[tempexpr]>=1,
+
+      nonmatrix = If[Head[tempexpr]===Plus,
                        Select[tempexpr, FreeQ[#, _?((UnitaryQ[#] === True)&)| _?((OrthogonalQ[#] === True)&)]&],
-                       If[FreeQ[tempexpr, _?((UnitaryQ[tempexpr] === True)&)| _?((OrthogonalQ[tempexpr] === True)&)],tempexpr,0]
+                       If[FreeQ[tempexpr, _?((UnitaryQ[#] === True)&)| _?((OrthogonalQ[#] === True)&)],tempexpr,0]
                     ];
-        tempexpr = Expand[tempexpr - nonmatrix];
+      tempexpr = Expand[tempexpr - nonmatrix];
+If[Head[tempexpr]=!=Plus,tempexpr={tempexpr};];
 
-        If[tempexpr ===0,
-           Return[expr]];
+      If[tempexpr ===0,Return[expr]];
+     tempexpr = (ReplaceRepeatedL0[#, {xx_*tt_[Index[name_, ii_], Index[name_, jj_]]Conjugate[tt_[Index[name_, kk_], Index[name_, jj_]]] :> (xx/.kk -> ii)  /; Not[NumericQ[jj]]&&UnitaryQ[tt]&&FreeQ[xx,jj], 
+                             xx_ *tt_[Index[name_, ii_], Index[name_, jj_]]Conjugate[tt_[Index[name_, ii_], Index[name_, kk_]]] :> (xx/.kk -> jj)  /; Not[NumericQ[ii]]&&UnitaryQ[tt]&&FreeQ[xx,ii]}]&)/@tempexpr;
+   tempexpr =(ReplaceRepeatedL0[#,  {xx_*tt_?(OrthogonalQ)[ii_, Index[name_, jj_]]tt_[kk_, Index[name_, jj_]] :> IndexDelta[ii,kk] /; Not[NumericQ[jj]]&&FreeQ[xx,jj], 
+                             xx_*tt_?(OrthogonalQ)[Index[name_, ii_], jj_]tt_[Index[name_, ii_], kk_] :> IndexDelta[jj,kk] /; Not[NumericQ[ii]]&&FreeQ[xx,ii]}]&)/@tempexpr;
 
-      tempexpr = tempexpr //. {aa_* tt_?(UnitaryQ)[ii_, Index[name_, jj_]]Conjugate[tt_[kk_, Index[name_, jj_]]] :> aa*NODO[tt][ii,Index[name, jj]]Conjugate[tt[kk,Index[name, jj]]] /; Not[FreeQ[aa,jj]],
-                     aa_* tt_?(UnitaryQ)[Index[name_, ii_], jj_]Conjugate[tt_[Index[name_, ii_], kk_]] :> aa*NODO[tt][Index[name, ii],jj]Conjugate[tt[Index[name, ii],kk]] /; Not[FreeQ[aa,ii]]};
-
-      tempexpr = tempexpr //. {xx_*tt_?(UnitaryQ)[Index[name_, ii_], Index[name_, jj_]]Conjugate[tt_[Index[name_, kk_], Index[name_, jj_]]] :> (xx/.kk -> ii)  /; Not[NumericQ[jj]], 
-                             xx_ *tt_?(UnitaryQ)[Index[name_, ii_], Index[name_, jj_]]Conjugate[tt_[Index[name_, ii_], Index[name_, kk_]]] :> ReplaceIndex[xx, kk, jj]  /; Not[NumericQ[ii]]};
-
-      tempexpr = tempexpr //. NODO -> Identity;
-
-
-
-      tempexpr = tempexpr //. {aa_* tt_?(OrthogonalQ)[ii_, Index[name_, jj_]]tt_[kk_, Index[name_, jj_]] :> aa*NODO[tt][ii,Index[name, jj]]tt[kk,Index[name, jj]] /; Not[FreeQ[aa,jj]],
-                     aa_* tt_?(OrthogonalQ)[Index[name_, ii_], jj_]tt_[Index[name_, ii_], kk_] :> aa*NODO[tt][Index[name, ii],jj]tt[Index[name, ii],kk] /; Not[FreeQ[aa,ii]]};
-      tempexpr = tempexpr //. {tt_?(OrthogonalQ)[ii_, Index[name_, jj_]]tt_[kk_, Index[name_, jj_]] :> IndexDelta[ii,kk] /; Not[NumericQ[jj]], 
-                             tt_?(OrthogonalQ)[Index[name_, ii_], jj_]tt_[Index[name_, ii_], kk_] :> IndexDelta[jj,kk] /; Not[NumericQ[ii]]};
-      tempexpr = tempexpr //. NODO -> Identity;
-
+If[SessionTime[]-utime>0.1,Print[InputForm[expr]];];
+If[Head[tempexpr]=!=Plus,tempexpr=tempexpr[[1]];];
       Return[tempexpr + nonmatrix];
 ];
+
+
 
 
 (* ::Section:: *)
@@ -134,12 +135,14 @@ ExpandIndices[lagrangian_, options___] := Block[{symfac = SymmetryFactor /. {opt
    tmplag=lagrangian;
    If[Not[MemberQ[opts,Rule[FlavorExpand,_]]], opts=Append[opts,FlavorExpand->True]];
 
-   If[M$MixingsDescription=!={}, out=ExpandIndices2[tmplag];out=out//.Dot->FR$Dot//.FR$Dot->Dot;Return[Expand/@out]];
+
+   If[M$MixingsDescription=!={}, out=ExpandIndices2[tmplag];out=out//.Dot->FR$Dot//.FR$Dot->Dot;Return[FieldExpand/@out]];
 
 
    out=PrepareLag[lagrangian, Sequence @@ opts, StandAlone->sa ];
+
    out=out//.Dot->FR$Dot//.FR$Dot->Dot;
-   Return[Expand/@out];
+   Return[FieldExpand/@out];
 ];
 
 
@@ -158,10 +161,9 @@ PrepareLagIndexExpansion[lagrangian_, flavexp_, flavexplist_, options___] := Blo
 
     templag = lagrangian,
     tempstandalone = StandAlone /. {options} /. Options[PrepareLagIndexExpansion],
-    symfac = SymmetryFactor /. {options} /. SymmetryFactor -> True
+    symfac = SymmetryFactor /. {options} /. SymmetryFactor -> True,
+    nodef = NoDefinitions/.{options}
 },
-
-
 
    (*                           *)
 (* Begin vertex computation  *)
@@ -176,49 +178,47 @@ PrepareLagIndexExpansion[lagrangian_, flavexp_, flavexplist_, options___] := Blo
         templag = ApplyDefinitions[templag];
         templag = Expand[templag];
 *)
-     If[Not[FreeQ[templag, _?RFermionFieldQ]], templag = Expand/@templag];      
-     templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]];
-     templag = If[Head[templag]===Plus,Expand/@templag,Expand[templag]];
 
+     If[Not[FreeQ[templag, _?RFermionFieldQ]], templag = FieldExpand/@templag];      
+     If[!nodef,templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]]];
+     templag = If[Head[templag]===Plus,FieldExpand/@templag,FieldExpand[templag]];
 
      If[templag === 0,
         Return[templag]
        ];
 
-(* Unitarity Constraints *)
-     If[Not[tempstandalone],
-        templag = UnitarityConstraints[templag];
-        ];
+(* Unitarity Constraints ,if remove by celine*)
+    (* If[Not[tempstandalone],*)
+        If[Head[templag]===Plus,templag = UnitarityConstraints/@templag;,templag = UnitarityConstraints[templag];];
+       (* ];*)
 
 (* End Unitarity constraints *)
 
       templag = TreatAllowSummation[templag];
+
       templag = templag //. f_?FieldQ[ind__?(FreeQ[{##},Index]&)] :> PutIndexName[f[ind]] //. done -> Identity;
-
       templag = PrePutIndices[templag];
-
 (* Modifications by A. Alloul 12/11/2012:
    1) Modified the  line below
    2) Modifications bring a considerable speed gain: Applying  ApplyDefinitions on the whole lagrangian is much slower
       than applying it on every term.
 *)
 (*      templag = ApplyDefinitions[templag];*)
-      templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]];
-      templag = PutIndices[templag, flavexp, flavexplist];
+      If[!nodef,templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]]];
+
+      templag = PutIndices[templag, flavexp, flavexplist,nodef];
+
+
      If[templag === 0,
         Return[templag]
        ];
-
       If[Not[tempstandalone],
          templag = UnitarityConstraints[templag];
          ];
 
-
-
       templag = templag //.f_?(NoTensQ[#] === True &)[Index[name_, ind_]] :> NoTensPutInd[f, {ind}];
       templag = templag /. {dd_?(SymTensQ[#] === True &)[ind__] :> SortSymTens[dd][ind], dd_?(AntiSymTensQ[#] === True &)[ind__] :> SortAntiSymTens[dd][ind],
                             ff_?(StrucConstQ[#] === True &) :> SortStrucConst[ff]};
-
 
 
       templag = templag //. Dot -> FR$Dot //. FR$Dot -> Dot;
@@ -238,7 +238,8 @@ PrepareLagIndexExpansion[lagrangian_, flavexp_, flavexplist_, options___] := Blo
       than applying it on every term.
 *)
 (*      templag =ApplyDefinitions[templag];*)
-      templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]];
+      If[!nodef,templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]]];
+
 
       templag = templag //.f_?(NoTensQ[#] === True &)[Index[name_, ind_]] :> NoTensPutInd[f, {ind}];
       templag = templag //. $HCExtractVertex -> HC;
@@ -253,7 +254,7 @@ PrepareLagIndexExpansion[lagrangian_, flavexp_, flavexplist_, options___] := Blo
       than applying it on every term.
 *)
 (*      templag = Expand[templag] //. {f_?FieldQ[] -> f};*)
-      templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]] //. {f_?FieldQ[] -> f};
+      If[!nodef,templag = If[Head[templag]===Plus,ApplyDefinitions/@templag,ApplyDefinitions[templag]] //. {f_?FieldQ[] -> f}];
 
       If[tempstandalone,
          templag = templag //. NTIndex -> Index
@@ -271,7 +272,7 @@ PrepareLagIndexExpansion[lagrangian_, flavexp_, flavexplist_, options___] := Blo
 Options[PrepareLag]= {FlavorExpand -> False, Name -> MR$Null, ConservedQuantumNumbers :> MR$QuantumNumbers, FermionFlow -> False, 
                       IndexExpand -> False, MaxParticles -> Automatic, MinParticles -> Automatic, SelectParticles -> Automatic,
                       MaxCanonicalDimension -> Automatic, MinCanonicalDimension -> Automatic, 
-                      Exclude4Scalars -> False, StandAlone -> False, Free -> Automatic, Contains -> Automatic, SymmetryFactor -> True};    
+                      Exclude4Scalars -> False, StandAlone -> False, Free -> Automatic, Contains -> Automatic, SymmetryFactor -> True,NoDefinitions->False};    
 
 PrepareLag[lagrangian_, options___] := Block[{ 
         templag = lagrangian, 
@@ -287,6 +288,7 @@ PrepareLag[lagrangian_, options___] := Block[{
         excl4scal = Exclude4Scalars /. {options} /. Options[PrepareLag],
         tempfree = Free /. {options} /. Options[PrepareLag],
         tempcontains = Contains /. {options} /. Options[PrepareLag],
+        nodef=NoDefinitions/.{options}/.Options[PrepareLag],
         selectionoptions
        }, 
 
@@ -303,8 +305,9 @@ PrepareLag[lagrangian_, options___] := Block[{
          $FlavExpList = KillDoubles[Join[indexplist, $FlavExpList]]];
 
       templag = If[Not[FreeQ[templag, PauliSigma]],
-                   PerformPauliAlgebra[Expand[templag]], 
+                   PerformPauliAlgebra[If[FR$FExpand,Expand[templag],Expand[templag,PauliSigma]]], (*PauliSigma added by Celine*)
                    templag];
+
 (* Changes brought by Adam Alloul 12/11/20112: 
    1) The original version is below commented -> 2 lines
    2) The modification is justified by the fact that applying Expand to the whole templag is much slower than applying it
@@ -314,12 +317,10 @@ PrepareLag[lagrangian_, options___] := Block[{
       templag =Expand[templag];
       templag = Expand[templag  //. Dot -> FR$Dot //. FR$Dot -> Dot];
 *)
-      templag =If[Head[templag]===Plus,Expand/@templag,Expand[templag]];
+      templag =If[Head[templag]===Plus,FieldExpand/@templag,FieldExpand[templag]];
       templag = templag  //. Dot -> FR$Dot //. FR$Dot -> Dot;
-      templag = If[Head[templag]===Plus,Expand/@templag,Expand[templag]];
-
-      templag = PrepareLagIndexExpansion[templag, $FlavExp, $FlavExpList, StandAlone -> tempstandalone, SymmetryFactor -> symfac];
-
+      templag = If[Head[templag]===Plus,FieldExpand/@templag,FieldExpand[templag]];
+      templag = PrepareLagIndexExpansion[templag, $FlavExp, $FlavExpList, StandAlone -> tempstandalone, SymmetryFactor -> symfac,NoDefinitions->nodef];
 
      (* Applying the Lagrangian selection rules *)
 
@@ -349,7 +350,7 @@ Options[LagrangianTermSelectionRules] := Options[PrepareLag];
 
 
 LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
-      templag = Expand[lag],
+      templag = FieldExpand[lag],
       tempfree = OptionValue[Free],
       tempcontains = OptionValue[Contains],
       maxnum = OptionValue[MaxParticles],
@@ -392,7 +393,7 @@ LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
       If[excl4scal === True,
          If[FR$Message[[1]],Print["Excluding quartic scalar couplings."];FR$Message[[1]]=False];
          templag = ApplyDefinitions[templag];
-         If[Head[Expand[templag]] === Plus, 
+         If[Head[FieldExpand[templag]] === Plus, 
             templag = Select[templag, ((GetFieldContent[#] /. _?ScalarFieldQ :> S) =!= {S,S,S,S})&],
             (*else*)
             If[(GetFieldContent[templag]/._?ScalarFieldQ -> S) === {S,S,S,S}, 
@@ -443,7 +444,7 @@ LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
         If[maxnum =!= Automatic, 
            If[FR$Message[[2]],Print["Neglecting all terms with more than ", ToString[maxnum], " particles."];FR$Message[[2]]=False];
            If[Head[templag] === Plus,
-              templag = Select[Expand[templag], (Length[GetFieldContent[#]] <= maxnum)&],
+              templag = Select[FieldExpand[templag], (Length[GetFieldContent[#]] <= maxnum)&],
               If[Length[GetFieldContent[templag]] > maxnum, 
                  templag = 0
                 ];
@@ -457,8 +458,8 @@ LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
       (* MinParticles *) 
       If[minnum =!= Automatic, 
           If[FR$Message[[3]],Print["Neglecting all terms with less than ", ToString[minnum], " particles."];FR$Message[[3]]=False];
-          If[Head[Expand[templag]] === Plus, 
-             templag = Select[Expand[templag], (Length[GetFieldContent[#]] >= minnum)&],
+          If[Head[FieldExpand[templag]] === Plus, 
+             templag = Select[FieldExpand[templag], (Length[GetFieldContent[#]] >= minnum)&],
              If[Length[GetFieldContent[templag]] < minnum, 
                 templag = 0;
                 ];
@@ -472,8 +473,8 @@ LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
       (* Selecting the maximal canonical dimension *)
       If[maxcanon =!= Automatic, 
          If[FR$Message[[4]],Print["Neglecting all terms with canonical dimension greater than ", ToString[maxcanon], "."];FR$Message[[4]]=False];
-         If[Head[Expand[templag]] === Plus, 
-            templag = Select[Expand[templag],(CanonicalDimension[#]<=maxcanon)&],
+         If[Head[FieldExpand[templag]] === Plus, 
+            templag = Select[FieldExpand[templag],(CanonicalDimension[#]<=maxcanon)&],
             If[Not[CanonicalDimension[templag] <= maxcanon], 
                templag = 0;
                ];
@@ -487,8 +488,8 @@ LagrangianTermSelectionRules[lag_, OptionsPattern[]] := Block[{
       (* Selecting the minimal canonical dimension *)
       If[mincanon =!= Automatic, 
          If[FR$Message[[5]],Print["Neglecting all terms with canonical dimension less than ", ToString[mincanon], "."];FR$Message[[5]]=False];
-         If[Head[Expand[templag]] === Plus, 
-            templag = Select[Expand[templag], (CanonicalDimension[#] >= mincanon)&],
+         If[Head[FieldExpand[templag]] === Plus, 
+            templag = Select[FieldExpand[templag], (CanonicalDimension[#] >= mincanon)&],
             If[Not[CanonicalDimension[templag] >= mincanon], 
                templag = 0;
               ];
@@ -533,9 +534,9 @@ PrepareParallelizationList[vlist_]:=Block[{newvlist,tot=Length[vlist]},
 
 Options[ParallelizeMe]={MyOptions->MR$Null,Counter->False};
 
-ParallelizeMe[func_,arg_,OptionsPattern[]]:=Block[{myoptions,myarg,tmpres},
+ParallelizeMe[func_,arg_,OptionsPattern[]]:=Block[{myoptions,myarg,tmpres,inter},
 (*First we want to create a list, if arg =!= list *)
-  myarg=Which[ Head[arg]===Plus,List@@(Expand/@arg),
+  myarg=Which[ Head[arg]===Plus,List@@(FieldExpand/@arg),
                Head[arg]===Times,{arg},
                Head[arg]===List,arg];
 
@@ -548,13 +549,13 @@ ParallelizeMe[func_,arg_,OptionsPattern[]]:=Block[{myoptions,myarg,tmpres},
     (*If the option has some options*)
     myoptions=OptionValue[MyOptions];
     (*Distribute the definitions*)
-    DistributeDefinitions[myarg,myoptions];
+    DistributeDefinitions[myoptions];SetSharedFunction[func];
     (*and parallelsubmit*)
-    Table[ParallelSubmit[{ii},mycounter++;$Output={};tmpres=func[myarg[[ii]],Sequence@@myoptions];$Output={OutputStream["stdout",1]}; tmpres],{ii,Length[myarg]}],
+    Table[inter=myarg[[ii]];ParallelSubmit[{ii,inter},mycounter++;$Output={};tmpres=func[inter,Sequence@@myoptions];$Output={OutputStream["stdout",1]}; tmpres],{ii,Length[myarg]}],
     (*Otherwise, distribute anyway*)
-    DistributeDefinitions[myarg];
+    SetSharedFunction[func];
     (*than parallelsubmit*)
-    Table[ParallelSubmit[{ii},mycounter++;$Output={};tmpres=func[myarg[[ii]]];$Output={OutputStream["stdout",1]}; tmpres],{ii,Length[myarg]}]
+    Table[inter=myarg[[ii]];ParallelSubmit[{ii,inter},mycounter++;$Output={};tmpres=func[inter];$Output={OutputStream["stdout",1]}; tmpres],{ii,Length[myarg]}]
   ];
 (*Do the calculations and return the result in the format it was before*)
   tmpres=If[Head[arg]===Plus||Head[arg]===Times,Plus@@WaitAll[tmpres],WaitAll[tmpres]];
@@ -582,12 +583,15 @@ Options[GetVertices] = {
   Exclude4Scalars -> False,
   Free -> Automatic, 
   Contains -> Automatic,
-  SelectParticles -> Automatic
+  SelectParticles -> Automatic,
+  ApplyMomCons->True,
+  NoDefinitions->False
 };
 
 
 Options[ProcessVertexList] = {
   Name -> MR$Null, 
+  ApplyMomCons->True,
   ConservedQuantumNumbers :> MR$QuantumNumbers
 };
 
@@ -599,31 +603,32 @@ Options[ProcessEmptyList] = { Name -> MR$Null};
 (*Core function*)
 
 
-GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag,FRoptions, FCList,FCListtemp, CollectedIntLagList, checklist,vertexlist},
+GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag ,FRoptions,amc=OptionValue[ApplyMomCons], FCList,FCListtemp, CollectedIntLagList, checklist,vertexlist},
   (* Initialization *)
   Clear[StoreIntLor, StoreInt]; (*Avoid name clashes when renaming internal indices from different runs. *)
-  FRoptions = {Name->OptionValue[Name], FlavorExpand->OptionValue[FlavorExpand], IndexExpand->OptionValue[IndexExpand], FermionFlow->OptionValue[FermionFlow],
+  FRoptions = {Name->OptionValue[Name], ApplyMomCons->OptionValue[ApplyMomCons], FlavorExpand->OptionValue[FlavorExpand], IndexExpand->OptionValue[IndexExpand], FermionFlow->OptionValue[FermionFlow],
     MinParticles -> OptionValue[MinParticles], MaxParticles->OptionValue[MaxParticles], ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers], Free->OptionValue[Free],
     Contains -> OptionValue[Contains], MaxCanonicalDimension -> OptionValue[MaxCanonicalDimension], MinCanonicalDimension -> OptionValue[MinCanonicalDimension],
-    SelectParticles->OptionValue[SelectParticles],  Exclude4Scalars->OptionValue[Exclude4Scalars], StandAlone->False};
+    SelectParticles->OptionValue[SelectParticles],  Exclude4Scalars->OptionValue[Exclude4Scalars], StandAlone->False,NoDefinitions->OptionValue[NoDefinitions]};
+
 
   (*To Parallellize or not to Parallelize? *)
   FR$DoPara=If[Global`FR$Parallelize && Length[lagrangian]>40 && $KernelCount>1,True,False];
 
   (* Expansion of the Lagrangian *)
-  Print["Expanding the Lagrangian..."]; 
+  Print["Expanding the Lagrangian..."];
+
   templag=If[FR$DoPara,
-    Print["Expanding indices over ", Global`FR$KernelNumber," cores"];
+    Print["Expanding the indices over ", Global`FR$KernelNumber," cores"];
     ParallelizeMe[ExpandIndices,lagrangian,MyOptions->FRoptions],
     Plus@@(ExpandIndices[#,Sequence@@FRoptions]&/@If[Head[lagrangian]===Plus,(List@@lagrangian),{lagrangian}])
   ];
-
 
   If[templag == 0, Print["No vertices found."]; ProcessEmptyList[lagrangian,Name->OptionValue[Name]]; Return[]];
 
   (* Collecting the vertex structures -> remove non-interaction terms and extract the field content list (FCList) *)
   Print["Collecting the different structures that enter the vertex."];
-  FCListtemp=Select[{GetFieldContent[#],#}&/@Listize[templag],Length[#[[1]]]>If[FR$Loop,1,2,2]&];
+  FCListtemp=Select[{GetFieldContent[#],#}&/@Listize[templag],Length[#[[1]]]>If[FR$Loop,0,2,2]&];
   CollectedIntLagList=FCListtemp[[All,2]];
   FCListtemp=FCListtemp[[All,1]];
   FCList=List@@@KillDoubles[FCListtemp];
@@ -635,14 +640,15 @@ GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag,FRoptions, FCList,F
     If[Complement[KillDoubles[Flatten[FCList]], checklist] =!= {}, FA$FlavExpCheck = False; 
       Print[Style["Warning: Class members in the Lagrangian! Not supported by FeynArts.",Orange,Bold]]; Return[]];
   ];
-
   CollectedIntLagList = (CollectedIntLagList[[#]]&/@#)&/@ ((Flatten[Position[FCListtemp,#]]&) /@ FCList);
   If[Length[FCList]===0, Print["No vertices found."]; ProcessEmptyList[lagrangian,Name->OptionValue[Name]]; Return[]];
   If[Length[CollectedIntLagList] != Length[FCList], Message[GetVert::FCList]];
 
   (* Computing the non-zero possible vertices *)
   FR$FeynmanRules=0;
+
   Print[Length[FCList], " possible non-zero vertices have been found -> starting the computation: ", Dynamic[FR$FeynmanRules], " / ", Length[FCList],"."];
+
   vertexlist = DeleteCases[If[FR$DoPara,
     SetSharedVariable[FR$FeynmanRules];ParallelizeMe[TreatVertex,CollectedIntLagList], 
     (TreatVertex[#]&/@CollectedIntLagList)],{{_,0}} ];
@@ -650,9 +656,10 @@ GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag,FRoptions, FCList,F
   vertexlist = DeleteCases[vertexlist, {_,0}];
   (* Output *)
   If[vertexlist=!={},
-    ProcessVertexList[vertexlist,lagrangian, Name->OptionValue[Name], ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers]],
+    ProcessVertexList[vertexlist,lagrangian, Name->OptionValue[Name], ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers],ApplyMomCons->amc],
     ProcessEmptyList[lagrangian, Name->OptionValue[Name]]
   ];
+
   Return[];
 ]; 
 
@@ -670,15 +677,25 @@ TreatVertex[vertx_]:=Block[{tempintterms,tempCreaList, CreaList,vtemp,$HCExtract
   tempCreaList = ReOrderCL[List @@ If[Head[tempintterms[[1]]]===Power,(MakeCreaList[tempintterms[[1]]]),(MakeCreaList @@ (tempintterms[[1]]))]];
   CreaList = Reverse[Table[crea[tempCreaList[[k]], {}, k], {k, 1, Length[tempCreaList]}]];
   CreaList = RenameSpin2[RenameSpin3[RenameSpin4[CreaList]]];
-  tempintterms = Expand/@tempintterms;
+  tempintterms = FieldExpand/@tempintterms;
   vtemp = Listize[Plus @@ (FromVertexTerm[#, CreaList, FR$FeynmanRules] &/@ tempintterms)];
 
+
   (* Finalizing the Feynman rule*)
-  vtemp = Expand[MakeSlashedMatrix[LorentzContract[PerformGaAlgebra[#]]]]&/@vtemp;
-  vtemp = Expand[# /. HC -> $HCExtractVertex /. $HCExtractVertex[t_?(TensQ)][ind___] -> $HCExtractVertex[t[ind]] //. MR$Definitions/. Dot -> FR$Dot /. FR$Dot -> Dot]&/@vtemp;
-  vtemp = Expand[# /. delta -> IndexDelta /. {NTIndex -> Index, NTI -> Index}]&/@vtemp;
-  vtemp = Expand[# /.$HCExtractVertex[t_?(TensQ)[xx___, i_, j_]] -> Conjugate[t[xx, j, i]]/. $HCExtractVertex -> HC]&/@vtemp;
-  vtemp = Factor[Plus@@vtemp];
+  If[FR$FExpand,
+    vtemp = Expand[MakeSlashedMatrix[LorentzContract[PerformGaAlgebra[#]]]]&/@vtemp; 
+    vtemp = Expand[# /. HC -> $HCExtractVertex /. $HCExtractVertex[t_?(TensQ)][ind___] -> $HCExtractVertex[t[ind]] //. MR$Definitions/. Dot -> FR$Dot /. FR$Dot -> Dot]&/@vtemp; 
+    vtemp = Expand[# /. delta -> IndexDelta /. {NTIndex -> Index, NTI -> Index}]&/@vtemp; 
+    vtemp = Expand[# /.$HCExtractVertex[t_?(TensQ)[xx___, i_, j_]] -> Conjugate[t[xx, j, i]]/. $HCExtractVertex -> HC]&/@vtemp; 
+    ,
+    vtemp = MakeSlashedMatrix[LorentzContract[PerformGaAlgebra[#]]]&/@vtemp;
+    vtemp = (# /. HC -> $HCExtractVertex /. $HCExtractVertex[t_?(TensQ)][ind___] -> $HCExtractVertex[t[ind]] //. MR$Definitions/. Dot -> FR$Dot /. FR$Dot -> Dot)&/@vtemp;
+    vtemp = (# /. delta -> IndexDelta /. {NTIndex -> Index, NTI -> Index})&/@vtemp;
+    vtemp = (# /.$HCExtractVertex[t_?(TensQ)[xx___, i_, j_]] -> Conjugate[t[xx, j, i]]/. $HCExtractVertex -> HC)&/@vtemp;
+  ]
+Off[Simplify::time];
+  vtemp = If[$VersionNumber>8,Factor[Plus@@vtemp],Simplify[Plus@@vtemp,TimeConstraint->0.01]];(* by celine*)
+On[Simplify::time];
 
   (* Returning the vertex *)
   Return[{MakeCreaListoutput[CreaList], vtemp}];
@@ -695,8 +712,9 @@ ProcessEmptyList[lagrangian_,OptionsPattern[]]:=Block[{},
 ];
 
 
-ProcessVertexList[vlist_,lagrangian_,OptionsPattern[]]:=Block[{vertexlist,tag,vertparticles,conserveqn,tempvertlistname},
+ProcessVertexList[vlist_,lagrangian_,OptionsPattern[]]:=Block[{vertexlist,tag,vertparticles,conserveqn,amc2=OptionValue[ApplyMomCons],tempvertlistname},
   (* Initialization *)
+
   tag = ToExpression["FR$VertNumb" <> ToString[FR$VertexNumber]];
 
   (* Particles in vertices are sorted, and fermions are relabelled (lambar -> lam, CC[psi] -> psibar + identical fermion issue (ticket #84 *)
@@ -708,8 +726,10 @@ ProcessVertexList[vlist_,lagrangian_,OptionsPattern[]]:=Block[{vertexlist,tag,ve
 
   (* Optimization of the index naming scheme *)
   vertexlist = DeleteCases[(List[#[[1]],OptimizeIndex[#[[2]]]] &/@vertexlist), {_, 0}];
+
   (* Saving the output *)
-  Vertices[lagrangian] = ApplyMomentumConservation[vertexlist];
+  Vertices[lagrangian] = If[amc2,ApplyMomentumConservation[vertexlist],vertexlist,ApplyMomentumConservation[vertexlist]];
+
   Vertices[tag] = vertexlist;
   
   (* Check for Quantum Number Conservation *)
