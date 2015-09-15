@@ -347,7 +347,7 @@ FS[bos_, mu_, nu_] := del[bos[nu],mu] - del[bos[mu] ,nu];
 
 Dual[FS][g_, mu_, nu_] := Module[{xx, yy}, 1/2 Eps[mu, nu, xx, yy] FS[g, xx, yy]];
 Dual[FS][g_, mu_, nu_, a_] := Module[{xx, yy}, 1/2 Eps[mu, nu, xx, yy] FS[g, xx, yy, a]];
-Dual[FS][w_, mu_, nu_, a_, f_, gg_] := Module[{xx, yy},  1/2 Eps[mu, nu, xx, yy] FS[w, xx, yy, a, f, gg]];
+Dual[FS][ww_, mu_, nu_, a_, f_, gg_] := Module[{xx, yy},  1/2 Eps[mu, nu, xx, yy] FS[ww, xx, yy, a, f, gg]];
 
 
 (* ::Section:: *)

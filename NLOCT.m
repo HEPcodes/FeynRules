@@ -16,7 +16,7 @@ Print["Authors: C. Degrande"];
 Off[Simplify::time];(*avoid the warning from aborded long simplification*)
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*Simplification rules*)
 
 
@@ -27,25 +27,25 @@ of the loop momentum times the appropriate lorentz structure and coefficient in 
 
 
 red4v[lm_]:={FV[lm,a_]FV[lm,b_]FV[lm,c_]FV[lm,d_]->1/(M$dim+2)/M$dim SP[lm,lm]^2(ME[a,b]ME[c,d]+ME[a,c]ME[b,d]+ME[a,d]ME[b,c]),
-             LeviCivita[lm,a_,c_,d_]FV[lm,b_]FV[lm,e_]FV[lm,f_]->1/M$dim/(M$dim+2)* SP[lm,lm]^2(LeviCivita[b,a,c,d]ME[e,f]+
-             LeviCivita[e,a,c,d]ME[b,f]+LeviCivita[f,a,c,d]ME[e,b])};
+             LCivita[lm,a_,c_,d_]FV[lm,b_]FV[lm,e_]FV[lm,f_]->1/M$dim/(M$dim+2)* SP[lm,lm]^2(LCivita[b,a,c,d]ME[e,f]+
+             LCivita[e,a,c,d]ME[b,f]+LCivita[f,a,c,d]ME[e,b])};
 red2v[lm_]:={FV[lm,a_]FV[lm,b_]->1/M$dim* SP[lm,lm]ME[a,b],SP[lm,a_]FV[lm,b_]:>1/M$dim* FV[a,b]SP[lm,lm]/;Not[a===lm],
              FCh[a__,NonCommutative[DiracSlash[lm]],b__]FV[lm,c_]:>1/M$dim* FCh[a,NonCommutative[DiracMatrix[c]],b]SP[lm,lm],
-             LeviCivita[lm,a_,c_,d_]FV[lm,b_]->1/M$dim* SP[lm,lm]LeviCivita[b,a,c,d]};
+             LCivita[lm,a_,c_,d_]FV[lm,b_]->1/M$dim* SP[lm,lm]LCivita[b,a,c,d]};
 
 
 (* ::Subsubtitle::Closed:: *)
 (*LeviCivita*)
 
 
-LeviCivita[d___,FourMomentum[Incoming,a_],FourMomentum[Internal,b_],c___]:=-LeviCivita[d,FourMomentum[Internal,b],FourMomentum[Incoming,a],c];
+LCivita[d___,FourMomentum[Incoming,a_],FourMomentum[Internal,b_],c___]:=-LCivita[d,FourMomentum[Internal,b],FourMomentum[Incoming,a],c];
 
-LeviCivita[d___,FourMomentum[Internal,a_],FourMomentum[Internal,b_],c___]:=-LeviCivita[d,FourMomentum[Internal,b],FourMomentum[Incoming,a],c]/;a>b;
-LeviCivita[d___,FourMomentum[Incoming,a_],FourMomentum[Incoming,b_],c___]:=-LeviCivita[d,FourMomentum[Incoming,b],FourMomentum[Incoming,a],c]/;a>b;
+LCivita[d___,FourMomentum[Internal,a_],FourMomentum[Internal,b_],c___]:=-LCivita[d,FourMomentum[Internal,b],FourMomentum[Incoming,a],c]/;a>b;
+LCivita[d___,FourMomentum[Incoming,a_],FourMomentum[Incoming,b_],c___]:=-LCivita[d,FourMomentum[Incoming,b],FourMomentum[Incoming,a],c]/;a>b;
 
-LeviCivita[c___,Index[Lorentz,d_],a_FourMomentum,b___]:=-LeviCivita[c,a,Index[Lorentz,d],b];
+LCivita[c___,Index[Lorentz,d_],a_FourMomentum,b___]:=-LCivita[c,a,Index[Lorentz,d],b];
 
-LeviCivita[c___,Index[Lorentz,d_],Index[Lorentz,a_],b___]:=-LeviCivita[c,Index[Lorentz,a],Index[Lorentz,d],b]/;d>a;
+LCivita[c___,Index[Lorentz,d_],Index[Lorentz,a_],b___]:=-LCivita[c,Index[Lorentz,a],Index[Lorentz,d],b]/;d>a;
 
 
 (* ::Subsubtitle::Closed:: *)
@@ -124,29 +124,29 @@ DTr[NonCommutative[ChiralityProjector[pm_]]]:=2;
 (*Only valid in 4 dimension *)
 
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracMatrix[b_]],NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(ME[a,b]ME[c,d]-ME[a,c]ME[b,d]+ME[a,d]ME[b,c]+ I pm*LeviCivita[a,b,c,d]);
+2*(ME[a,b]ME[c,d]-ME[a,c]ME[b,d]+ME[a,d]ME[b,c]+ I pm*LCivita[a,b,c,d]);
 DTr[NonCommutative[DiracSlash[a__]],NonCommutative[DiracMatrix[b_]],NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[a,b]ME[c,d]-FV[a,c]ME[b,d]+FV[a,d]ME[b,c]+ I pm*LeviCivita[a,b,c,d]);
+2*(FV[a,b]ME[c,d]-FV[a,c]ME[b,d]+FV[a,d]ME[b,c]+ I pm*LCivita[a,b,c,d]);
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b__]],NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[b,a]ME[c,d]-ME[a,c]FV[b,d]+ME[a,d]FV[b,c]+ I pm*LeviCivita[a,b,c,d]);
+2*(FV[b,a]ME[c,d]-ME[a,c]FV[b,d]+ME[a,d]FV[b,c]+ I pm*LCivita[a,b,c,d]);
 DTr[NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[DiracSlash[a__]],NonCommutative[DiracMatrix[b_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[a,b]ME[c,d]-FV[a,c]ME[b,d]+FV[a,d]ME[b,c]+ I pm*LeviCivita[a,b,c,d]);
+2*(FV[a,b]ME[c,d]-FV[a,c]ME[b,d]+FV[a,d]ME[b,c]+ I pm*LCivita[a,b,c,d]);
 DTr[NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b__]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[b,a]ME[c,d]-ME[a,c]FV[b,d]+ME[a,d]FV[b,c]+ I pm*LeviCivita[a,b,c,d]);
+2*(FV[b,a]ME[c,d]-ME[a,c]FV[b,d]+ME[a,d]FV[b,c]+ I pm*LCivita[a,b,c,d]);
 
 DTr[NonCommutative[DiracSlash[a__]],NonCommutative[DiracSlash[b_]],NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(SP[a,b]ME[c,d]-FV[a,c]FV[b,d]+FV[a,d]FV[b,c]+ pm*I LeviCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
+2*(SP[a,b]ME[c,d]-FV[a,c]FV[b,d]+FV[a,d]FV[b,c]+ pm*I LCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b__]],NonCommutative[DiracSlash[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[b,a]FV[c,d]-FV[c,a]FV[b,d]+ME[a,d]SP[b,c]+ pm*I LeviCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
+2*(FV[b,a]FV[c,d]-FV[c,a]FV[b,d]+ME[a,d]SP[b,c]+ pm*I LCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
 DTr[NonCommutative[DiracMatrix[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[DiracSlash[a__]],NonCommutative[DiracSlash[b_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(SP[a,b]ME[c,d]-FV[a,c]FV[b,d]+FV[a,d]FV[b,c]+ pm*I LeviCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
+2*(SP[a,b]ME[c,d]-FV[a,c]FV[b,d]+FV[a,d]FV[b,c]+ pm*I LCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
 DTr[NonCommutative[DiracSlash[c_]],NonCommutative[DiracMatrix[d_]],NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b__]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[b,a]FV[c,d]-FV[c,a]FV[b,d]+ME[a,d]SP[b,c]+ pm*I LeviCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
+2*(FV[b,a]FV[c,d]-FV[c,a]FV[b,d]+ME[a,d]SP[b,c]+ pm*I LCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
 
 DTr[NonCommutative[DiracSlash[a__]],NonCommutative[DiracMatrix[c_]],NonCommutative[DiracSlash[b_]],NonCommutative[DiracMatrix[d_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(-SP[a,b]ME[c,d]+FV[a,c]FV[b,d]+FV[a,d]FV[b,c]- pm*I LeviCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
+2*(-SP[a,b]ME[c,d]+FV[a,c]FV[b,d]+FV[a,d]FV[b,c]- pm*I LCivita[a,b,c,d])/;FreeQ[a,Internal]||FreeQ[b,Internal];
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b__]],NonCommutative[DiracMatrix[d_]],NonCommutative[DiracSlash[c_]],NonCommutative[ChiralityProjector[pm_]]]:=
-2*(FV[b,a]FV[c,d]+FV[c,a]FV[b,d]-ME[a,d]SP[b,c]- pm*I LeviCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
+2*(FV[b,a]FV[c,d]+FV[c,a]FV[b,d]-ME[a,d]SP[b,c]- pm*I LCivita[a,b,c,d])/;FreeQ[c,Internal]||FreeQ[b,Internal];
 
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracMatrix[b_]],NonCommutative[ChiralityProjector[pm_]]]:=2*(ME[b,a]);
 DTr[NonCommutative[DiracMatrix[a_]],NonCommutative[DiracSlash[b_]],NonCommutative[ChiralityProjector[pm_]]]:=2*(FV[b,a]);
@@ -263,17 +263,28 @@ MergeVertList[vl1_,vl2_]:=Block[{vsh,vlg,pos,verk},
 ];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Xintegrate*)
 
 
-XIntegrate[num_, del_,x_]:=Block[{m1,m2,p2,c0,c1,c2,nolog,mext,withlog},
+XIntegrate[num_, del_,x_]:=Block[{m1,m2,p2,c0,c1,c2,nolog,mext,withlog,tempo},
 
 m1 = (del/.{x->1})[[1]]/FR$MU;
 m2 = (del/.{x->0})[[1]]/FR$MU;
 p2 = Coefficient[del,x^2]/FR$MU^2;
-nolog = Integrate[Total[Cases[Expand[num],_?(FreeQ[#,Log]&)]],{x,0,1}];
-withlog = Total[Cases[Expand[num],_?(Not[FreeQ[#,Log]]&)]]/.Log[__]->1;
+tempo=Expand[num];
+If[Head[tempo]===Plus,
+  nolog = Integrate[Total[Cases[tempo,_?(FreeQ[#,Log]&)]],{x,0,1}];
+  withlog = Total[Cases[tempo,_?(Not[FreeQ[#,Log]]&)]]/.Log[__]->1;
+  ,
+  If[FreeQ[tempo,Log],
+    nolog=Integrate[tempo,{x,0,1}];
+    withlog=0;
+    ,
+    nolog=0;
+    withlog=tempo/.Log[__]->1;
+  ];
+];
 
 nolog+Sum[IntxnLog[m1,m2,p2,nx]Coefficient[withlog,x,nx],{nx,0,2}]
 ];
@@ -382,8 +393,8 @@ IntxnLog2[m1_/FR$MU,m2_/FR$MU,m2_^2/FR$MU^2,2]:=IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2
 IntxnLog2[m1_,m2_,p2_,0]:=-2 - ((m1^2 - m2^2)*Log[m2/m1])/p2 + Log[(m1*m2)] + 
  (m1*m2*(-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2) - (-m1^2 - m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] + p2)/(2*m1*m2))*
    (If[NLO$CMS||p2<(m1-m2)^2,1,0]Log[(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]+
-    If[NLO$CMS||p2<(m1-m2)^2||p2<(m1+m2)^2,0,1](Log[-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]+I Pi*FR$Re)))/p2+
-    If[Not[NLO$CMS]&&p2>(m1-m2)^2&&p2<(m1+m2)^2,1,0]Re[m1*m2*(-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2) - 
+    If[NLO$CMS||p2<=(m1+m2)^2,0,1](Log[-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]+I Pi*FR$Re)))/p2+
+    If[Not[NLO$CMS]&&p2>=(m1-m2)^2&&p2<(m1+m2)^2,1,0]Re[m1*m2*(-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2) - 
     (-m1^2 - m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] + p2)/(2*m1*m2))*Log[(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]]/p2/;FreeQ[m1,Mass]&&FreeQ[m2,Mass]&&FreeQ[p2,FourMomentum];
 
 IntxnLog2[m1_,m2_,p2_,1]:=1/2/p2(-m2^2(2Log[m2]-1)+m1^2(2Log[m1]-1)-IntxnLog2[m1,m2,p2,0](-m2^2+m1^2-p2))/;FreeQ[m1,Mass]&&FreeQ[m2,Mass]&&
@@ -397,7 +408,7 @@ UVLog[0]:=0;(*from the tadpole from x Log[x], x->0*)
 UVLog[x_?(Not[Head[#]===Mass]&)^2/FR$MU^2]:=Log[x^2/FR$MU^2];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Dp2IntxnLog*)
 
 
@@ -488,8 +499,10 @@ Dp2IntxnLog2[m1_,m2_,0,0]:=(-m1^4 + m2^4 + 4*m1^2*m2^2*Log[m1/m2])/(2*(m1^2 - m2
 Dp2IntxnLog2[m1_,m2_,0,1]:=-(m1^6 - 6*m1^4*m2^2 + 3*m1^2*m2^4 + 2*m2^6 - 12*m1^2*m2^4*Log[m2/m1])/(6*(m1^2 - m2^2)^4)/;Not[m1===m2]&&FreeQ[m1,Mass]&&FreeQ[m2,Mass];
 Dp2IntxnLog2[m1_,m2_,0,2]:=(-m1^8 + 6*m1^6*m2^2 - 18*m1^4*m2^4 + 10*m1^2*m2^6 + 3*m2^8 + 24*m1^2*m2^6*Log[m1/m2])/(12*(m1^2 - m2^2)^5)/;Not[m1===m2]&&FreeQ[m1,Mass]&&FreeQ[m2,Mass];
 
-Dp2IntxnLog2[m_,m_,p2_,0]:=(Sqrt[p2*(-4*m^2 + p2)] - 2*m^2*(If[NLO$CMS||p2<4m^2,1,0]*Log[(2*m^2 - p2 + Sqrt[p2*(-4*m^2 + p2)])/(2*m^2)]+ 
-  If[NLO$CMS||p2<4m^2,0,1](Log[-(2*m^2 - p2 + Sqrt[p2*(-4*m^2 + p2)])/(2*m^2)]+I Pi*FR$Re)))/(p2*Sqrt[p2*(-4*m^2 + p2)])/;FreeQ[p2,FourMomentum];
+Dp2IntxnLog2[m_,m_,p2_,0]:=(Sqrt[p2*(-4*m^2 + p2)] - 2*m^2*(
+     If[NLO$CMS||p2<4m^2,1,0]*Log[(2*m^2 - p2 + Sqrt[p2*(-4*m^2 + p2)])/(2*m^2)]+ 
+     If[NLO$CMS||p2<=4m^2,0,1](Log[-(2*m^2 - p2 + Sqrt[p2*(-4*m^2 + p2)])/(2*m^2)]+I Pi*FR$Re))+
+ If[p2==4m^2,1,0]*Sqrt[p2*(-4*m^2 + p2)] )/(p2*Sqrt[p2*(-4*m^2 + p2)])/;FreeQ[p2,FourMomentum];
 
 Dp2IntxnLog2[m1_/FR$MU,m2_/FR$MU,m1_^2/FR$MU^2,0]:= If[NLO$CMS||m2>2m1,1,0]*(FR$MU^2*((m1^2*Sqrt[-4*m1^2*m2^2 + m2^4] + (m1^2 - m2^2)*Sqrt[-4*m1^2*m2^2 + m2^4]*Log[m2/m1] + 
 (-3*m1^2*m2^2 + m2^4)*Log[(m2^2 + Sqrt[-4*m1^2*m2^2 + m2^4])/(2*m1*m2)])/(m1^4*Sqrt[-4*m1^2*m2^2 + m2^4])))+If[NLO$CMS||m2>2m1,0,1]*Re[(FR$MU^2*((m1^2*Sqrt[-4*m1^2*m2^2 + m2^4] + (m1^2 - m2^2)*Sqrt[-4*m1^2*m2^2 + m2^4]*Log[m2/m1] + 
@@ -499,7 +512,8 @@ Dp2IntxnLog2[m1_/FR$MU,m2_/FR$MU,m2_^2/FR$MU^2,0]:=Dp2IntxnLog2[m2/FR$MU,m1/FR$M
 Dp2IntxnLog2[m1_/FR$MU,m2_/FR$MU,m2_^2/FR$MU^2,1]:=Dp2IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2/FR$MU^2,0]-Dp2IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2/FR$MU^2,1];
 Dp2IntxnLog2[m1_/FR$MU,m2_/FR$MU,m2_^2/FR$MU^2,2]:=Dp2IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2/FR$MU^2,0]-2 Dp2IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2/FR$MU^2,1]+Dp2IntxnLog2[m2/FR$MU,m1/FR$MU,m2^2/FR$MU^2,2];
 
-Dp2IntxnLog2[m1_,m2_,p2_,0]:=((p2*Sqrt[m1^4 + (-m2^2 + p2)^2 - 2*m1^2*(m2^2 + p2)] + (m1^2 - m2^2)*Sqrt[m1^4 + (-m2^2 + p2)^2 - 2*m1^2*(m2^2 + p2)]*Log[m2/m1] + 
+Dp2IntxnLog2[m1_,m2_,p2_,0]:=((If[Not[NLO$CMS]&&p2>(m1-m2)^2&&p2<(m1+m2)^2,0,1]*p2*Sqrt[m1^4 + (-m2^2 + p2)^2 - 2*m1^2*(m2^2 + p2)] +
+    If[Not[NLO$CMS]&&p2>(m1-m2)^2&&p2<(m1+m2)^2,0,1]*(m1^2 - m2^2)*Sqrt[m1^4 + (-m2^2 + p2)^2 - 2*m1^2*(m2^2 + p2)]*Log[m2/m1] + 
   (m1^4 + m2^2*(m2^2 - p2) - m1^2*(2*m2^2 + p2))*
    (If[NLO$CMS||p2<(m1-m2)^2,1,0]Log[(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]+
     If[NLO$CMS||p2<(m1-m2)^2||p2<(m1+m2)^2,0,1](Log[-(m1^2 + m2^2 + Sqrt[-4*m1^2*m2^2 + (m1^2 + m2^2 - p2)^2] - p2)/(2*m1*m2)]+I Pi FR$Re)))/
@@ -515,7 +529,7 @@ Dp2IntxnLog2[m1_,m2_,p2_,2]:=-IntxnLog2[m1,m2,p2,2]/p2+(-1/6-m2^2 Dp2IntxnLog2[m
 FreeQ[m1,Mass]&&FreeQ[m2,Mass]&&FreeQ[p2,FourMomentum];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*SolveDelta*)
 
 
@@ -704,14 +718,14 @@ res=Flatten[res/.Rule->tRule/.{tRule[FR$deltaZ[{a_,b_},xx__],-Conjugate[FR$delta
 ];
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*R2*)
 
 
 (*Performs q integration*)
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*Tadpoles*)
 
 
@@ -724,11 +738,11 @@ R2Tadpoles[num_,del_,next_,UVcounter_] := Block[{tmp, coef},
    tmp = Expand[tmp /. {MatrixTrace -> DTr, MetricTensor -> ME, FourVector -> FV}];
    Simplify[-2 I \[Pi]^2*coef*del*Coefficient[Normal[Series[tmp /. {M$dim -> 4 + M$eps}, {M$eps, 0, 1}]], M$eps]]*FR$R2-2 I \[Pi]^2*coef*del*Simplify[(FR$UV(1/FR$Eps*
    Normal[Series[(tmp(1-FR$Eps/2)/.M$dim->4+FR$Eps),{FR$Eps,0,If[next<=2&&UVcounter,1,0]}]]+ If[next<=2&&UVcounter,1,0]*UVLog[del/FR$MU^2]/2*tmp/.{M$dim->4}))] /. {DTr -> MatrixTrace, ME -> MetricTensor, 
-   FV -> FourVector}
+   FV -> FourVector,LCivita->LeviCivita}
 ];
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*Bubbles*)
 
 
@@ -744,7 +758,7 @@ R2BubblesF[num_,del_,next_,UVcounter_]:=Block[{tmp,coef},
   tmp=Expand[tmp/.{MatrixTrace->DTr,MetricTensor->ME,FourVector->FV,FermionChain->FCh}];
   tmp=-2I \[Pi]^2*(Simplify[Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]]FR$R2 + 
                FR$UV*Simplify[1/FR$Eps*Normal[Series[(tmp/.M$dim->4+FR$Eps),{FR$Eps,0,If[next===2&&UVcounter,1,0]}]]+ If[next===2&&UVcounter,1,0]*(Normal[Series[Log[del/FR$MU^2]/2*tmp/.{M$dim->4+FR$Eps},{FR$Eps,0,1}]])]/.
-               {DTr->MatrixTrace,ME->MetricTensor,FV->FourVector,FCh->FermionChain});
+               {DTr->MatrixTrace,ME->MetricTensor,FV->FourVector,FCh->FermionChain,LCivita->LeviCivita});
   coef*tmp
 ];
 
@@ -756,12 +770,12 @@ R2BubblesQ2[num_,lm_,del_,next_,UVcounter_]:=Block[{tmp,coef},
   tmp=Simplify[-4I \[Pi]^2*Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-I \[Pi]^2tmp/.{M$dim->4}]*del*FR$R2 - 
                 I \[Pi]^2*del FR$UV*Simplify[(1/FR$Eps*Normal[Series[((4-FR$Eps)tmp/.M$dim->4+FR$Eps),{FR$Eps,0,If[next===2&&UVcounter,1,0]}]]+ 
                   If[next===2&&UVcounter,1,0]*Normal[Series[(4-FR$Eps)Log[del/FR$MU^2]/2*tmp/.{M$dim->4+FR$Eps},{FR$Eps,0,1}]])]/.
-               {SP[lm,lm]->1}/.{DTr->MatrixTrace,ME->MetricTensor,FV->FourVector,FCh->FermionChain};
+               {SP[lm,lm]->1}/.{DTr->MatrixTrace,ME->MetricTensor,FV->FourVector,FCh->FermionChain,LCivita->LeviCivita};
   coef*tmp
 ];
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*Triangles*)
 
 
@@ -776,7 +790,7 @@ R2FTriangles[num_,lm_]:=Block[{tmp,coef},
   tmp=tmp/.{MatrixTrace->DTr};
   tmp=Expand[Expand[tmp]/.red2v[lm]];
   I \[Pi]^2*coef (Simplify[-2Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-1/2(tmp/.M$dim->4)]FR$R2- 
-               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector}
+               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector,LCivita->LeviCivita}
 ];
 
 R2FBTriangles[num_,lm_]:=Block[{tmp,coef},
@@ -787,7 +801,7 @@ R2FBTriangles[num_,lm_]:=Block[{tmp,coef},
   tmp=Expand[tmp/.{FermionChain->FCh,MetricTensor->ME,FourVector->FV}];
   tmp=Expand[Expand[tmp]/.red2v[lm]];
   I \[Pi]^2*coef (Simplify[-2Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-1/2(tmp/.M$dim->4)]FR$R2- 
-               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector,FCh->FermionChain}
+               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector,FCh->FermionChain,LCivita->LeviCivita}
 ];
 
 R2BTriangles[num_,lm_]:=Block[{coef, tmp},
@@ -799,11 +813,11 @@ R2BTriangles[num_,lm_]:=Block[{coef, tmp},
   tmp=Expand[tmp]/.red2v[lm];
   tmp=Expand[tmp];
   I \[Pi]^2*coef (Simplify[-2Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-1/2(tmp/.M$dim->4)]FR$R2- 
-               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector}
+               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,DTr->MatrixTrace,FV->FourVector,LCivita->LeviCivita}
 ];
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*Boxes*)
 
 
@@ -817,7 +831,7 @@ R2FBoxes[num_,lm_]:=Block[{tmp,coef},
   tmp=tmp/.{MatrixTrace->DTr};
   tmp=Simplify[Expand[Expand[tmp]/.red4v[lm]/.red2v[lm]]];
   I \[Pi]^2*coef (Simplify[-2Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-5/6(tmp/.M$dim->4)]FR$R2- 
-               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,FV->FourVector}
+               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,FV->FourVector,LCivita->LeviCivita}
 ];
 
 R2BBoxes[num_,lm_]:=Block[{coef, tmp},
@@ -828,11 +842,11 @@ R2BBoxes[num_,lm_]:=Block[{coef, tmp},
   tmp=Expand[tmp]/.{MetricTensor->ME}/.{FourVector->FV}/.red4v[lm]/.red2v[lm];
   tmp=Expand[tmp];
   I \[Pi]^2*coef (Simplify[-2Coefficient[Normal[Series[tmp/.{M$dim->4+M$eps},{M$eps,0,1}]],M$eps]-5/6(tmp/.M$dim->4)]FR$R2- 
-               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,FV->FourVector}
+               2 FR$UV*Simplify[(tmp/.{M$dim->4})]/FR$Eps)/.SP[lm,lm]->1/.{ME->MetricTensor,FV->FourVector,LCivita->LeviCivita}
 ];
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*GetR2*)
 
 
@@ -844,7 +858,7 @@ GetR2[amp_,next_,UVfin_]:=Block[{temp,loopmom,nden,den,num,kk,extmom,intmom,lmco
   den=Cases[amp[[3]],_PropagatorDenominator,\[Infinity]];
   den=Cases[den,_?(Not[FreeQ[#,loopmom]]&),1];
   nden=Length[den];
-  num=amp[[3]]/.{FeynAmpDenominator[__]->1};
+  num=amp[[3]]/.{FeynAmpDenominator[__]->1}/.LeviCivita->LCivita;
   Switch[nden,
     1,
     num=num/.{NonCommutative[DiracSlash[loopmom] + Mass[yy_,Loop]]->Mass[yy,Loop],NonCommutative[DiracSlash[-loopmom] + Mass[yy_,Loop]]->Mass[yy,Loop]}/.
@@ -953,14 +967,14 @@ GetR2[amp_,next_,UVfin_]:=Block[{temp,loopmom,nden,den,num,kk,extmom,intmom,lmco
 ];(*end of getR2*)
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*Get Several R2*)
 
 
 (* from generic to class in FR format*)
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*R2atClass*)
 
 
@@ -1698,5 +1712,5 @@ SUT[Index[Gluon,c],Index[Colour,i],Index[Colour,j]]/SumOver[Index[Gluon,a],8]/Su
 
 
 Protect[ME,SUF,SUT,SUNTr,GetR2,R2Tadpoles,R2BubblesF,R2BubblesQ2,R2FTriangles,R2BTriangles,R2FBTriangles,R2BBoxes,R2FBoxes,ILQ,WriteCT,ModelR2,PartOrder,R2atClass,
-SP,FCh,DTr,FV,LeviCivita,M$dim,red2v,red4v,FR$UV,FR$R2,FR$MU,FR$Eps,MergeVertList,UVwfatClass,AddWf,FR$UV,FR$R2,ReInt,IntxnLog,IntxnLog2,Dp2IntxnLog,Dp2IntxnLog2,
+SP,FCh,DTr,FV,LCivita,M$dim,red2v,red4v,FR$UV,FR$R2,FR$MU,FR$Eps,MergeVertList,UVwfatClass,AddWf,FR$UV,FR$R2,ReInt,IntxnLog,IntxnLog2,Dp2IntxnLog,Dp2IntxnLog2,
 IndexDel];

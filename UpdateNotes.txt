@@ -1,5 +1,22 @@
 Update notes for FeynRules 2.3.x
 
+2484 2.3.9 08-09-15 degrande:   fix for LeviCivita with FA39 
+
+2482 2.3.8 08-09-15 clduhr:     Bug fix in current: variable w in ToolBox.m 
+                                 gave shadow warning 
+
+2464 2.3.7 27-07-15 fuks:       Fixing a small bug with the Sig matrices 
+
+2462 2.3.6 27-07-15 fuks:       Bug in ExpandIndices: TensDot structure 
+                                 with HC matrices inside; the bug was also 
+                                 present in the UFO interface 
+
+2459 2.3.5 24-07-15 degrande:   renormalization if parametername are used 
+
+2458 2.3.4 22-07-15 degrande:   bug fixes for nlo for x integrals 
+
+2451 2.3.3 18-06-15 degrande:   bug fix flavor expansion in FA interface 
+
 2445 2.3.2 31-05-15 claudeduhr: fixed UFO in FR current 
 
 2438 2.3.1 10-05-15 fuks:       Small bug for the spin 3/2 fields found in 

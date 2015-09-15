@@ -12,8 +12,8 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "2.3.2";
-FR$VersionDate = "31 May 2015";
+FR$VersionNumber = "2.3.9";
+FR$VersionDate = "08 September 2015";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];

@@ -15,9 +15,12 @@
 Format[Ga[mu_], TraditionalForm] := Power[\[Gamma], mu];
 Format[Ga[mu_, r_, s_], TraditionalForm] := Power[Subscript[\[Gamma], r, s], mu];
 Format[GaAlgebra[mu_, r_, s_], TraditionalForm] := Power[Subscript[\[Gamma], r, s], mu];
+
+Format[Sig[mu_,nu_], TraditionalForm] := Superscript[Superscript[\[Sigma], mu], nu];
+Format[Sig[mu_,nu_, r_, s_], TraditionalForm] :=  Subscript[Superscript[Superscript[\[Sigma], mu], nu],r,s];
+
 Format[ProjP, TraditionalForm] = Subscript[P, "+"];
 Format[ProjM, TraditionalForm] = Subscript[P, "-"];
-
 Format[ProjP[ind__], TraditionalForm] := Subscript[(Subscript[P,"+"]), ind];
 Format[ProjM[ind__], TraditionalForm] := Subscript[(Subscript[P,"-"]), ind];
 
@@ -56,7 +59,7 @@ Protect[Conjugate];
 Format[SlashedP[k_,i_,j_], TraditionalForm] := Subscript[Dot[\[Gamma], Subscript["p",k]], i,j];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Index formatting*)
 
 
@@ -142,6 +145,9 @@ Format[Index[_, Except[Ext[___], k1_], k2_], StandardForm] := merge[k1, k2];
 
 Format[Ga[mu_], StandardForm] := Power[\[Gamma], mu];
 Format[Ga[mu_, r_, s_], StandardForm] := Power[Subscript[\[Gamma], r, s],mu];
+
+Format[Sig[mu_,nu_], StandardForm] := Superscript[Superscript[\[Sigma], mu], nu];
+Format[Sig[mu_,nu_, r_, s_], StandardForm] :=  Subscript[Superscript[Superscript[\[Sigma], mu], nu],r,s];
 
 Format[ProjP, StandardForm] := Subscript[P,"+"];
 Format[ProjM, StandardForm] := Subscript[P,"-"];

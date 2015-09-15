@@ -188,7 +188,7 @@ PYSplitVertices[vertices_] := Block[{
 (*   { { C1, L1, G1}   ,  {  C1, L1, G2}  , .... }   ->    {{ C1, L1, G1+G2}, .....}*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*PYOpenTensorProducts*)
 
 
@@ -196,7 +196,8 @@ PYSplitVertices[vertices_] := Block[{
 (*PYOpenTensDot[x,y][i,j] opens up TensDot[x,y][i,j] into TensDot[x][i,   intnnn] TensDot[y][intnnn, j].*)
 
 
-PYMergeIndices[yy_, i1_,i2_] := If[MatchQ[yy, _[___]], Append[Append[yy, i1], i2], yy[i1,i2]];
+PYMergeIndices[HC[yy_], i1_,i2_] := Conjugate[If[MatchQ[yy, _[___]], Append[Append[yy, i2], i1], yy[i2,i1]]];
+PYMergeIndices[yy_?(Head[#]=!=HC&), i1_,i2_] := If[MatchQ[yy, _[___]], Append[Append[yy, i1], i2], yy[i1,i2]];
 
 
 PYTensDotOpen[xx__, yy_][Index[name_ ,s1__], Index[name_, s2__]] := Block[{newindex = Unique["int$$"]},

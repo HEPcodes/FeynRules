@@ -1178,8 +1178,8 @@ FR$FeynArtsInterface = True;
 
          If[LoopOpt, FR$Loop=True];
          Do[Print["Calculating Feynman rules for ", defname[[kmg]]];
-         FeynmanRules[mylags[[kmg]], Sequence @@ FilterRules[tempoptions,Options[FeynmanRules]], Name -> defname[[kmg]], ScreenOutput -> False, FlavorExpand -> True],         
-         {kmg, Length[defname]}]];
+         FeynmanRules[mylags[[kmg]], Sequence @@ DeleteCases[FilterRules[tempoptions,Options[FeynmanRules]],FlavorExpand->_], Name -> defname[[kmg]], ScreenOutput -> False, FlavorExpand -> True],         
+{         kmg, Length[defname]}]];
 
          If[LoopOpt, FR$Loop=False];
 

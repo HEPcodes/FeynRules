@@ -81,7 +81,7 @@ NumericalValue[Abs[x_]] := Abs[NumericalValue[x]];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Dot*)
 
 
@@ -141,7 +141,7 @@ Protect[Conjugate];
 Mass[ff_?AntiFieldQ]:=Mass[anti[ff]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IndexDelta*)
 
 
@@ -807,6 +807,7 @@ GammaMatrixQ[ProjM[_]] := True;
 GammaMatrixQ[ProjP] = True;
 GammaMatrixQ[ProjM] = True;
 GammaMatrixQ[Sig[__]] := True;
+GammaMatrixQ[Sig]=True;
 
 GammaMatrixQ[TensDot[xx_, yy__]] := GammaMatrixQ /@ And[xx, yy];
 
@@ -1106,7 +1107,7 @@ TensQ[Eps[___]] := True;
 TensQ[Eps] = True;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Metric tensor and four-vectors*)
 
 
@@ -1197,7 +1198,7 @@ SortAntiSymTens[dd_[ind__]] := Signature[{ind}] dd @@ Sort[{ind}];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Hermitian conjugate*)
 
 

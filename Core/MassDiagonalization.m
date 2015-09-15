@@ -1042,11 +1042,11 @@ PreRotate[Field_]:=Block[{mbases,tmpfld={}, tmpdef={},bbas,bbas2},
   (* Checking basis by basis *)
   If[Length[Dimensions[#[[1]]]]===1,
     (* only one mass basis *) 
-    bbas=And@@((Derf[#,Field]===0)&/@(PrepareBasis[#[[1]]]));
+    bbas=And@@((Derf[#,Field]===0 && Derf[#,anti[Field]]===0)&/@(PrepareBasis[#[[1]]]));
     If[Not[bbas], tmpfld=Append[tmpfld,PrepareBasis[#[[2]]]]],
     (* two mass bases *)
-    bbas=And@@((Derf[#,Field]===0)&/@(PrepareBasis[#[[1,1]]]));
-    bbas2=And@@((Derf[#,Field]===0)&/@(PrepareBasis[#[[1,2]]]));
+    bbas=And@@((Derf[#,Field]===0 && Derf[#,anti[Field]]===0)&/@(PrepareBasis[#[[1,1]]]));
+    bbas2=And@@((Derf[#,Field]===0 && Derf[#,anti[Field]]===0)&/@(PrepareBasis[#[[1,2]]]));
     If[Not[bbas] || Not[bbas2], tmpfld=Append[tmpfld,PrepareBasis[#[[2]]]]]
   ]&/@mbases;
 

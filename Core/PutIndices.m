@@ -22,7 +22,7 @@ PPInd[f_?(FieldQ), ind___] := Block[{tempind = List[ind], temp1 = {}, indlist = 
     output];
 
 PrePutIndices[expr_] := Block[{BlockIt},
-   expr //. {f_?(FieldQ)[ind___] :> PPInd[f, ind]}//.TensDot[u__,v_][rr_, ss_] -> BlockIt[TensDot][u, v[rr,ss]] //. $TensIndRules//.{BlockIt[TensDot][u__, v_[ind__, rr_, ss_]] -> TensDot[u, v[ind]][rr, ss], BlockIt[TensDot][u__, v_[rr_, ss_]] -> TensDot[u, v][rr, ss]} //. {del[fff_, Except[Index[___], mu_]] -> del[fff, Index[Lorentz, mu]]} /. Done -> Identity]; 
+   expr //. {f_?(FieldQ)[ind___] :> PPInd[f, ind]}//.TensDot[u__,v_?(Head[#]=!=HCPI && Head[#]=!=HC&)][rr_, ss_] -> BlockIt[TensDot][u, v[rr,ss]]//.{TensDot[u__,HCPI[v_]][rr_, ss_] -> BlockIt[TensDot][u, HCPI[v],v[rr,ss]],TensDot[u__,HCPI[v_]][rr_, ss_] -> BlockIt[TensDot][u, HC[v],v[rr,ss]]} //. $TensIndRules//.{BlockIt[TensDot][u__, HCPI[v_],v_[rr_, ss_]] -> TensDot[u, HCPI[v]][rr, ss],BlockIt[TensDot][u__, HC[v_],v_[rr_, ss_]] -> TensDot[u, HC[v]][rr, ss],BlockIt[TensDot][u__, v_[ind__, rr_, ss_]] -> TensDot[u, v[ind]][rr, ss], BlockIt[TensDot][u__, v_[rr_, ss_]] -> TensDot[u, v][rr, ss]} //. {del[fff_, Except[Index[___], mu_]] -> del[fff, Index[Lorentz, mu]]} /. Done -> Identity]; 
 
 (*********************************************************************)
 NoTensPutInd[f_, ind_] := Block[{indl = $IndList[f], indi, output, mergeindname},

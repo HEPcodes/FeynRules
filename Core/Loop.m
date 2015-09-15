@@ -161,7 +161,7 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Tadpole renormalization*)
 
 
@@ -547,7 +547,8 @@ logfile=OpenWrite[];
 
 If[Length[FR$RmDblExt]===0,FR$RmDblExt={};];
 
-deltaLag=Expand[Lag];
+(*Replace ParameterName as they are not used in the renormalization*)
+deltaLag=Expand[Lag/.Reverse/@Cases[DeleteCases[Flatten[(ParameterName/.#[[2]]&)/@M$Parameters],ParameterName],_Rule]];
 If[no4S,
   Print["Putting 4 scalars term aside for the renormalization"];
   lag4S=Total[Cases[deltaLag,_?((Count[#//.{Dot->Times,Power[a_,b_Integer]:>Pow@@Table[a,{b}],del[a_,b_]:>Identity[a]},_?ScalarFieldQ,\[Infinity]])>3&)]];
