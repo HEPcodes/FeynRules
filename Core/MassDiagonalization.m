@@ -115,7 +115,7 @@ CheckBasis[mbasis_,gbasis_]:=Block[{lg,lm,maprules},
 ];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*When a symbol is given: checking the sattelite rules + declaration of the parameter if relevant*)
 
 
@@ -137,7 +137,7 @@ DeclareFullNewPrm[Thebname_,matname_,len_]:=Block[{tmpdecl,index={},desc,bname=T
       ToString[matname]<>ToString[i]<>"x"<>ToString[j]<>" (parameter to be computed by the MD routine)"]},{i,len},{j,len}
     ]
   ];
-  tmpdecl = tmpdecl/.{bname,aaA_}:>{bname,Flatten[aaA,1]};
+  tmpdecl = tmpdecl/.{bname,aaA_}:>{bname,Flatten[aaA,1]}; 
   EParamList = Append[EParamList,tmpdecl];
   tmpdecl = tmpdecl[[2,All,2]];
   tmpdecl = Insert[#,Ext,2]&/@tmpdecl;
@@ -691,7 +691,7 @@ InitializeMixings[] :=Block[{},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Core function: LoadMixing*)
 
 
@@ -891,7 +891,7 @@ SpecialExpandIndices[lag_]:=Block[{tmplag=Expand[lag]/.del[__]->0,vevrules},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExpandIndices2*)
 
 
@@ -966,7 +966,7 @@ ExpandIndices2[lag_]:=Block[{tmplag=Expand[lag]/.Dot->FR$Dot/.FR$Dot->Dot, mufmu
 *)
 
    tmplag=(ApplyDefinitions/@(tmplag/.Conjugate[a_][ind__]:>MyConj[a[ind]]))//.a_?(MemberQ[M$Parameters[[All,1]],#]&)[ind1___,Index[_,b_],ind2___]:>a[ind1,b,ind2];
-   tmplag=tmplag/.a_?(MemberQ[M$Parameters[[All,1]],#]&)[ind1_,ind2_]:>ToExpression[ToString[a]<>ToString[ind1]<>"x"<>ToString[ind2]]/.a_?(MemberQ[M$Parameters[[All,1]],#]&)[ind1_,ind2_,ind3_]:>ToExpression[ToString[a]<>ToString[ind1]<>"x"<>ToString[ind2]<>"x"<>ToString[ind3]];
+   tmplag=tmplag/.a_?(MemberQ[FR$MassMatricesToCalculate,#]&)[ind1_,ind2_]:>ToExpression[ToString[a]<>ToString[ind1]<>"x"<>ToString[ind2]]/.a_?(MemberQ[FR$MassMatricesToCalculate,#]&)[ind1_,ind2_,ind3_]:>ToExpression[ToString[a]<>ToString[ind1]<>"x"<>ToString[ind2]<>"x"<>ToString[ind3]];
    tmplag=tmplag/.MyConj->Conjugate;
   (*End of the add-on*)
   tmplag=Expand/@tmplag;
@@ -1001,7 +1001,7 @@ Derf[HC[a_],fi_]:=HC[Derf[a,fi]];
 Derf[fi_?(Head[#]===Symbol&),fi2_]:=Derf[fi[],fi2];
 Derf[fi_,fi2_?(Head[#]===Symbol&)]:=Derf[fi,fi2[]];
 
-Derf[fi1_?(FieldQ[#]===True&)[inds1___],fi2_?(FieldQ[#]===True&)[inds2___]]:=If[fi1=!=fi2,0,Inner[IndexDelta2,{inds1},{inds2},Times]];
+Derf[fi1_?(FieldQ[#]===True&)[inds1___],fi2_?(FieldQ[#]===True&)[inds2___]]:=If[fi1=!=fi2,0,Inner[IndexDelta2,{inds2},{inds1},Times]];
 
 
 Derf[0,_]=0;
@@ -1011,8 +1011,7 @@ Derf[0,_]=0;
 (*Core function*)
 
 
-ComputeMassMatrix2[lagr_,b1_,b2_]:=Block[{mat,nsize = Length[b1],bases, tmplag,muftime},
-  muftime = Timing[
+ComputeMassMatrix2[lagr_,b1_,b2_]:=Block[{mat,nsize = Length[b1],bases, tmplag},
   bases=DeleteDuplicates[Join[b1,b2]/.fld_?(FieldQ[#]===True&)[__]->fld];  
   tmplag = lagr/.{_?(FieldQ[#]===True && Not[MemberQ[bases,#]]&)[__]->0,_?(FieldQ[#]===True && $IndList[#]==={} && Not[MemberQ[bases,#]]&)->0};
   tmplag = tmplag/.aa_?(MemberQ[MR$ParameterList,#]&)[ids__]:>FrV[ReplaceAll[aa[ids],Index[_,ii_?(NumericQ)]:>ii]]/.FrV->Plus;
@@ -1020,8 +1019,10 @@ ComputeMassMatrix2[lagr_,b1_,b2_]:=Block[{mat,nsize = Length[b1],bases, tmplag,m
   tmplag = Expand[tmplag//.FR$UnitarySimplifications/.Pow->Power];
   mat = Table[Derf[Derf[tmplag,b1[[iii]]],b2[[jjj]]],{iii,nsize},{jjj,nsize}];
   mat = mat/.Index[type_,Index[type_,a_]]->Index[type,a]/.IndexDelta2->IndexDelta;
-  mat = Expand[mat]//.{ME[__]->1,IndexDelta[a_(!NumericQ[#]&),b_(!NumericQ[#]&)] IndexDelta[a_(!NumericQ[#]&),c_(!NumericQ[#]&)]:> IndexDelta[b,c]};
-  mat = mat/.IndexDelta[a_?(!NumericQ[#]&),a_(!NumericQ[#]&)]->1];
+  mat = Expand[mat]//.{ME[__]->1,
+     IndexDelta[b_?(!NumericQ[#]&),a_?(!NumericQ[#]&)] IndexDelta[a_?(!NumericQ[#]&),c_?(!NumericQ[#]&)]:> IndexDelta[b,c],
+     IndexDelta[a_?(!NumericQ[#]&),b_?(!NumericQ[#]&)] IndexDelta[a_?(!NumericQ[#]&),c_?(!NumericQ[#]&)]:> IndexDelta[b,c]};
+  mat = mat/.IndexDelta[a_?(!NumericQ[#]&),b_?(!NumericQ[#]&)]->1;
   mat=ApplyDefinitions/@(ApplyDefinitions/@mat);
   Return[mat];
 ];
@@ -1151,7 +1152,7 @@ TreeLevelMassMatrix[Mix[id_],lagr_,OptionsPattern[]]:=Block[{gbasis,gbasis2,tag=
 (*User's functions*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Computation of the tree-level mass matrices*)
 
 
@@ -1424,7 +1425,7 @@ MixMatrix[id_] := Block[{resu},
 ];  
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Summary function*)
 
 

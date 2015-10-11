@@ -8,7 +8,7 @@
 (*This file contains the routines that read the model file, and declare all the corresponding classes*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Some usefull functions*)
 
 
@@ -221,7 +221,7 @@ ModelInformation[] := Block[{tmp},
       
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*LoadModel (one argument)*)
 
 
@@ -772,7 +772,7 @@ DeclareQuantumNumbers[tempclassname_, tempclassmembers_,tempQNrules_] := Block[{
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Class declarations (spin 3/2 added)*)
 
 
@@ -1220,6 +1220,8 @@ If[Not[repo], Print["   - Loading particle classes."]];
             AppendTo[tempweylcomp, anti[tempweylcomp[[1]]]];
             If[Not[tempselfconjugate], Message[Weyl::Chirality]]];
          WeylComponents[tempclassname] = tempweylcomp;
+         (To4Components[#]=tempclassname)&/@tempweylcomp;
+         (To4Components[anti[#]]=tempclassname)&/@tempweylcomp;
          If[tempweylcomp =!= {}, AppendTo[FR$MakeWeylToDirac, tempclassname]]],
 
       {kk, Length[MR$ClassesList]}];

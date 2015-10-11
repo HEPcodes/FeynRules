@@ -5,10 +5,8 @@ void MassMatrixNF::printMassm(ofstream& out)
 {
     out << "Mass Matrix " << name << " REAL " << "    " << "# " << comment << endl;
     printRealMatrixList(massm, dim, dim, out);
-    out;
     out << "Mass Matrix " << name << " IMAG " << "    " << "# " << comment << endl;
     printImagMatrixList(massm, dim, dim, out);
-    out;
 }
 
 //prints the sqrt of the vector

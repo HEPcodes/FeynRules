@@ -38,13 +38,13 @@ SLHABlock::SLHABlock(string n, int s):Matrix<ParSLHA*>(s)
 //get the value of an element of the block
 double SLHABlock::getElemValue(vector<int> p)
 {
-    getElement(p)->getValue();
+    return getElement(p)->getValue();
 }
 
 //get the description of an element of the block
 string SLHABlock::getElemComment(vector<int> p)
 {
-    getElement(p)->getComment();
+    return getElement(p)->getComment();
 }
 
 /*****setters*****/

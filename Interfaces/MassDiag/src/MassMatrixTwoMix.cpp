@@ -81,14 +81,10 @@ void MassMatrixTwoMix::printMixm(ofstream& out)
 {
     out << "Block " << remixname << "    " << "# " << comment << endl;
     printRealMatrixList(mixm, dim, dim, out);
-    out;
     out << "Block " << immixname << "    " << "# " << comment << endl;
     printImagMatrixList(mixm, dim, dim, out);
-    out;
     out << "Block " << remixname2 << "    " << "# " << comment << endl;
     printRealMatrixList(mixm2, dim, dim, out);
-    out;
     out << "Block " << immixname2 << "    " << "# " << comment << endl;
     printImagMatrixList(mixm2, dim, dim, out);
-    out;
 }

@@ -301,7 +301,7 @@ CheckPythonParticles[partlist_] := Block[{plist = partlist},
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*PutUndefinedMassesToZERO*)
 
 
@@ -310,14 +310,20 @@ CheckPythonParticles[partlist_] := Block[{plist = partlist},
 (*The corresponding symbols are read out, and replace in the <particle list> by ZERO.*)
 
 
-PutUndefinedMassesToZERO[particles_] := Block[{
+PutUndefinedMassesToZERO[particles_] := Block[{MyAspergeMasses={},
 
    zeromasses = Join[MassList[[2]], WidthList[[2]]]
 
    },
 
+   (* Define the Asperge masses *)
+   If[M$MixingsDescription=!={},
+     MyAspergeMasses=DeleteCases[PDGToMass/@CalculatePDGFLR/@Flatten[(MassBasis/.#)&/@M$MixingsDescription[[All,2]]],PDGToMass[_]];
+    ];
+
+
    (* Read out the mass and width symbols which have a NoValue[1] *)
-   zeromasses = #[[2]]& /@ Cases[zeromasses, {__,NoValue[1]}];
+   zeromasses = #[[2]]& /@ Cases[zeromasses, {a1_,a2_?(Not[MemberQ[MyAspergeMasses,#]]&),NoValue[1]}];
  
    (* Make a replacement list out of it *)
    zeromasses = Rule[#,ZERO]& /@ zeromasses;

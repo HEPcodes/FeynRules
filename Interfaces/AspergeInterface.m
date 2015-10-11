@@ -98,7 +98,7 @@ CheckDefinitions[def_]:=Block[{masslist={},fieldmasses={}},
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DefinitionsToStrings*)
 
 
@@ -332,6 +332,21 @@ DefineParameters[OptionsPattern[]]:=Block[{def,blockdefined,blockrule,mixingslis
 (*List[ MatrixSymbol, BlockName, Size of the matrix, the analytical expression of the matrix ]*)
 
 
+CalculatePDGFLR[field_]:=Block[{resu},
+  resu=PartPDG[field];
+  If[Not[FreeQ[resu,PartPDG]], resu=PartPDG[ClassMemberList[field/.fi_[__]:>fi][[field/.fi_[inds1___,a_?NumericQ,inds2___] :>a]]]];
+  If[Not[FreeQ[resu,PartPDG]], Print["Error with the PDG identification ("<>ToString[InputForm[field]]<>"). Please contact the FeynRules authors."]];
+  Return[resu];
+];
+
+
+CalculatePDGWeyl[field_]:=Block[{Ferm4,inds},
+  Ferm4=To4Components[field/.fi_[__]:>fi];
+  inds=List@@field;
+  Return[CalculatePDGFLR[Ferm4[Sequence@@inds]]];
+];
+
+
 DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement,matrixsymbol,blockname,massmatrix,pdgids,massbasis,liste},
  tmpdef=Which[
     (*Dirac Fermions*)
@@ -339,7 +354,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString[MatrixSymbol[#,"L"]];
       blockname=ToString/@List[BlockName[#,"L"],BlockName[#,"R"]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#].ConjugateTranspose[MassMatrix[#]], ConjugateTranspose[MassMatrix[#]].MassMatrix[#] ]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(Sort/@List[PartPDG/@MassBasis[#],PartPDG/@MassBasis[#]]);
+      pdgids=ToString/@(Sort/@List[CalculatePDGFLR/@MassBasis[#],CalculatePDGFLR/@MassBasis[#]]); 
       massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
       liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis],
 
@@ -348,7 +363,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString/@(List[MatrixSymbol[#][[1]],MatrixSymbol[#][[2]]]);
       blockname =ToString/@List[BlockName[#][[1]],BlockName[#][[2]]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#].ConjugateTranspose[MassMatrix[#]],ConjugateTranspose[MassMatrix[#]].MassMatrix[#]]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(List[Sort[PartPDG/@MassBasis[#][[1]]],-Sort[PartPDG/@MassBasis[#][[2]]]]);
+      pdgids=ToString/@(List[Sort[CalculatePDGWeyl/@MassBasis[#][[1]]],-Sort[CalculatePDGWeyl/@MassBasis[#][[2]]]]);
       massbasis=List[ToString/@(MassBasis[#][[1]]/.par_[n_Integer,_]:>par[n]),ToString/@(MassBasis[#][[2]]/.par_[n_Integer,_]:>par[n])];
       liste=List[matrixsymbol,blockname,ToString/@(Length/@massbasis),massmatrix,pdgids,massbasis];
       Sequence@@List[liste[[All,1]],liste[[All,2]]],
@@ -357,7 +372,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
       matrixsymbol=ToString/@(List[MatrixSymbol[#,"S"],MatrixSymbol[#,"PS"]]);
       blockname=ToString/@List[BlockName[#,"S"],BlockName[#,"PS"]];
       massmatrix=DefinitionsToStrings/@((Expand[List[MassMatrix[#,"S"], MassMatrix[#,"PS"]]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num);
-      pdgids=ToString/@(Sort/@List[PartPDG/@MassBasis[#,"S"],PartPDG/@MassBasis[#,"PS"]]);
+      pdgids=ToString/@(Sort/@List[CalculatePDGFLR/@MassBasis[#,"S"],CalculatePDGFLR/@MassBasis[#,"PS"]]);
       massbasis=List[ToString/@(MassBasis[#,"S"]/.par_[n_Integer,_]:>par[n]),ToString/@(MassBasis[#,"PS"]/.par_[n_Integer,_]:>par[n])];                 
       liste=List[matrixsymbol,blockname,ToString/@(Length/@massbasis),massmatrix,pdgids,massbasis];
       Sequence@@List[liste[[All,1]],liste[[All,2]]],
@@ -368,14 +383,14 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
         matrixsymbol=ToString[MatrixSymbol[#]];
         blockname=ToString[BlockName[#]];
         massmatrix=DefinitionsToStrings[(Expand[MassMatrix[#]]/.n_?(NumericQ[#]&)*pars__:>N[n,30]*pars)/.Index[typ_,num_]:>num];
-        pdgids=ToString[Sort[PartPDG/@MassBasis[#]]];
+        pdgids=ToString[Sort[CalculatePDGWeyl/@MassBasis[#]]];
         massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
         liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis,"nsq"],
 (*or a vector field*)
         matrixsymbol=ToString[MatrixSymbol[#]];
         blockname=ToString[BlockName[#]];
         massmatrix=DefinitionsToStrings[Expand[MassMatrix[#]]/.Index[typ_,num_]:>num];
-        pdgids=ToString[Sort[PartPDG/@MassBasis[#]]];
+        pdgids=ToString[Sort[CalculatePDGFLR/@MassBasis[#]]];
         massbasis=ToString/@(MassBasis[#]/.part_[n_Integer,_]:>part[n]);
         liste=List[matrixsymbol,blockname,ToString[Length[massbasis]],massmatrix,pdgids,massbasis]]]&/@FR$MassMatrices;
 
@@ -418,7 +433,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
     WriteString[cppstream,"    gsl_complex comp;\n"];
     Table[
       matrixelement=If[StringMatchQ[#[[4,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    real("<>matrixelement<>"),\n    imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"}\n"],
 
@@ -431,14 +446,14 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
 
     Table[
       matrixelement=If[StringMatchQ[#[[4,1,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,1,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    real("<>matrixelement<>"),\n    imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"\n"];
       WriteString[cppstream,"   //fill m2;\n"];
 
     Table[
       matrixelement=If[StringMatchQ[#[[4,2,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,2,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    real("<>matrixelement<>"),\n    imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m2,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"}\n"]]; )&/@tmpdef;
 
@@ -485,7 +500,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Main*)
 
 

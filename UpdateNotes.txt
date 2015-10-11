@@ -1,5 +1,11 @@
 Update notes for FeynRules 2.3.x
 
+2492 2.3.12 07-10-15 degrande:   bug fix for tensor indices in FA interface 
+
+2488 2.3.11 02-10-15 degrande:   new notation for UFO propagators 
+
+2487 2.3.10 21-09-15 fuks:       bug fixed in asperge 
+
 2484 2.3.9 08-09-15 degrande:   fix for LeviCivita with FA39 
 
 2482 2.3.8 08-09-15 clduhr:     Bug fix in current: variable w in ToolBox.m 

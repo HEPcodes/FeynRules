@@ -125,10 +125,8 @@ void MassMatrix::printMassm(ofstream& out)
 {
     out << "Mass Matrix squared " << name << " REAL " << "    " << "# " << comment << endl;
     printRealMatrixList(massm, dim, dim, out);
-    out;
     out << "Mass Matrix squared " << name << " IMAG " << "    " << "# " << comment << endl;
     printImagMatrixList(massm, dim, dim, out);
-    out;
 }
 
 //Prints the real and imaginary parts of the mixing matrix
@@ -136,10 +134,8 @@ void MassMatrix::printMixm(ofstream& out)
 {
     out << "Block " << remixname << "    " << "# " << comment << endl;
     printRealMatrixList(mixm, dim, dim, out);
-    out;
     out << "Block " << immixname << "    " << "# " << comment << endl;
     printImagMatrixList(mixm, dim, dim, out);
-    out;
 }
 
 
@@ -149,7 +145,6 @@ void MassMatrix::printEigv(ofstream& out)
     out << "Block MASS " << "    " << "# " << comment << endl;
     out << "# pdg code"	<< "    " << "mass" << "    " << "particle"<<  endl;
     printPdgMass(out);
-    out;
 }
 
 

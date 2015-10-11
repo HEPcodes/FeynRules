@@ -15,7 +15,7 @@
 FAInt::Dirac = "Warning : Forcing no use of dirac indices while there are more than 2 fermions in some vertices";
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Useful functions and definitions*)
 
 
@@ -264,7 +264,7 @@ FAParticleOrderingQBuild["T",Except["-F"|"F"|"U"|"V"|"S",_]]:=True;
 FAParticleOrderingQ = FAParticleOrderingQBuild[FAPartFieldType[#1[[1]]], FAPartFieldType[#2[[1]]]] === True &;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*CreateFAVertexList*)
 
 
@@ -277,7 +277,7 @@ FAParticleOrderingQ = FAParticleOrderingQBuild[FAPartFieldType[#1[[1]]], FAPartF
 
 
 CreateFAVertexList[{parts_List, vertex_}] := Block[{faparts = parts[[All,1]] /. {ff_?((MajoranaFieldQ[#] && AntiFieldQ[#])&) :> $Maj[ff]}, porder,gam,tag,kk,FSignature, rules ,vert,vert2, 
-frparts,nf,naf,spinL,faparts2,fm,ind,SPlist},
+frparts,nf,naf,spinL,faparts2,fm,ind,SPlist,ikk},
 
    (* Create the FA names *)
    faparts = PartNameFA[faparts];
@@ -294,7 +294,7 @@ porder=Ordering[faparts,All,FAParticleOrderingQ[#1,#2]&];
    (* change the label of the external particles according to their order *)
    SPlist=Union[Cases[vertex,SP[a_Integer,b_Integer],\[Infinity]]];
    SPlist=Table[SPlist[[ll]]-> (SPlist[[ll]]/.Table[faparts[[kk,2]]->kk,{kk,1,Length[faparts]}]),{ll,1,Length[SPlist]}];
-   vert2=Replace[vertex,Join[Table[Ext[faparts[[kk,2]]]->Ext[kk],{kk,1,Length[faparts]}],Table[FV[faparts[[kk,2]],ind__]->FV[kk,ind],{kk,1,Length[faparts]}],Table[SlashedP[faparts[[kk,2]]]->SlashedP[kk],{kk,1,Length[faparts]}],SPlist],\[Infinity],Heads->True];
+   vert2=Replace[vertex,Join[Table[Ext[faparts[[kk,2]],ikk___]->Ext[kk,ikk],{kk,1,Length[faparts]}],Table[FV[faparts[[kk,2]],ind__]->FV[kk,ind],{kk,1,Length[faparts]}],Table[SlashedP[faparts[[kk,2]]]->SlashedP[kk],{kk,1,Length[faparts]}],SPlist],\[Infinity],Heads->True];
    faparts[[All,2]]=Table[kk,{kk,1,Length[faparts]}];
 
    nf = Count[FAPartFieldType[#1]& @@@ faparts,"F"];

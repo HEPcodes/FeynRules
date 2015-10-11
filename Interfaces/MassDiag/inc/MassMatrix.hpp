@@ -272,6 +272,7 @@ class MassMatrix
 		       " does not exist." << endl;
 		       exit(EXIT_FAILURE);
 		    }
+                    return NULL;
 		}
 		
 		//prints the mass matrices a file 
