@@ -12,8 +12,8 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "2.3.12";
-FR$VersionDate = "07 October 2015";
+FR$VersionNumber = "2.3.21";
+FR$VersionDate = "18 April 2016";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];
@@ -1712,6 +1712,10 @@ $UseFierzIdentities = False;
 
 
 FR$FormFactors = {};
+
+
+(*CD, 12.01.16: This is a renaming. In older Verison DTerm was called SymmetricTensor. *)
+DTerm = SymmetricTensor;
 
 
 (* ::Subsection::Closed:: *)

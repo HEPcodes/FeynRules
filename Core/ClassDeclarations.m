@@ -87,7 +87,7 @@ GBToGh[field_?(AntiFieldQ[#] === True &)] := HCanti[GBToGh[HCanti[field]]];
 DeclareDef::usage = "The second argument must be a list.";
 
 
-DeclareNewDefinition[rule_, outputlist_]:=Block[{tempdef = rule,tempdeflhs,tempdefrhs,MyModule,modulelist,tempspinindex,indexname, newoutputlist, MyRuleDelayed},
+DeclareNewDefinition[rule_, outputlist_]:=Block[{tempdef = rule,tempdeflhs,tempdefrhs,MyModule,modulelist,tempspinindex,indexname, newoutputlist, MyRuleDelayed,sumspin},
 
    (* Check if outputlist already exists and if it is a list. If not, print a warning and exit, returning Null *)
 
@@ -131,7 +131,9 @@ DeclareNewDefinition[rule_, outputlist_]:=Block[{tempdef = rule,tempdeflhs,tempd
      ];
 
     Do[If[modulelist[kkfr] =!= {},
-          tempdefrhs[[kkfr]]= MyModule[modulelist[kkfr], tempdefrhs[[kkfr]]]], 
+          sumspin = Cases[modulelist[kkfr],_?(FreeQ[tempdefrhs[[kkfr]],#]&)];
+          If[Length[sumspin]>0,sumspin=sumspin[[1]],sumspin={}]; 
+ 	     tempdefrhs[[kkfr]]= MyModule[modulelist[kkfr], If[Not[Length[sumspin]==={}],Replace[tempdefrhs[[kkfr]],(ma:ProjP|ProjM|_TensorDot|_Ga)[a_, sp1_]*b_[a_, ff___]*c___:>c*ma[sumspin,sp1]*b[sumspin,ff]],tempdefrhs[[kkfr]]]]], 
       {kkfr, Length[tempdefrhs]}];
 
     tempdefrhs = tempdefrhs /. MyModule[ll_, exi_] :> Hold[Module[ll, exi]];
@@ -178,7 +180,7 @@ MakeNumQ[eparams_,iparams_]:=Block[{
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ReadAuthors*)
 
 
@@ -404,7 +406,7 @@ LoadModel[modfile_String, rule_Rule] := Block[{templist, MRoutput, tempq, massli
 
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*LoadModel (multiple arguments) *)
 
 
@@ -479,7 +481,7 @@ LoadModel[modfile1_String, modelfiles__, rule_Rule] := Block[{frfiles = {modfile
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Restrictions and Definitions*)
 
 
@@ -491,7 +493,11 @@ ReconvoluteEParamBlock[block_] := {block[[1,1]], Rest /@ block};
 CreateParamListEntryFromDeconvolutedEParamListEntry[{lhablock_, lhanumber_, entry_List}] := Block[{entr = entry},
 
     If[Length[entr] == 6,
-       entr = Insert[Delete[entr, {4}], entr[[4]], 2]
+       entr = Insert[Delete[entr, {4}], entr[[4]], 2],
+       If[Length[entr] == 8,
+         entr = Insert[Delete[entr, {6}], entr[[6]], 2],
+         If[Length[entr]>8,Print["More than 2 interaction order? not handle"];]
+         ];
       ];
 
     Return[Insert[entr, lhablock, 3]];
@@ -527,7 +533,7 @@ ConvoluteEIToParamList[elist_, ilist_] := Block[{eparams = elist, iparams = ilis
     iparams = Insert[#, Int, 2]& /@ iparams;
 
     eparams = Delete[#, {2}]& /@ eparams;
-    eparams = MapAt[If[Length[#]===6,Insert[Delete[#,{4}],#[[4]],2],#]&,#,2]& /@ eparams;
+    eparams = MapAt[If[Length[#]===6,Insert[Delete[#,{4}],#[[4]],2],If[Length[#]===8,Insert[Delete[#,{6}],#[[6]],2],If[Length[#]>8,Print["More than two interactionorder, not handled"]];#]]&,#,2]& /@ eparams;
     eparams = Insert[#, Ext, 2]& /@ (Insert[#2, #1,3]& @@@ eparams);
 
     Return[Join[eparams, iparams]];
@@ -544,6 +550,7 @@ CleanParamLists[] := Block[{
    },
 
    eplsave = epl;
+
 
    ipl = MapAt[# //. MR$Restrictions /. InvParamRules //.PRIVATE`$TensIndRules/.{f_?(PRIVATE`NoTensQ[#] === True &)[ind__?(FreeQ[##, NTIndex]&)] :> PRIVATE`NoTensPutInd[f, {ind}]} /. NTIndex -> Index //. MR$Restrictions/. Index[PRIVATE`DUMMY, a_] :> a  //. ParamRules &, #, 1]& /@ IParamList; 
    IParamList = Intersection[IParamList, ipl];
@@ -583,6 +590,7 @@ AddDefinition[Rule[x_,y_]|RuleDelayed[x_,y_],options___]:=Block[{temprule1,tempr
   position, newparam, index, InvParamRules2, row, 
   SetMassAccordingtoPDG},
   SetMassAccordingtoPDG[a_] := (Mass[PDGtoSymb[a]] = y);
+
 
   FR$restrictionCounter++;
   InvParamRules = (Reverse/@ParamRules);
@@ -715,6 +723,7 @@ LoadRestriction[filename_String, nprint_Integer]:=Block[{curDir, split, ParalEva
      ];
 
 
+
    If[nprint == 1, Print["Restrictions loaded."]]];
 
 
@@ -810,7 +819,6 @@ If[Not[repo], Print["   - Loading particle classes."]];
        UnphysicalQ[tempclassname] = tempunphys;
 
 
-
        tempselfconjugate = SelfConjugate /. MR$ClassesRules[currentclass] /. Options[LoadModel];
        If[tempselfconjugate === MR$Null, Message[LoadModel::SelfConjugate], SelfConjugateQ[tempclassname] = tempselfconjugate];
 
@@ -853,6 +861,7 @@ If[Not[repo], Print["   - Loading particle classes."]];
        If[tempflavind =!= MR$Null,
           FA$FlavorNumber[currentclass] = Length[MRIndexRange[Index[tempflavind]]], 
           FA$FlavorNumber[currentclass] = 1];
+
 
 
 (*                   *)
@@ -947,7 +956,6 @@ If[Not[repo], Print["   - Loading particle classes."]];
                       FA$ClassesDescription[currentclass] = DeleteCases[FA$ClassesDescription[currentclass], Rule[Mass, _]]]];
        If[(Length[tempmass] == (Length[tempclassmembers] + 1)) && Not[Length[tempclassmembers] == 1], tempmass = Rest[tempmass]];
 
-
 (*                   *)
 (* Width             *)
 (*                   *)
@@ -997,6 +1005,7 @@ If[Not[repo], Print["   - Loading particle classes."]];
        tempsymsp2 = Symmetric /. MR$ClassesRules[currentclass] /. Options[LoadModel];
        tempantisymsp2 = AntiSymmetric /. MR$ClassesRules[currentclass] /. Options[LoadModel];
 
+
 (*                   *)
 (* Indices           *)
 (*                   *)
@@ -1024,7 +1033,6 @@ If[Not[repo], Print["   - Loading particle classes."]];
 
 
 
-
 (*                   *)
 (*QuantumNumbers     *)
 (*                   *)
@@ -1047,7 +1055,6 @@ If[Not[repo], Print["   - Loading particle classes."]];
           VeVs[currentclass] = tempvevs;
           VeVs[tempclassname] = tempvevs;
                
-
 
 
 
@@ -1233,7 +1240,6 @@ If[Not[repo], Print["   - Loading particle classes."]];
       DeclareWeylFermions[];
 
 If[repo,  Print["(* * * * * * * * * * * * * * * * *)"]];
-
 
 
 

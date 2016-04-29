@@ -1483,7 +1483,7 @@ HCanti[Power[a_, b_]] := Power[HCanti[a], HCanti[b]];
 HCanti[ProjM][r_,s_] := ProjP[s, r];*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Charge conjugation*)
 
 
@@ -1524,11 +1524,11 @@ CC/:qq_?QuantumNumberQ[CC[ff_][___]]:=-qq[ff];
 CC[ff_?FieldQ[ind___]]:=CC[ff][ind];
 
 CC[ff1_+ff2_] := CC[ff1] + CC[ff2];
-CC[Except[ProjP[_,_]|ProjM[_,_]|Ga[5, _,_], aa_?(numQ)]*ff_] := Conjugate[aa] * CC[ff];
+CC[Except[_ProjP|_ProjM|Ga[5, _,_], aa_?(numQ)]*ff_] := Conjugate[aa] * CC[ff];
 
 CC[ProjP[s_,r_]*ff_] := ProjM[s,r] * CC[ff];
 CC[ProjM[s_,r_]*ff_] := ProjP[s,r] * CC[ff];
-CC[Ga[5,s_,r_]*ff_] := Ga[5, s,r] * CC[ff];
+CC[Ga[5,s_,r_]*ff_] := -Ga[5, s,r] * CC[ff];
 
 (*HC[CC[ff_]] := CC[HC[ff]];
 HCanti[CC[ff_]] := CC[HCanti[ff]];*)

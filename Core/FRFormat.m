@@ -12,8 +12,8 @@
 (*General print out for TraditionalForm*)
 
 
-Format[Ga[mu_], TraditionalForm] := Power[\[Gamma], mu];
-Format[Ga[mu_, r_, s_], TraditionalForm] := Power[Subscript[\[Gamma], r, s], mu];
+Format[Ga[mu_], TraditionalForm] := Superscript[\[Gamma], mu];
+Format[Ga[mu_, r_, s_], TraditionalForm] := Superscript[Subscript[\[Gamma], r, s], mu];
 Format[GaAlgebra[mu_, r_, s_], TraditionalForm] := Power[Subscript[\[Gamma], r, s], mu];
 
 Format[Sig[mu_,nu_], TraditionalForm] := Superscript[Superscript[\[Sigma], mu], nu];
@@ -24,11 +24,11 @@ Format[ProjM, TraditionalForm] = Subscript[P, "-"];
 Format[ProjP[ind__], TraditionalForm] := Subscript[(Subscript[P,"+"]), ind];
 Format[ProjM[ind__], TraditionalForm] := Subscript[(Subscript[P,"-"]), ind];
 
-Format[PauliSigma[i_], TraditionalForm] := Power[\[Sigma], i];
+Format[PauliSigma[i_], TraditionalForm] := Superscript[\[Sigma], i];
 
-Format[si[mu_], TraditionalForm] := Power[\[Sigma], mu];
+Format[si[mu_], TraditionalForm] := Superscript[\[Sigma], mu];
 Format[si[mu_, r__], TraditionalForm] := Subscript[Power[\[Sigma], mu], r];
-Format[sibar[mu_], TraditionalForm] := Power[Overscript[\[Sigma], "-"], mu];
+Format[sibar[mu_], TraditionalForm] := Superscript[Overscript[\[Sigma], "-"], mu];
 Format[sibar[mu_,r_,s_],TraditionalForm]:=Superscript[Power[Overscript[\[Sigma],"-"],mu],Row[{r,",",s}]];
 
 Format[IndexDelta[ind__], TraditionalForm] := Subscript[\[Delta], ind];
@@ -40,16 +40,16 @@ Format[ME[ind__], TraditionalForm] := Subscript[\[Eta], ind];
 
 Format[Eps[ind__], TraditionalForm] := Subscript[\[Epsilon], ind];
 
-Format[HC[t_], TraditionalForm] := Power[t,\[Dagger]];
+Format[HC[t_], TraditionalForm] := Superscript[t,\[Dagger]];
 
-Format[HC[t_][ind__], TraditionalForm] := Power[Subscript[t, ind],\[Dagger]];
+Format[HC[t_][ind__], TraditionalForm] := Superscript[Subscript[t, ind],\[Dagger]];
 
 Format[CC[t_], TraditionalForm] := Power[t, C];
 Format[CC[t_][ind___], TraditionalForm] := Power[Subscript[t, ind], C];
 
 Format[del[f_, mu_], TraditionalForm] := Subscript["\[PartialD]", mu][f];
 
-Format[FV[k_, mu_], TraditionalForm] := Power[Subscript["p",k],mu];
+Format[FV[k_, mu_], TraditionalForm] := Subsuperscript["p",k,mu];
 Format[SP[k1_, k2_], TraditionalForm] := Dot[Subscript["p", k1], Subscript["p", k2]];
 
 Unprotect[Conjugate];
@@ -143,8 +143,8 @@ MakeTeXIndex[$xx_, $yy_] := Block[{tmp}, SetDelayed[Format[$xx[indind___], Stand
 Format[Index[_, Except[Ext[___], k_]], StandardForm] := k;
 Format[Index[_, Except[Ext[___], k1_], k2_], StandardForm] := merge[k1, k2];
 
-Format[Ga[mu_], StandardForm] := Power[\[Gamma], mu];
-Format[Ga[mu_, r_, s_], StandardForm] := Power[Subscript[\[Gamma], r, s],mu];
+Format[Ga[mu_], StandardForm] := Superscript[\[Gamma], mu];
+Format[Ga[mu_, r_, s_], StandardForm] := Superscript[Subscript[\[Gamma], r, s],mu];
 
 Format[Sig[mu_,nu_], StandardForm] := Superscript[Superscript[\[Sigma], mu], nu];
 Format[Sig[mu_,nu_, r_, s_], StandardForm] :=  Subscript[Superscript[Superscript[\[Sigma], mu], nu],r,s];

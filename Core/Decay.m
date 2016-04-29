@@ -1,6 +1,6 @@
 (* ::Package:: *)
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Useful functions: Getting masses, flavor indices, etc...*)
 
 
@@ -63,7 +63,7 @@ MemberNumber[partname_?(AntiFieldQ[#]===True&)]:=MemberNumber[anti[partname]];
 MemberNumber[partname_]:=Position[ClassMembers/.MR$ClassesRules[ClassToLabel[MemberToClass[partname]]],partname][[1,1]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GetMass*)
 
 
@@ -372,7 +372,7 @@ Colorrules={
 };
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Extracting Lorentz invariants*)
 
 
@@ -394,7 +394,7 @@ Lorentzrules={
 };
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Tracing over the polarization vectors*)
 
 
@@ -482,7 +482,7 @@ MakeDiracRule[exp_,rul_]:=Block[{tmp,idx,myPattern,myRule},
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Conjugating a diagram*)
 
 
@@ -543,20 +543,31 @@ Squaring[{fields__},expr_]:=Block[{Amp,CAmp,ECAmp,M2,masses,gammalist,CArule={}}
 
   (* Speed optimization required *)
    M2=If[Head[M2]===Plus,List@@M2,{M2}];  
-   M2 = M2/.Eps[args__]:>Signature[{args}] Eps[Sequence@@Sort[{args}]];
-   M2 = M2/.Eps[a1_,b1_,c_,d1_] Eps[a2_,b2_,d2_,c_]:> -Eps[a1,b1,c,d1] Eps[a2,b2,c,d2];
-   M2 = M2/.Eps[a1_,c_,b1_,d1_] Eps[a2_,b2_,d2_,c_]:> Eps[a1,b1,c,d1] Eps[a2,b2,c,d2];
-   M2 = M2/.Eps[a1_,c_,b1_,d1_] Eps[a2_,c_,b2_,d2_]:> Eps[a1,b1,c,d1] Eps[a2,b2,c,d2];
-   M2 = M2/.Eps[a1_,c_,b1_,d1_] Eps[a2_,c_,b2_,d2_]:> Eps[a1,b1,c,d1] Eps[a2,b2,c,d2];
-   M2 = M2/.Eps[a1_,c_,b_,d1_] Eps[a2_,d2_,c_,b_]:> Eps[a1,c,b,d1] Eps[a2,c,b,d2];
-   M2 = M2/.Eps[a1_,c_,b_,d1_] Eps[a2_,d2_,b_,c_]:> -Eps[a1,c,b,d1] Eps[a2,c,b,d2];
-   M2 = M2/.Eps[a1_,c_,b_,d1_] Eps[c_,a2_,b_,d2_]:> -Eps[a1,c,b,d1] Eps[a2,c,b,d2];
-   M2 = M2/.Eps[a1_,d1_,c_,b_] Eps[b_,a2_,c_,d2_]:> Eps[a1,c,b,d1] Eps[a2,c,b,d2];
-   M2 = M2/.Eps[a1_,d1_,c_,b_] Eps[a2_,c_,b_,d2_]:> Eps[a1,c,b,d1] Eps[a2,c,b,d2];
-   M2 = M2/.Eps[a1_,b_,c_,d_] Eps[d_,b_,c_,a2_]:>6 ME[a1,a2];
-   M2 = Expand[M2/.Eps[a1_,c_,b_,d1_] Eps[a2_,c_,b_,d2_]:> 2 ME[a1,d2] ME[d1,a2]-2 ME[a1,a2] ME[d1,d2]/;Intersection[{a1,d1},{a2,d2}]==={}];
-   M2 = Expand[M2/.Eps[a1_,b1_,c_,d1_] Eps[a2_,b2_,c_,d2_]:> ME[a1, d2]*ME[a2, d1]*ME[b1, b2] - ME[a1, b2]*ME[a2, d1]*ME[b1, d2] - ME[a1, d2]*ME[a2, b1]*ME[b2, d1] + 
-     ME[a1, a2]*ME[b1, d2]*ME[b2, d1] + ME[a1, b2]*ME[a2, b1]*ME[d1, d2] - ME[a1, a2]*ME[b1, b2]*ME[d1, d2]/;Intersection[{a1,b1,d1},{a2,b2,d2}]==={}];
+  (* CD: Added rule for square of Levi Civita *)
+   M2=Expand[M2]/. Eps[i1_,i2_,i3_,i4_]Eps[j1_,j2_,j3_,j4_] :> -(ME[i1, j4]*ME[i2, j3]*ME[i3, j2]*ME[i4, j1] - 
+     ME[i1, j3]*ME[i2, j4]*ME[i3, j2]*ME[i4, j1] - 
+     ME[i1, j4]*ME[i2, j2]*ME[i3, j3]*ME[i4, j1] + 
+     ME[i1, j2]*ME[i2, j4]*ME[i3, j3]*ME[i4, j1] + 
+     ME[i1, j3]*ME[i2, j2]*ME[i3, j4]*ME[i4, j1] - 
+     ME[i1, j2]*ME[i2, j3]*ME[i3, j4]*ME[i4, j1] - 
+     ME[i1, j4]*ME[i2, j3]*ME[i3, j1]*ME[i4, j2] + 
+     ME[i1, j3]*ME[i2, j4]*ME[i3, j1]*ME[i4, j2] + 
+     ME[i1, j4]*ME[i2, j1]*ME[i3, j3]*ME[i4, j2] - 
+     ME[i1, j1]*ME[i2, j4]*ME[i3, j3]*ME[i4, j2] - 
+     ME[i1, j3]*ME[i2, j1]*ME[i3, j4]*ME[i4, j2] + 
+     ME[i1, j1]*ME[i2, j3]*ME[i3, j4]*ME[i4, j2] + 
+     ME[i1, j4]*ME[i2, j2]*ME[i3, j1]*ME[i4, j3] - 
+     ME[i1, j2]*ME[i2, j4]*ME[i3, j1]*ME[i4, j3] - 
+     ME[i1, j4]*ME[i2, j1]*ME[i3, j2]*ME[i4, j3] + 
+     ME[i1, j1]*ME[i2, j4]*ME[i3, j2]*ME[i4, j3] + 
+     ME[i1, j2]*ME[i2, j1]*ME[i3, j4]*ME[i4, j3] - 
+     ME[i1, j1]*ME[i2, j2]*ME[i3, j4]*ME[i4, j3] - 
+     ME[i1, j3]*ME[i2, j2]*ME[i3, j1]*ME[i4, j4] + 
+     ME[i1, j2]*ME[i2, j3]*ME[i3, j1]*ME[i4, j4] + 
+     ME[i1, j3]*ME[i2, j1]*ME[i3, j2]*ME[i4, j4] - 
+     ME[i1, j1]*ME[i2, j3]*ME[i3, j2]*ME[i4, j4] - 
+     ME[i1, j2]*ME[i2, j1]*ME[i3, j3]*ME[i4, j4] + 
+     ME[i1, j1]*ME[i2, j2]*ME[i3, j3]*ME[i4, j4]);
    M2=Plus@@(Expand[#] //.Lorentzrules &/@M2);
 
   (* Removing remaining epsilons *)

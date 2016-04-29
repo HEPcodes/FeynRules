@@ -21,15 +21,26 @@ int numDigits(int number)
 }
 
 /*****complex numer handling*****/
-double real(double x)
+double realpart(double x)
 {
     return x;
 }
 
-double imag(double x)
+double imagpart(double x)
 {
     return 0.;
 }
+
+double realpart(complex<double> x)
+{
+    return real(x);
+}
+
+double imagpart(complex<double> x)
+{
+    return imag(x);
+}
+
 
 /*****matrices*****/
 

@@ -94,13 +94,16 @@ PYSplitVertices[vertices_] := Block[{
        verts = PartitionVertexList[verts, FR$MaxKernels];
        Print["Splitting of vertices distributed over ", Length[verts], " kernels."];
        DistributeDefinitions[verts];
+
        split1 = Table[ParallelSubmit[{iii},
                         FullSplitL[verts[[iii]]]],
                         {iii, Length[verts]}
                         ];
        split1 = Join @@ WaitAll[split1];
       ];
+
     lorentzstruc = Map[Take[#,{1,1}]&, split1, {2}];  
+
     If[Global`FR$Parallelize === False,
        split2 = FullSplitC[Map[Take[#,{2,2}]&, split1, {2}]],
        (* else, parallellize *)
@@ -112,6 +115,7 @@ PYSplitVertices[vertices_] := Block[{
                         ];
        split2 = Join @@ WaitAll[split2];
       ];
+
     colorstruc = Map[Take[#,{1,1}]&, split2, {2}];    
     couplstruc = Map[Take[#,{2,2}]&, split2, {2}] //. reversenumberrpls; 
    

@@ -37,8 +37,9 @@ KronDelta[Except[_[_Index, ___], psi_], phi_, _] := Block[{phase, kd},
 
 delta /: delta[i_, j_]ff_[x___, j_, y___] := ff[x, i, y] /; ff =!= uwave;
 delta /: delta[i_, j_]ff_[x___, i_, y___] := ff[x, j, y] /; ff =!= uwave;
-delta /: delta[i_, j_]hh_[x1___, ff_[x___, j_, y___], y1___] := hh[x1, ff[x, i, y], y1] /; ff =!= uwave;
-delta /: delta[i_, j_]hh_[x1___, ff_[x___, i_, y___], y1___] := hh[x1, ff[x, j, y], y1] /; ff =!= uwave;
+(*if hh is a sum replace all the i by j and so on*)
+delta /: delta[i_, j_]hh_[x1___, ff_[x___, j_, y___], y1___] := (hh[x1, ff[x, j, y], y1] /.j->i)/; ff =!= uwave;
+delta /: delta[i_, j_]hh_[x1___, ff_[x___, i_, y___], y1___] :=(hh[x1, ff[x, i, y], y1] /.i->j) /; ff =!= uwave;
 
 IntTermQ[expr_] := If[FR$Loop===True,
   (Length[GetFieldContent[expr]] != 1) && (Length[GetFieldContent[expr]] != 0),

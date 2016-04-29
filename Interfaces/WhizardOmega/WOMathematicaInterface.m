@@ -451,9 +451,10 @@ WO`GaugeName[g_] := Switch[g, WO`WOUnitarity, "Unitarity", WO`WOFeynman, "Feynma
 WO`GaugeName[] := WO`GaugeName[WO`gauge];
 
 (* Version query helpers *)
-WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,_,
+WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,"2.3.0",230,_,
    Throw["BUG: invalid version in WO`whizvn, please report", WO`EAbort]];
 WO`whizvn[] := WO`whizvn[WO`whizv];
+WO`whizv23[] := WO`whizvn[] >= WO`whizvn["2.3.0"];
 WO`whizv2x[] := WO`whizvn[] >= WO`whizvn["2.0"];
 WO`whizv19x[] := !WO`whizv2x[];
 
@@ -2806,7 +2807,7 @@ WO`WriteWhizGlue[filestem_] := Module[{handle, content, pubdefs, header, footer,
          <> "end module " <> namepre <> "_local";
       (* Build the import function. *)
       import = ""
-         <> "subroutine import_from_whizard (par)\n"
+         <> If[WO`whizv23[], "subroutine import_from_whizard (par, scheme)\n", "subroutine import_from_whizard (par)\n"]
          <> "use " <> namepre <> "_local\n"
          <> WO`Concat[Table["use " <> namepre <> "_cpl" <> ToString[i], {i, 1, Length[couplings]}], "\n"] <> "\n"
          <> If[WO`whizv19x[], ""
@@ -2819,7 +2820,7 @@ WO`WriteWhizGlue[filestem_] := Module[{handle, content, pubdefs, header, footer,
          , ""
             <> "real(kind=default), dimension("
                <> ToString[Plus @@ (If[#[[2]], 2, 1]& /@ WO`paramlist) + If[WO`appendAlphas, 1, 0]]
-               <> "), intent(in) :: par\n"
+               <> "), intent(in) :: par\n" <> If[WO`whizv23[], "integer, intent(in) :: scheme\n",""]
             <> WO`Indent[Module[{val, j, par},
                val = "";
                j = 1;

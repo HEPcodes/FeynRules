@@ -132,7 +132,7 @@ Do[
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Vertex reordering*)
 
 

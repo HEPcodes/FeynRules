@@ -433,7 +433,7 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
     WriteString[cppstream,"    gsl_complex comp;\n"];
     Table[
       matrixelement=If[StringMatchQ[#[[4,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    realpart("<>matrixelement<>"),\n    imagpart("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"}\n"],
 
@@ -446,14 +446,14 @@ DefineMassMatrices[]:=Block[{tmpdef,cppstream,hppstream,mainstream,matrixelement
 
     Table[
       matrixelement=If[StringMatchQ[#[[4,1,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,1,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    realpart("<>matrixelement<>"),\n    imagpart("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"\n"];
       WriteString[cppstream,"   //fill m2;\n"];
 
     Table[
       matrixelement=If[StringMatchQ[#[[4,2,ii,jj]],"0"],"complex<double>(0.,0.)",#[[4,2,ii,jj]]];
-      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    std::real("<>matrixelement<>"),\n    std::imag("<>matrixelement<>"));\n"];
+      WriteString[cppstream,"    GSL_SET_COMPLEX(&comp,\n    realpart("<>matrixelement<>"),\n    imagpart("<>matrixelement<>"));\n"];
       WriteString[cppstream,"    gsl_matrix_complex_set(m2,"<>ToString[ii-1]<>","<>ToString[jj-1]<>",comp);\n\n"],{ii,ToExpression[#[[3]]]},{jj,ToExpression[#[[3]]]}];
       WriteString[cppstream,"}\n"]]; )&/@tmpdef;
 

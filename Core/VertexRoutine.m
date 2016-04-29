@@ -678,8 +678,8 @@ TreatVertex[vertx_]:=Block[{tempintterms,tempCreaList, CreaList,vtemp,$HCExtract
   CreaList = Reverse[Table[crea[tempCreaList[[k]], {}, k], {k, 1, Length[tempCreaList]}]];
   CreaList = RenameSpin2[RenameSpin3[RenameSpin4[CreaList]]];
   tempintterms = FieldExpand/@tempintterms;
-  vtemp = Listize[Plus @@ (FromVertexTerm[#, CreaList, FR$FeynmanRules] &/@ tempintterms)];
 
+  vtemp = Listize[Plus @@ (FromVertexTerm[#, CreaList, FR$FeynmanRules] &/@ tempintterms)];
 
   (* Finalizing the Feynman rule*)
   If[FR$FExpand,
@@ -692,10 +692,10 @@ TreatVertex[vertx_]:=Block[{tempintterms,tempCreaList, CreaList,vtemp,$HCExtract
     vtemp = (# /. HC -> $HCExtractVertex /. $HCExtractVertex[t_?(TensQ)][ind___] -> $HCExtractVertex[t[ind]] //. MR$Definitions/. Dot -> FR$Dot /. FR$Dot -> Dot)&/@vtemp;
     vtemp = (# /. delta -> IndexDelta /. {NTIndex -> Index, NTI -> Index})&/@vtemp;
     vtemp = (# /.$HCExtractVertex[t_?(TensQ)[xx___, i_, j_]] -> Conjugate[t[xx, j, i]]/. $HCExtractVertex -> HC)&/@vtemp;
-  ]
-Off[Simplify::time];
+  ];
+
+(*Print[InputForm[vtemp]];*)
   vtemp = If[$VersionNumber>8,Factor[Plus@@vtemp],Simplify[Plus@@vtemp,TimeConstraint->0.01]];(* by celine*)
-On[Simplify::time];
 
   (* Returning the vertex *)
   Return[{MakeCreaListoutput[CreaList], vtemp}];

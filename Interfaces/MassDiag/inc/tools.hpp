@@ -5,8 +5,10 @@
 
 /*****complex numer handling*****/
 
-double real(double );// {return x;}
-double imag(double );//x) {return 0;}
+double realpart(double );// {return x;}
+double imagpart(double );//x) {return 0;}
+double imagpart(complex<double>);
+double realpart(complex<double>);
 
 /*****matrices*****/
 

@@ -512,6 +512,15 @@ RenDot[c_,FR$CT*b_]:=FR$CT*RenDot[c,b];
 RenDot[FR$CT*b_,c_]:=FR$CT*RenDot[b,c];
 RenDot[c_,a_FR$deltaZ*b_]:=a*RenDot[c,b];
 RenDot[a_FR$deltaZ*b_,c_]:=a*RenDot[b,c];
+RenDot[c_,Conjugate[a_FR$deltaZ]*b_]:=Conjugate[a]*RenDot[c,b];
+RenDot[Conjugate[a_FR$deltaZ]*b_,c_]:=Conjugate[a]*RenDot[b,c];
+
+
+CCtmp[a_+b_]:=CCtmp[a]+CCtmp[b];
+CCtmp[FR$CT*a_]:=FR$CT*CCtmp[a];
+CCtmp[1/2a_]:=CCtmp[a]/2;
+CCtmp[a_FR$deltaZ*b_]:=a*CCtmp[b];
+CCtmp[Conjugate[a_FR$deltaZ]*b_]:=Conjugate[a]*CCtmp[b];
 
 
 Dmshift[x_]:=Block[{FR$delta2},If[GhostFieldQ[x[[1]]]||GoldstoneQ[x[[1]]],
@@ -718,8 +727,9 @@ If[qcd,deltaLagt=0;lagtmp=0;,
 ];
 
 Print["with the fields"];
-deltaLag=Refine[ComplexExpand[(deltaLag(*//.massRules*))/.FieldRenoList,cvar,TargetFunctions->{Conjugate}], Assumptions->{FR$CT>0}]/.Dot->RenDot/.
-  RenDot->Dot/.Conjugate[FR$deltaZ[{x_,x_},y___]]->FR$deltaZ[{x,x},y];
+deltaLag=Refine[ComplexExpand[(deltaLag(*//.massRules*))/.{CC[x_][p__]:>CCtmp[x[p]]}/.FieldRenoList,cvar,TargetFunctions->{Conjugate}]/.CCtmp->CC, Assumptions->{FR$CT>0}];
+deltaLag=deltaLag/.Dot->RenDot/.RenDot->Dot/.Conjugate[FR$deltaZ[{x_,x_},y___]]->FR$deltaZ[{x,x},y];
+deltaLag=deltaLag/.Dot->RenDot/.RenDot->Dot;
 deltaLag=deltaLag/.{FR$CT^2->0,FR$CT^3->0,FR$CT^4->0};
 deltaLag=Replace[deltaLag,Times[I*a_Plus]:>PlusI@@a,1];
 If[FR$DoPara,
