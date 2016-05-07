@@ -12,8 +12,8 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "2.3.21";
-FR$VersionDate = "18 April 2016";
+FR$VersionNumber = "2.3.22";
+FR$VersionDate = "04 May 2016";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];
@@ -1772,7 +1772,7 @@ M$RenormalizationConstants={};
 $OptIndex=1;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*The FR$Dot function*)
 
 
@@ -1793,6 +1793,7 @@ FR$Dot[xx___, v_?VectorFieldQ * f_, yy___] := v * FR$Dot[xx, f, yy];
 FR$Dot[xx___, del[v_?VectorFieldQ, mu_] * f_, yy___] := del[v, mu] * FR$Dot[xx, f, yy];
 FR$Dot[xx___, v_?VectorFieldQ, yy___] := v * FR$Dot[xx, yy];
 FR$Dot[xx___, del[v_?VectorFieldQ, mu_], yy___] := del[v, mu] * FR$Dot[xx, yy];
+FR$Dot[xx___, Power[v_?VectorFieldQ[mu_],2] yy___] := Power[v[mu],2] * FR$Dot[xx, yy];
 FR$Dot[xx___, v_?Spin2FieldQ * f_, yy___] := v * FR$Dot[xx, f, yy];
 FR$Dot[xx___, del[v_?Spin2FieldQ, mu_] * f_, yy___] := del[v, mu] * FR$Dot[xx, f, yy];
 FR$Dot[xx___, v_?Spin2FieldQ, yy___] := v * FR$Dot[xx, yy];

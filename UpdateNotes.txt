@@ -1,5 +1,8 @@
 Update notes for FeynRules 2.3.x
 
+2533 2.3.22 04-05-16 fuks:       Adding a missing FRDot rule (thanks to Jose 
+                                 Santiago) 
+
 2530 2.3.21 18-04-16 fuks:       Fixing a last bug (typo) with the epsilon 
                                  stuff in the decay package (thanks 
                                  Kentarou) 
