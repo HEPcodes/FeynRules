@@ -12,6 +12,7 @@ NLO$Version="1.02";
 Print[" - NLOCT - "];
 Print["Version: "<>NLO$Version];
 Print["Authors: C. Degrande"];
+Print["Please cite C. Degrande, Comput.Phys.Commun. 197 (2015) 239-262"];
 
 Off[Simplify::time];(*avoid the warning from aborded long simplification*)
 

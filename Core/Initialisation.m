@@ -545,7 +545,7 @@ CanonicalDimension[CC[ff_]] := CanonicalDimension[ff];
 CanonicalDimension[CC[ff_][ind___]] := CanonicalDimension[ff[ind]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*FieldQ & co.*)
 
 
@@ -653,7 +653,7 @@ right[field_[s_,i___]] := Module[{r}, ProjM[r,s] field[r,i]] /; (Spin32FieldQ[fi
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Pauli \[Sigma] matrices*)
 
 
@@ -716,7 +716,7 @@ numQ[PauliSigma[_,_,_]]:=True;
 CnumQ[PauliSigma[_,_,_]]:=True;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*TensDot*)
 
 
@@ -924,6 +924,9 @@ ProjM /: ProjM[r_, s_] * ProjM[s_, t_] := ProjM[r, t];
 ProjP /: ProjP[r_, s_] * ProjM[s_, t_] := 0;
 ProjP /: ProjM[r_, s_] * ProjP[s_, t_] := 0;
 
+(* include transformation between chiral and dirac bases for Ga[5]Ga[mu] etc... *)
+(* check if FR automatically renames products Ga[5,mu] etc... *)
+
 TensDot /: TensDot[g1_, ProjP][r_, s_] + TensDot[g1_, ProjM][r_, s_] := g1[r,s];
 TensDot /: TensDot[g11_, g1__, ProjP][r_, s_] + TensDot[g11_, g1__, ProjM][r_, s_] := TensDot[g11, g1][r,s];
 TensDot /: TensDot[g1__, ProjP][r_, s_] - TensDot[g1__, ProjM][r_, s_] := TensDot[g1, Ga[5]][r,s]
@@ -958,7 +961,9 @@ TensDot[g1___, ProjP, ProjM, g2___][r_,s_] := 0;
 TensDot[g1___, ProjM, ProjP, g2___][r_,s_] := 0;
 TensDot[g1___, ProjM, ProjM, g2___][s_, t_] := TensDot[g1, ProjM, g2][s,t];
 TensDot[g1___, Ga[5], Ga[mu_?((# =!= 5) &)], g2___][s_, t_] := -TensDot[g1, Ga[mu], Ga[5], g2][s,t];
-TensDot[g1___, Ga[5], Ga[5], g2___][s_, t_] := TensDot[g1, g2][s,t];
+
+(* commenting this out to see if can avoid bug *)
+TensDot[g1___, Ga[5], Ga[5], g2___][s_, t_] := TensDot[g1, g2][s,t]; (* fixed this in basis file - liam *)
 
 (*Traces added by celine*)
 ProjP[s_, s_] := 2;
@@ -1001,31 +1006,40 @@ ProjP /: Dot[g1___, ProjP[r_,s_], g2___] := ProjP[r,s] Dot[g1, g2];
 ProjM /: Dot[g1___, ProjM[r_,s_], g2___] := ProjM[r,s] Dot[g1, g2];
 
 
-Ga /: Ga[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[ind__, s_,u_]] := TensDot[Ga[mu], tt[ind]][r, u];
-Ga /: Ga[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[ind__, u_,s_]] := TensDot[tt[ind], Ga[mu]][u, r];
 
-ProjP /: ProjP[r_,s_] Except[TensDot[_,__][_,_], tt_[ind__, s_,u_]] := TensDot[ProjP, tt[ind]][r, u];
-ProjP /: ProjP[s_,r_] Except[TensDot[_,__][_,_], tt_[ind__, u_,s_]] := TensDot[tt[ind], ProjP][u, r];
-ProjM /: ProjM[r_,s_] Except[TensDot[_,__][_,_], tt_[ind__, s_,u_]] := TensDot[ProjM, tt[ind]][r, u];
-ProjM /: ProjM[s_,r_] Except[TensDot[_,__][_,_], tt_[ind__, u_,s_]] := TensDot[tt[ind], ProjM][u, r];
 
-ProjP /: ProjP[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[ind__, s_,u_]] := TensDot[ProjP[mu], tt[ind]][r, u];
-ProjP /: ProjP[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[ind__, u_,s_]] := TensDot[tt[ind], ProjP[mu]][u, r];
-ProjM /: ProjM[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[ind__, s_,u_]] := TensDot[ProjM[mu], tt[ind]][r, u];
-ProjM /: ProjM[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[ind__, u_,s_]] := TensDot[tt[ind], ProjM[mu]][u, r];
 
-Ga /: Ga[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[Ga[mu], tt][r, u];
-Ga /: Ga[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, Ga[mu]][u, r];
+(* LRM 16/06/16: Fixed an issue in Mathematica 10.4 by which TensDot would erroneously take leptons as an argument (since these carry 2 indices and accidentally 
+match these definitions) by adding a qualifier here to limit these definitions to Dirac algebra objects. (Internal functions with variables shared with gamma matrices
+were also susceptible). *)
 
-ProjP /: ProjP[r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[ProjP, tt][r, u];
-ProjP /: ProjP[s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, ProjP][u, r];
-ProjM /: ProjM[r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[ProjM, tt][r, u];
-ProjM /: ProjM[s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, ProjM][u, r];
+SpinMatrixObject:=Ga|ProjP|ProjM|Sig;
 
-ProjP /: ProjP[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[ProjP[mu], tt][r, u];
-ProjP /: ProjP[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, ProjP[mu]][u, r];
-ProjM /: ProjM[mu_, r_,s_] Except[TensDot[_,__][_,_], tt_[s_,u_]] := TensDot[ProjM[mu], tt][r, u];
-ProjM /: ProjM[mu_, s_,r_] Except[TensDot[_,__][_,_], tt_[u_,s_]] := TensDot[tt, ProjM[mu]][u, r];
+Ga /: Ga[mu_, r_,s_] tt_[ind__, s_,u_] := TensDot[Ga[mu], tt[ind]][r, u] /; MatchQ[tt,SpinMatrixObject];
+Ga /: Ga[mu_, s_,r_] tt_[ind__, u_,s_] := TensDot[tt[ind], Ga[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
+
+ProjP /: ProjP[r_,s_] tt_[ind__, s_,u_] := TensDot[ProjP, tt[ind]][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjP /: ProjP[s_,r_] tt_[ind__, u_,s_] := TensDot[tt[ind], ProjP][u, r] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[r_,s_] tt_[ind__, s_,u_] := TensDot[ProjM, tt[ind]][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[s_,r_] tt_[ind__, u_,s_] := TensDot[tt[ind], ProjM][u, r] /; MatchQ[tt,SpinMatrixObject];
+
+ProjP /: ProjP[mu_, r_,s_] tt_[ind__, s_,u_] := TensDot[ProjP[mu], tt[ind]][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjP /: ProjP[mu_, s_,r_] tt_[ind__, u_,s_] := TensDot[tt[ind], ProjP[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[mu_, r_,s_] tt_[ind__, s_,u_] := TensDot[ProjM[mu], tt[ind]][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[mu_, s_,r_] tt_[ind__, u_,s_] := TensDot[tt[ind], ProjM[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
+
+Ga /: Ga[mu_, r_,s_] tt_[s_,u_] := TensDot[Ga[mu], tt][r, u] /; MatchQ[tt,SpinMatrixObject];
+Ga /: Ga[mu_, s_,r_] tt_[u_,s_] := TensDot[tt, Ga[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
+
+ProjP /: ProjP[r_,s_] tt_[s_,u_] := TensDot[ProjP, tt][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjP /: ProjP[s_,r_] tt_[u_,s_] := TensDot[tt, ProjP][u, r] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[r_,s_] tt_[s_,u_] := TensDot[ProjM, tt][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[s_,r_] tt_[u_,s_] := TensDot[tt, ProjM][u, r] /; MatchQ[tt,SpinMatrixObject];
+
+ProjP /: ProjP[mu_, r_,s_]  tt_[s_,u_] := TensDot[ProjP[mu], tt][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjP /: ProjP[mu_, s_,r_] tt_[u_,s_] := TensDot[tt, ProjP[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[mu_, r_,s_] tt_[s_,u_] := TensDot[ProjM[mu], tt][r, u] /; MatchQ[tt,SpinMatrixObject];
+ProjM /: ProjM[mu_, s_,r_] tt_[u_,s_] := TensDot[tt, ProjM[mu]][u, r] /; MatchQ[tt,SpinMatrixObject];
 
 MakeSlashedMatrix[expr_] := Block[{tempexpr},
    tempexpr = If[FR$FExpand,Expand[expr],Expand[Expand[Expand[expr,Lorentz],FV],TensDot]];
@@ -1037,7 +1051,7 @@ MakeSlashedMatrix[expr_] := Block[{tempexpr},
          FV[kk_, mumu_] TensDot[gg1___, Ga[mumu_], gg2___] :> TensDot[gg1, SlashedP[kk], gg2]}];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Levi - Civita*)
 
 
@@ -1074,7 +1088,14 @@ Eps[xx___, Index[name_, i_?NumericQ], yy___] := Eps[xx, i, yy];
 
 (*added by celine*)
 (* Benj: problem with the global sign. I changed it to match Peskin and Schroeder *)
+
+(* Liam commenting out to test *)
+
+
+
 Eps /: Eps[___, i_,___,i_,___] := 0;
+
+
 Eps /: Eps[ i_,k_,l_,j_] Eps[ i_,g_,h_,j_] := -2 (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ k_,i_,l_,j_] Eps[ i_,g_,h_,j_] := 2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ k_,l_,i_,j_] Eps[ i_,g_,h_,j_] := -2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
@@ -1092,6 +1113,8 @@ Eps /: Eps[ k_,i_,l_,j_] Eps[ g_,h_,j_,i_] := -2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]
 Eps /: Eps[ k_,l_,i_,j_] Eps[ g_,h_,j_,i_] := 2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 Eps /: Eps[ k_,l_,j_,i_] Eps[ g_,h_,j_,i_] := -2  (ME[k,g]ME[l,h]-ME[k,h]ME[l,g]);
 
+
+
 (* Reordering of the Levi  - Civita *)
 
 OrderEps[expr_] := expr //. Eps -> (Signature[List[##]]*(Epstmp @@ Sort[List[##]]) &) //. Epstmp -> Eps;
@@ -1107,7 +1130,7 @@ TensQ[Eps[___]] := True;
 TensQ[Eps] = True;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Metric tensor and four-vectors*)
 
 
@@ -1124,6 +1147,48 @@ ME[Except[Index[___], mu_], Except[Index[___], nu_]] := ME[Index[Lorentz, mu], I
 SetAttributes[ME, Orderless];
 
 SetAttributes[SP, Orderless];
+
+(* Adding special cases of metric contractions *)
+
+(***********)
+
+(*(* Fully contracted *)
+ME /:ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]]:=FR$SpaceTimeDimension^2;
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]]:=FR$SpaceTimeDimension;
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,sig_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]:=FR$SpaceTimeDimension;
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,sig_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]:=FR$SpaceTimeDimension;
+
+(* Two Indices left *)
+ME/: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,eps_]]:=FR$SpaceTimeDimension ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];*)
+
+(* Adding redundant looking identites to see if this will fix bug *)
+(*ME/:ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,eps_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME/:ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME/:ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];*)
+
+(* Try permuting orders *)
+(*ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]]ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]]  ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]]ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]]  :=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]]ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] :=ME[Index[Lorentz,sig],Index[Lorentz,eps]];*)
+
+(* Try doing backwards *)
+(*ME/: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,eps_]]ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] :=FR$SpaceTimeDimension ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] :=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] :=ME[Index[Lorentz,sig],Index[Lorentz,eps]];
+ME /:  ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,rho_]]ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]]:=ME[Index[Lorentz,sig],Index[Lorentz,eps]];*)
+
+
+(* Four Indices left *)
+(*ME/: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,kap_],Index[Lorentz,eps_]]:=FR$SpaceTimeDimension ME[Index[Lorentz,rho],Index[Lorentz,sig]] ME[Index[Lorentz,kap],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,kap_]] ME[Index[Lorentz,nu_],Index[Lorentz,eps_]]:=ME[Index[Lorentz,rho],Index[Lorentz,sig]] ME[Index[Lorentz,kap],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,nu_]] ME[Index[Lorentz,rho_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,kap_]]:=ME[Index[Lorentz,rho],Index[Lorentz,sig]] ME[Index[Lorentz,kap],Index[Lorentz,eps]];
+ME /: ME[Index[Lorentz,mu_],Index[Lorentz,rho_]] ME[Index[Lorentz,nu_],Index[Lorentz,sig_]] ME[Index[Lorentz,mu_],Index[Lorentz,eps_]] ME[Index[Lorentz,nu_],Index[Lorentz,kap_]]:=ME[Index[Lorentz,rho],Index[Lorentz,sig]] ME[Index[Lorentz,kap],Index[Lorentz,eps]];*)
+
+
+(**********)
 
 MEME /: func_[x___, mu_, y___]MEME[mu_, nu_] := func[x, nu, y];
 MEME /: func_[x___, nu_, y___]MEME[mu_, nu_] := func[x, mu, y];
@@ -1173,7 +1238,7 @@ FV[bb_,Index[Lorentz,mu__]] FV[aa_,Index[Lorentz,mu__]]^:=SP[bb,aa];
 FV[aa_,Index[Lorentz,mu__]] FV[aa_,Index[Lorentz,mu__]]^:=SP[aa,aa];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Sorting*)
 
 
@@ -1364,7 +1429,7 @@ HC[p_?(numQ[#[_]]===True&)][in_]:=Conjugate[p[in]];
 HC[f_?(SuperfieldQ[#]===True&)[inds___]]:=HC[f][inds];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Hermitian conjugate for definitions*)
 
 
@@ -1453,6 +1518,8 @@ RSpin32FieldQ[HCanti[f_]] := RSpin32FieldQ[f];
 CSpin32FieldQ[HCanti[f_]] := CSpin32FieldQ[f];
 RFermionFieldQ[HCanti[f_]] := RFermionFieldQ[f];
 CFermionFieldQ[HCanti[f_]] := CFermionFieldQ[f];
+
+(* change to check for source of lepton/W/vl vertex bug - liam *)
 (*HCanti[f_?((Not[AntiFieldQ[#]] && Not[MajoranaFieldQ[#]])&)] := f;*)
 
 
@@ -1467,6 +1534,8 @@ HCanti[x_?(Element[#,Reals] === True &)] := x;
 HCanti[x_?(Element[#,Complexes] === True &)] := Conjugate[x];
 HCanti[Complex][a_,b_] := Conjugate[Complex[a,b]];
 HCanti[Rational][a_,b_] := Rational[a,b];
+
+(* change to check for source of lepton/W/vl vertex bug - liam *)
 (*HCanti[f_?(Not[CompTensQ[#]]&)] := f;*)
 
 

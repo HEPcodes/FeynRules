@@ -132,7 +132,7 @@ Do[
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Vertex reordering*)
 
 
@@ -264,7 +264,7 @@ FAParticleOrderingQBuild["T",Except["-F"|"F"|"U"|"V"|"S",_]]:=True;
 FAParticleOrderingQ = FAParticleOrderingQBuild[FAPartFieldType[#1[[1]]], FAPartFieldType[#2[[1]]]] === True &;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*CreateFAVertexList*)
 
 
@@ -321,7 +321,7 @@ porder=Ordering[faparts,All,FAParticleOrderingQ[#1,#2]&];
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*CouplRenaming*)
 
 
@@ -486,7 +486,7 @@ FACouplingRenaming[favertices_] := Block[{vertListTmp = {}, vertN = 1},
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Index handling*)
 
 
@@ -546,7 +546,7 @@ MakeIndexSum[expr_?(Head[#]=!=List &)]:=Block[{tmpexprlist,getindlist,IndexSum1}
 (*Generic file writing functions*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteKinIndices[genfile,dirIndOpt]*)
 
 
@@ -578,7 +578,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WriteSimpRules[genfile]*)
 
 
@@ -600,7 +600,7 @@ WriteString[genfile, "\n"];
 );
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*WritePropagators[genfile,dicacIndOpt]*)
 
 
@@ -777,7 +777,8 @@ WriteStructure[gen_,struc_]:=Module[{struc2,struc3,sumInd,SI},
 		];
 		If[ll<StringLength[structurelistFA[[kk,1]]],WriteString[genfile,", "];];,
 		{ll,StringLength[structurelistFA[[kk,1]]]}];
-	If[Not[StringFreeQ[structurelistFA[[kk,1]],"F"]],WriteString[genfile," ] ==\nG[-1]["];,WriteString[genfile," ] ==\nG[+1]["];];
+	If[Not[StringFreeQ[structurelistFA[[kk,1]],"F"]]||Not[FreeQ[structurelistFA[[kk]],Eps]],
+       WriteString[genfile," ] ==\nG[-1]["];,WriteString[genfile," ] ==\nG[+1]["];];
 	Do[WriteString[genfile,"s"<>ToString[ll]<>" "<>StringTake[structurelistFA[[kk,1]],{ll}]<>"[j"<>ToString[ll]<>"]"];
 		If[ll<StringLength[structurelistFA[[kk,1]]],WriteString[genfile,", "];];,
 		{ll,StringLength[structurelistFA[[kk,1]]]}];

@@ -1,5 +1,10 @@
 Update notes for FeynRules 2.3.x
 
+2547 2.3.24 12-08-16 degrande:   bug fixed for leviCivita 
+
+2541 2.3.23 19-07-16 clduhr:     Added Patched Initialisation.m (by Liam) to 
+                                 current 
+
 2533 2.3.22 04-05-16 fuks:       Adding a missing FRDot rule (thanks to Jose 
                                  Santiago) 
 
