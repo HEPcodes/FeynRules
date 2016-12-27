@@ -44,7 +44,7 @@ Options[WO`WriteOutput] = {
    WO`WOMaxNcf -> 4,
    WO`WOGauge -> WO`WOUnitarity,
    WO`WOGaugeParameter -> "Rxi",
-   WO`WOWhizardVersion -> "2.2.3",
+   WO`WOWhizardVersion -> "2.4.0",
    WO`WOVerbose -> False,
    WO`WOAutoGauge -> True,
    WO`WOMaxCouplingsPerFile -> 500,
@@ -62,7 +62,7 @@ Options[WO`WriteOutput] = {
 };
 
 Options[WO`WriteExtParams] = {
-   WO`WOWhizardVersion -> "2.2.3",
+   WO`WOWhizardVersion -> "2.4.0",
    WO`WOEParamList -> {},
    WO`WOModelName -> "unknown",
    WO`WOMassList -> {},
@@ -94,7 +94,9 @@ WO`WOWhizardVersion::usage = (""
    <> "   \"1.96\" : >= 1.96\n"
    <> "   \"2.0\"  : 2.0 - 2.0.2\n"
    <> "   \"2.0.3\": 2.0.3 - 2.2.2\n"
-   <> "   \"2.2.3\": 2.2.3 (default)");
+   <> "   \"2.2.3\": 2.2.3\n"
+   <> "   \"2.3.0\": 2.3.0\n"
+   <> "   \"2.4.0\": 2.4.0 (default)");
 WO`WOVerbose::usage = (""
    <> "Verbose output. At the moment, this enables more detailed information "
    <> "on skipped vertices. Default: False");
@@ -451,7 +453,7 @@ WO`GaugeName[g_] := Switch[g, WO`WOUnitarity, "Unitarity", WO`WOFeynman, "Feynma
 WO`GaugeName[] := WO`GaugeName[WO`gauge];
 
 (* Version query helpers *)
-WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,"2.3.0",230,_,
+WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,"2.3.0",230,"2.4.0",240,_,
    Throw["BUG: invalid version in WO`whizvn, please report", WO`EAbort]];
 WO`whizvn[] := WO`whizvn[WO`whizv];
 WO`whizv23[] := WO`whizvn[] >= WO`whizvn["2.3.0"];
@@ -714,10 +716,16 @@ WO`CopyAux[srcdir_, destdir_] := Module[{CopyHelper},
    ];
    If[WO`whizv2x[],
       CopyHelper[{filea_, fileb_}] := Module[{src, dest, sdir, sfile, ddir, dfile},
-         src=If[WO`whizvn[] > WO`whizvn["2.0.3"],
+(* CD: changed this to include WO 2.3.0 *)
+         (* src=If[WO`whizvn[] > WO`whizvn["2.0.3"],
             ToFileName[{srcdir, "2.2.3"}, filea],
             ToFileName[{srcdir, "2.0"}, filea]
+         ];*)
+         src=Which[WO`whizvn[] >= WO`whizvn["2.3.0"], ToFileName[{srcdir, "2.3.0"}, filea],
+                   WO`whizvn[] > WO`whizvn["2.0.3"], ToFileName[{srcdir, "2.2.3"}, filea],
+                   True, ToFileName[{srcdir, "2.0"}, filea]
          ];
+(* End CD change *)
          dest = ToFileName[destdir, fileb];
          StringReplace[src, RegularExpression[
             "^(.*" <> WO`fileSlashRE <> ")([^" <> WO`fileSlashRE <> "]+)$"] :>
@@ -2130,7 +2138,7 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
                <> "\n"
             , ""]
          <> "(* Misc. infrastructure *)\n\n"
-         <> options <> "\n" <> rcs <> "\n"
+         <> options <> "\n" <> If[MemberQ[{"1.92", "1.93", "1.96", "2.0", "2.0.3", "2.2.3", "2.3.0"}, WO`whizv], rcs <> "\n", ""]
          <> If[WO`whizv2x[], sanscolorstubs <> "\n", ""]
       , 3] <> finalwords
    ];
@@ -2638,13 +2646,21 @@ WO`WriteWhizMdl[file_] := Module[{handle, content, header, params, DoParams, rep
             <> "  anti pbar \"p-\"\n"
             <> "\n"
             <> "particle HADRON_REMNANT 90\n"
+	    <> "  name hr\n"
+	    <> "  tex_name \"had_r\"\n"
             <> "\n"
             <> "particle HADRON_REMNANT_SINGLET 91\n"
+	    <> "  name hr1\n"
+	    <> "  tex_name \"had_r^{(1)}\"\n"
             <> "\n"
             <> "particle HADRON_REMNANT_TRIPLET 92\n"
+	    <> "  name hr3\n"
+	    <> "  tex_name \"had_r^{(3)}\"\n"
             <> "  color 3\n"
             <> "\n"
             <> "particle HADRON_REMNANT_OCTET 93\n"
+	    <> "  name hr8\n"
+	    <> "  tex_name \"had_r^{(8)}\"\n"
             <> "  color 8"
             <> "\n\n";
       ];

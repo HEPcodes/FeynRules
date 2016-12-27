@@ -16,8 +16,8 @@ M$ModelName = "Standard Model";
 
 M$Information = {
   Authors      -> {"N. Christensen", "C. Duhr", "B. Fuks"}, 
-  Version      -> "1.4.6",
-  Date         -> "15. 04. 2014",
+  Version      -> "1.4.7",
+  Date         -> "28. 09. 2016",
   Institutions -> {"Michigan State University", "Universite catholique de Louvain (CP3)", "IPHC Strasbourg / University of Strasbourg"},
   Emails       -> {"neil@pa.msu.edu", "claude.duhr@uclouvain.be", "benjamin.fuks@cnrs.in2p3.fr"},
   URLs         -> "http://feynrules.phys.ucl.ac.be/view/Main/StandardModel"
@@ -37,6 +37,7 @@ FR$RmDblExt = { ymb -> MB, ymc -> MC, ymdo -> MD, yme -> Me,
 (* *****  Change  log   ***** *)
 (* ************************** *)
 
+(* v1.4.7: Index issue with the ghost Lagrangian (special thanks to S. Iwamoto *)
 (* v1.4.6: NLO variable added.                                               *)
 (* v1.4.5: Added widths for ghosts.                                          *)
 (* v1.4.4: Changed widths of goldstone bosons to be the same as for the W and Z bosons *)
@@ -719,8 +720,8 @@ LYukawa := Block[{sp,ii,jj,cc,ff1,ff2,ff3,yuk,feynmangaugerules},
 LGhost := Block[{LGh1,LGhw,LGhs,LGhphi,mu, generators,gh,ghbar,Vectorize,phi1,phi2,togoldstones,doublet,doublet0},
   (* Pure gauge piece *) 	
   LGh1 = -ghBbar.del[DC[ghB,mu],mu];
-  LGhw = -ghWibar.del[DC[ghWi,mu],mu];
-  LGhs = -ghGbar.del[DC[ghG,mu],mu];
+  LGhw = -ghWibar[ii].del[DC[ghWi[ii],mu],mu];
+  LGhs = -ghGbar[ii].del[DC[ghG[ii],mu],mu];
 
   (* Scalar pieces: see Peskin pages 739-742 *)
   (* phi1 and phi2 are the real degrees of freedom of GP *)

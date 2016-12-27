@@ -1,5 +1,11 @@
 Update notes for FeynRules 2.3.x
 
+2557 2.3.26 06-12-16 clduhr:     Fix of WOinterface (first one was buggy 
+                                 still) 
+
+2555 2.3.25 05-12-16 clduhr:     Fix to WO interfaces using patches sent by 
+                                 JRR in August 
+
 2547 2.3.24 12-08-16 degrande:   bug fixed for leviCivita 
 
 2541 2.3.23 19-07-16 clduhr:     Added Patched Initialisation.m (by Liam) to 
