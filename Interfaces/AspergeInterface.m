@@ -546,7 +546,7 @@ RunASperGe[] :=Block[{olddir=Directory[]},
   Print[Style[" * Compiling Asperge ...",Orange]];
   Run["make"];
   Print[Style[" * Running Asperge ...",Orange]];
-  Run["./ASperGe input/externals.dat output/out.dat"];
+  Print[Run["./ASperGe input/externals.dat output/out.dat"]];
   Print[Style[" * Updating parameters ...",Orange]];
   SetDirectory[$ASperGeDir<>"/output"];
   ReadLHAFile[Input->"out.dat"];

@@ -625,6 +625,8 @@ For[fi=1,fi<=Length[FieldRenoList],fi++,
 ];
 FieldRenoList=Flatten[FieldRenoList];
 
+FieldRenoList=FieldRenoList/.Conjugate[FR$CT*b__]->Conjugate[b]*FR$CT;
+
 FieldRenoList[[All,2,2]] = FieldRenoList[[All,2,2]]/.{FR$deltaZ[{a_,b_},{{c_}},d___]*b_[in___,c_,e___]:>
   Sum[FR$deltaZ[{a,GetnFlavor[b,kk,1]},{{}},d](GetnFlavor[b,kk,2])[in,e],{kk,Length[IndexRange[Index[c[[1]]]]]}],
   Conjugate[FR$deltaZ[{a_,bbar_},{{c_}},d___]]*b_[in___,c_,e___]:>

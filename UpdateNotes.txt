@@ -1,5 +1,10 @@
 Update notes for FeynRules 2.3.x
 
+2573 2.3.28 21-05-17 fuks:       Adding the sextet Clebsch to the index 
+                                 optimization routine 
+
+2568 2.3.27 10-02-17 degrande:   fix reno bug for Kim 
+
 2557 2.3.26 06-12-16 clduhr:     Fix of WOinterface (first one was buggy 
                                  still) 
 

@@ -66,7 +66,6 @@ FeynmanRules[{lags__}, OptionsPattern[]] := Block[{FRname=OptionValue[Name],lag,
     SelectParticles->OptionValue[SelectParticles],  Exclude4Scalars->OptionValue[Exclude4Scalars],NoDefinitions->OptionValue[NoDefinitions]},Rule[_,MR$Null]];
 
   GetVertices[lag, Sequence@@FRoptions];
-
   (* Output *)
   If[Length[Vertices[lag]]==1, Print["1 vertex obtained."], Print[Length[Vertices[lag]], " vertices obtained."]];
   If[OptionValue[TeXOutput]=!=MR$Null, FRMakeTeXOut[OptionValue[TeXOutput], Vertices[lag]]];
@@ -654,6 +653,7 @@ GetVertices[lagrangian_, OptionsPattern[]] := Block[{templag ,FRoptions,amc=Opti
     (TreatVertex[#]&/@CollectedIntLagList)],{{_,0}} ];
 
   vertexlist = DeleteCases[vertexlist, {_,0}];
+
   (* Output *)
   If[vertexlist=!={},
     ProcessVertexList[vertexlist,lagrangian, Name->OptionValue[Name], ConservedQuantumNumbers->OptionValue[ConservedQuantumNumbers],ApplyMomCons->amc],
@@ -728,10 +728,12 @@ ProcessVertexList[vlist_,lagrangian_,OptionsPattern[]]:=Block[{vertexlist,tag,ve
   vertexlist = DeleteCases[(List[#[[1]],OptimizeIndex[#[[2]]]] &/@vertexlist), {_, 0}];
 
   (* Saving the output *)
+  If[vertexlist==={}, Vertices[lagrangian] = {}; Vertices[tag] = {}; Return[]];
+
   Vertices[lagrangian] = If[amc2,ApplyMomentumConservation[vertexlist],vertexlist,ApplyMomentumConservation[vertexlist]];
 
   Vertices[tag] = vertexlist;
-  
+
   (* Check for Quantum Number Conservation *)
   vertparticles = ((#1&)@@@#&)/@ vertexlist[[All,1]];
   conserveqn = OptionValue[ConservedQuantumNumbers];

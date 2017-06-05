@@ -1799,7 +1799,7 @@ ToIndexList[exp_]:=Block[{res,MyTens},
 
 (* Save the ordering of the expression and remove objects without indices *)
   res=If[(Length[res]=!=1) && (Length[res]=!=0),(List@@res), List[res]]//.{nc->Sequence, Dot->Sequence, GammaLine->Sequence,TensDot2[ff__][opt__]->Sequence[ff]};
-  res=res/.{HC[aa_]->aa,Conjugate[aa_]->aa,CC[aa_]->aa,IndexDelta[aa__]->Sequence[aa], PauliSigma[aa__]->Sequence[aa]};
+  res=res/.{HC[aa_]->aa,Conjugate[aa_]->aa,CC[aa_]->aa,IndexDelta[aa__]->Sequence[aa], PauliSigma[aa__]->Sequence[aa], K6bar[aa__]->Sequence[aa],K6[aa__]->Sequence[aa]};
   res=res/.Power[a_,n_? (IntegerQ[#]&)] :> Sequence@@Table[a,{Abs[n]}];
   res=res//.del[x_,mu_]->Sequence[x, Index[Lorentz,mu]];
   res=res/.FV[sa_, mu_]->Index[Lorentz, mu];
