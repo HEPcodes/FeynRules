@@ -1,5 +1,10 @@
 Update notes for FeynRules 2.3.x
 
+2590 2.3.31 26-01-18 claudeduhr: Fixed <<<.mine issue introduced in previous 
+                                 commit 
+
+2587 2.3.30 24-01-18 claudeduhr: Fixed bug signaled by A. Coogan. 
+
 2575 2.3.29 06-07-17 clduhr:     bug fix in __init__.py for FR-current: 
                                  missing import function_library. Pointed 
                                  out by Olivier, after bug report on 

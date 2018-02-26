@@ -283,7 +283,7 @@ CnumQ[FR$delta[args__]] := True;
 numQ[FR$delta[args__]] := True;
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*del*)
 
 
@@ -339,7 +339,7 @@ del /: del[c_ * f_ / a_ + g_ / b_, mu_] := c * del[f, mu]/a + del[g, mu]/b /; nu
 
 del /: del[Power[f_?FieldQ, 2], mu_] := 2 * f * del[f, mu];
 del /: del[Power[f_?(ScalarFieldQ), n_], mu_] := n * Power[f, n-1] * del[f, mu];
-del /: del[Power[Plus[xx_, y__], n_], mu] := del[Expand[Power[Plus[xx,y], n]], mu];
+del /: del[Power[Plus[xx_, y__], n_], mu_] := del[Expand[Power[Plus[xx,y], n]], mu];
 del /: del[f1_?(ScalarFieldQ) * f2_?(ScalarFieldQ), mu_] := f1 * del[f2, mu] + del[f1, mu] * f2;
 del /: del[f1_?(ScalarFieldQ) * f2_?(ScalarFieldQ), mu_] := f1 * del[f2, mu] + del[f1, mu] * f2;
 del /: del[f1_?(ScalarFieldQ) * f2_?(ScalarFieldQ) * f3_?(ScalarFieldQ), mu_] := f1 * del[f2 * f3, mu] + del[f1, mu] * f2 * f3;
