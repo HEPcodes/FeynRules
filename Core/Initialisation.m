@@ -16,7 +16,7 @@ FR$DateFormat[] := Block[{date = Date[]},
      ToString[date[[3]]] <> ". " <> ToString[date[[2]]] <> ". " <> ToString[date[[1]]] <> ",    " <> ToString[date[[4]]]<>":" <> ToString[date[[5]]]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*NumericalValue*)
 
 

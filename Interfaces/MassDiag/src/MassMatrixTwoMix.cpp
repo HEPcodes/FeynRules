@@ -68,7 +68,7 @@ void MassMatrixTwoMix::diagMatrix()
     
     gsl_eigen_hermv_workspace *w2 = gsl_eigen_hermv_alloc(dim);
     gsl_eigen_hermv(massm2, eigv2, mixm2, w2);
-    gsl_eigen_hermv_sort(eigv, mixm2, GSL_EIGEN_SORT_ABS_ASC);
+    gsl_eigen_hermv_sort(eigv2, mixm2, GSL_EIGEN_SORT_ABS_ASC);
     gsl_eigen_hermv_free(w2);    
    
     //Since GSL put the eigenvectors as columns, we need to transpose

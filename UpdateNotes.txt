@@ -1,5 +1,8 @@
 Update notes for FeynRules 2.3.x
 
+2591 2.3.32 12-03-18 clduhr:     Fix in object_library.py signalled by O 
+                                 Mattelaer. 
+
 2590 2.3.31 26-01-18 claudeduhr: Fixed <<<.mine issue introduced in previous 
                                  commit 
 

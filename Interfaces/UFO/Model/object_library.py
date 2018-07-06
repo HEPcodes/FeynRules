@@ -172,17 +172,13 @@ all_CTparameters = []
 
 class CTParameter(UFOBaseClass):
 
-    require_args=['name', 'nature,', 'type', 'value', 'texname']
+    require_args=['name', 'type', 'value', 'texname']
 
     def __init__(self, name, type, value, texname):
 
-        args = (name,'internal',type,value,texname)
+        args = (name,type,value,texname)
 
         UFOBaseClass.__init__(self, *args)
-
-        args=(name,'internal',type,value,texname)
-
-        self.nature='interal'
 
         global all_CTparameters
         all_CTparameters.append(self)
