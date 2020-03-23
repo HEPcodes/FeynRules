@@ -205,15 +205,15 @@ FRMakeTeXOut[outfile_, vl_] := Block[{texclass, texindlist},
       Close[outfile];];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*WriteTeXOutput*)
 
 
 Options[WriteTeXOutput] = {PrintLagrangian -> False, Output -> Automatic};
 
-WriteTeXOutput[args__]:=WriteTeXOutputList[{args}] /; And @@ ((Head[#] =!= Rule &) /@ {args});
+WriteTeXOutput[argx__]:=WriteTeXOutputList[{argx}] /; And @@ ((Head[#] =!= Rule &) /@ {argx});
 
-WriteTeXOutput[args__]:=WriteTeXOutputList[Select[{args}, Head[#] =!= Rule &], Sequence @@ Select[{args}, Head[#] === Rule &]] /; Not[And @@ ((Head[#] =!= Rule &) /@ {args})];
+WriteTeXOutput[argx__]:=WriteTeXOutputList[Select[{argx}, Head[#] =!= Rule &], Sequence @@ Select[{argx}, Head[#] === Rule &]] /; Not[And @@ ((Head[#] =!= Rule &) /@ {argx})];
 
 WriteTeXOutputList[lagpieces_List, options___] := Block[{texclass, texindlist, texvl, outfile, tempoutfile, laglists, templaglists = {}},
       (*Setting the output file name *)

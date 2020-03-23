@@ -54,7 +54,7 @@ DeltaSUSYChiral[lc_,spin_, lor_] :=Module[{start,resu,resudbl,resusgl,spt},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SUSY transformation of the vector Lagrangian*)
 
 
@@ -68,7 +68,7 @@ DeltaSUSYVector[lv_,spin_,lorentz_] :=Module[{start,check,resu,spt,inoList=SF2In
 
   (* We then derive the supercurrent from the previous result *)
   resu=Expand[resu/.eps1bar[_]->0/. del[del[ff_,Global`mu$1],Global`mu$2]->del[del[ff,Global`mu$2],Global`mu$1]];
-  resu=resu/.Eps[args__]:>Signature[{args}] Eps[Sequence@@Sort[{args}]]/.Eps[___,a_,___,b_,___]del[del[_,a_],b_]->0;
+  resu=resu/.Eps[argx__]:>Signature[{argx}] Eps[Sequence@@Sort[{argx}]]/.Eps[___,a_,___,b_,___]del[del[_,a_],b_]->0;
   start=resu; 
   resu=If[Head[resu]===Plus, List@@resu, {resu}];
 
@@ -80,7 +80,7 @@ DeltaSUSYVector[lv_,spin_,lorentz_] :=Module[{start,check,resu,spt,inoList=SF2In
   (* Check that everything worked fine *)
   check = start-Expand[del[GrassmannExpand[Expand[Ueps[spin,spt]nc[eps1[spt],(Plus@@resu)]]],lorentz]];
   check = OptimizeIndex[check/.del[eps1[_],_]->0]/.{ff_?(MemberQ[cstlist,#]&)[inds__]:>ff[Sequence@@Sort[{inds}]] Signature[{inds}],
-   Eps[args__]:>Signature[{args}] Eps[Sequence@@Sort[{args}]], Eps[___,a_,___,b_,___]del[del[_,a_],b_]->0};
+   Eps[argx__]:>Signature[{argx}] Eps[Sequence@@Sort[{argx}]], Eps[___,a_,___,b_,___]del[del[_,a_],b_]->0};
   If[check=!=0, Print[Style["Problen with the extraction of the supercurrent in LVector",Bold,Red]];Abort[]];
 
   (* output *)
@@ -148,7 +148,7 @@ CreateChiralDeltaSUSY[] := Module[{MyPat},
    sfidx=anti[#][Sequence@@inds]/.fld_[]->fld;
    out=MyRule[FR$DPsi[anti[wey][MyPat[spi,Blank[]],Sequence@@(MyPat[#,Blank[]]&/@inds)]],
       Tonc[ThetabarComponent[Deps[spi,spi2]Tonc[DeltaSUSY[sfidx,eps1]/.eps1bar[_]->0],spi2]/Sqrt[2]]];
-    out=out/.del[args__]->DC[args];
+    out=out/.del[argx__]->DC[argx];
     $OptIndex=999;out=out/.MyRule[a_,b_]:>MyRule[a,OptimizeIndex[Expand[b]]];
     out/.MyPat->Pattern/.MyRule->Rule]&/@M$ChiralSuperfieldNames;
 

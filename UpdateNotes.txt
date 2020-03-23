@@ -1,5 +1,17 @@
 Update notes for FeynRules 2.3.x
 
+2614 2.3.36 28-11-19 fuks:       Small in InSurGe and with the interaction 
+                                 orders in the UFO interface 
+
+2611 2.3.35 15-10-19 clduhr:     Fix in HC[ ], which had not made it into 
+                                 current release. Also remove shadow 
+                                 warrning from args arguments when loading 
+                                 the package (variable is now called argx). 
+
+2607 2.3.34 22-05-19 degrande:   change tadpole shift 
+
+2606 2.3.33 14-05-19 degrande:   bug fix for roy with color index summed 
+
 2591 2.3.32 12-03-18 clduhr:     Fix in object_library.py signalled by O 
                                  Mattelaer. 
 

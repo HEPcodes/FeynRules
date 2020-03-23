@@ -414,8 +414,8 @@ CheckHermiticity[lagrangian_, options___] := Block[{tempoptions, results, llag, 
      Print["Checking for hermiticity by calculating the Feynman rules contained in L-HC[L]."];
      Print["If the lagrangian is hermitian, then the number of vertices should be zero."];
      (* Improvements added by Benj *)
-     llag = OptimizeIndex[ExpandIndices[lagrangian]]/.{Eps[args__] :> Signature[{args} ] Eps[Sequence @@ Sort[{args}]]};  (* CD: Added ExpandIndices *)
-     hcllag = OptimizeIndex[ExpandIndices[HC[lagrangian]]]/.{Eps[args__] :> Signature[{args} ] Eps[Sequence @@ Sort[{args}]]};
+     llag = OptimizeIndex[ExpandIndices[lagrangian]]/.{Eps[argsargs__] :> Signature[{argsargs} ] Eps[Sequence @@ Sort[{argsargs}]]};  (* CD: Added ExpandIndices *)
+     hcllag = OptimizeIndex[ExpandIndices[HC[lagrangian]]]/.{Eps[argsargs__] :> Signature[{argsargs} ] Eps[Sequence @@ Sort[{argsargs}]]};
 
      (* End of improvements added by Benj *)
      results = Simplify[FeynmanRules[ llag - hcllag, options, ScreenOutput -> False]];

@@ -16,7 +16,7 @@ FR$DateFormat[] := Block[{date = Date[]},
      ToString[date[[3]]] <> ". " <> ToString[date[[2]]] <> ". " <> ToString[date[[1]]] <> ",    " <> ToString[date[[4]]]<>":" <> ToString[date[[5]]]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*NumericalValue*)
 
 
@@ -81,7 +81,7 @@ NumericalValue[Abs[x_]] := Abs[NumericalValue[x]];
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Dot*)
 
 
@@ -141,7 +141,7 @@ Protect[Conjugate];
 Mass[ff_?AntiFieldQ]:=Mass[anti[ff]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IndexDelta*)
 
 
@@ -272,18 +272,18 @@ CnumQ[Exp[x_]] := CnumQ[x]
 numQ[TensDot[xx_, yy___][i_,j_]] := True;
 
 
-CnumQ[FR$deltaZ[args__]] := True;
-numQ[FR$deltaZ[args__]] := True;
+CnumQ[FR$deltaZ[argx__]] := True;
+numQ[FR$deltaZ[argx__]] := True;
 
-CnumQ[FR$deltat[args__]] := True;
-numQ[FR$deltat[args__]] := True;
-
-
-CnumQ[FR$delta[args__]] := True;
-numQ[FR$delta[args__]] := True;
+CnumQ[FR$deltat[argx__]] := True;
+numQ[FR$deltat[argx__]] := True;
 
 
-(* ::Section:: *)
+CnumQ[FR$delta[argx__]] := True;
+numQ[FR$delta[argx__]] := True;
+
+
+(* ::Section::Closed:: *)
 (*del*)
 
 
@@ -545,7 +545,7 @@ CanonicalDimension[CC[ff_]] := CanonicalDimension[ff];
 CanonicalDimension[CC[ff_][ind___]] := CanonicalDimension[ff[ind]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*FieldQ & co.*)
 
 
@@ -653,7 +653,7 @@ right[field_[s_,i___]] := Module[{r}, ProjM[r,s] field[r,i]] /; (Spin32FieldQ[fi
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Pauli \[Sigma] matrices*)
 
 
@@ -716,7 +716,7 @@ numQ[PauliSigma[_,_,_]]:=True;
 CnumQ[PauliSigma[_,_,_]]:=True;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*TensDot*)
 
 
@@ -739,7 +739,7 @@ TensDot /: TensDot[a1_, as__][ii_, jj_] TensDot[b1_, bs__][jj_, kk_] :=
   TensDot[a1, as, b1, bs][ii, kk]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Gamma matrices*)
 
 
@@ -1051,7 +1051,7 @@ MakeSlashedMatrix[expr_] := Block[{tempexpr},
          FV[kk_, mumu_] TensDot[gg1___, Ga[mumu_], gg2___] :> TensDot[gg1, SlashedP[kk], gg2]}];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Levi - Civita*)
 
 
@@ -1130,7 +1130,7 @@ TensQ[Eps[___]] := True;
 TensQ[Eps] = True;
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Metric tensor and four-vectors*)
 
 
@@ -1238,7 +1238,7 @@ FV[bb_,Index[Lorentz,mu__]] FV[aa_,Index[Lorentz,mu__]]^:=SP[bb,aa];
 FV[aa_,Index[Lorentz,mu__]] FV[aa_,Index[Lorentz,mu__]]^:=SP[aa,aa];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Sorting*)
 
 
@@ -1324,7 +1324,9 @@ HC[TensDot[xx_, y___]][r_,s_] := (HC /@ Reverse[TensDot[xx, y]])[s,r];
 (*HC[a_ + b_] := HC[a] + HC[b];*)
 (*HC[a_ * b_] := HC[a] * HC[b];*)
 HC[sum_Plus]:=HC /@ sum;
-HC[prod_Times] := HC /@ prod; 
+(* CD Feb 2017: Added Expand[ ] *)
+HC[prod_Times] := Expand[HC /@ prod]; 
+(* End CD Feb 2017 *)
 (*/; Not[MatchQ[a, _?(TensQ)[_,_]] || MatchQ[b, _?(TensQ)[_,_]]] ;
 HC[tt_?TensQ[i1_,i2_]ff_[jj___,i2_, kk___]] := HC[ff[jj, i2, kk]]HC[tt[i2,i1]];*)
 HC[Power][a_, n_] := Power[HC[a], n];
@@ -1399,8 +1401,14 @@ $TensClass[HC[t_][ind___]] := $TensClass[t];
 HC[t_?((FieldQ[#]||TensQ[#])&)[ind___]] := HC[t][ind];
 
 
-HC[Except[_?(TensQ)[___], x_?(CnumQ[#] === True &)]] := Conjugate[x];
-HC[Except[_?(TensQ)[___], x_?((Not[CnumQ[#] === True] && (numQ[#] === True))&)]] := x;
+(* CD: Feb 2017: Added /; FreeQ[x, _?GammaMatrixQ], because otherwise it triggers on Gamma matrices without transposing them.
+   Old version is commented out.
+*)
+(*HC[Except[_?(TensQ)[___], x_?(CnumQ[#] === True &)]] := Conjugate[x];
+HC[Except[_?(TensQ)[___], x_?((Not[CnumQ[#] === True] && (numQ[#] === True))&)]] := x;*)
+HC[Except[_?(TensQ)[___], x_?(CnumQ[#] === True &)]] := Conjugate[x] /; FreeQ[x, _?GammaMatrixQ];
+HC[Except[_?(TensQ)[___], x_?((Not[CnumQ[#] === True] && (numQ[#] === True))&)]] := x /; FreeQ[x, _?GammaMatrixQ];
+(* End CD Feb 2017 *)
 HC[x_?(Element[#,Reals] === True &)] := x;
 HC[x_?(Element[#,Complexes] === True &)] := Conjugate[x];
 HC[Complex][a_,b_] := Conjugate[Complex[a,b]];

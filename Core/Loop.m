@@ -4,7 +4,7 @@
 (*This file contains all the routines necessary for the extraction of the counterterm Lagrangian.*)
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Field renormalization*)
 
 
@@ -61,7 +61,7 @@ RenField[field_,inds__List]:=Block[{rfield=field,NewIndices,FreeIndices, ColorIn
         (#[[1]][Sequence@@DeleteCases[Append[DeleteCases[FreeIndices,Index[ffla,_]],Index[#[[2]],NewIndices]],Index[FlavorIndex,_]]]/.#[[1]][]->#[[1]])&/@MixList)]
   ]; 
 
-  If[AntiFieldQ[field]===True,result=result/.{rfield->field,FR$deltaZ[args__]->Conjugate[FR$deltaZ[args]],ProjP[a_,b_]->ProjM[b,a],ProjM[a_,b_]->ProjP[b,a]}];
+  If[AntiFieldQ[field]===True,result=result/.{rfield->field,FR$deltaZ[argx__]->Conjugate[FR$deltaZ[argx]],ProjP[a_,b_]->ProjM[b,a],ProjM[a_,b_]->ProjP[b,a]}];
 
   (* Return the result *)
 result];
@@ -93,8 +93,8 @@ FieldRenormalization[]:=Block[{MyModule,MyRuleDelayed},
   (* Antifields *)
   If[SelfConjugateQ[#]=!=True,
     antibare=If[FermionQ[#]===True && GhostFieldQ[#]=!=True,bare/.#->HC[#].Ga[0],bare/.#->anti[#]];
-    antiren=ren/.{fi_?(FieldQ[#]===True&)[args__]->(anti[fi])[args],fi_?(FieldQ[#]===True&)->anti[fi]}/.{
-      FR$deltaZ[args__]->Conjugate[FR$deltaZ[args]],ProjP[a_,b_]->ProjM[b,a],ProjM[a_,b_]->ProjP[b,a]}/.
+    antiren=ren/.{fi_?(FieldQ[#]===True&)[argx__]->(anti[fi])[argx],fi_?(FieldQ[#]===True&)->anti[fi]}/.{
+      FR$deltaZ[argx__]->Conjugate[FR$deltaZ[argx]],ProjP[a_,b_]->ProjM[b,a],ProjM[a_,b_]->ProjP[b,a]}/.
       Conjugate[FR$deltaZ[{fi_?(AntiFieldQ[#]===True&),gi_?(AntiFieldQ[#]===True&)},rest_List,opt___]]->Conjugate[FR$deltaZ[{anti[fi],anti[gi]},rest,opt]];
   ];
 
@@ -161,7 +161,7 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Tadpole renormalization*)
 
 
@@ -173,8 +173,11 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 (*This produces a list of rules allowing to replace the fields with a vev by temself and a tadpole*)
 
 
-TadpoleRenormalization[]:=Block[{tadrep={},vevtmp,vevfi,tadrules,vevkk,vevll},
+TadpoleRenormalization[]:=Block[{tadrep={},vevtmp,vevfi,tadrules,vevkk,vevll,realparam,vevfi2,vevre,zerorule},
+zerorule[x_]:=x->0;
 tadrep={};
+tadrules={};
+realparam=Cases[Join[Flatten[EParamList[[1;;,2,1;;,2]],1],IParamList],{__,False,_}][[1;;,1]];
 For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
   (*get the properties of the field with the vev*)
   vevtmp=Cases[M$ClassesDescription,_?(Not[FreeQ[#,If[Depth[M$vevs[[vevkk,1]]]>1,ClassName->Head[M$vevs[[vevkk,1]]],ClassName->M$vevs[[vevkk,1]]]]]&)];
@@ -185,6 +188,7 @@ For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
   (*the field after replacing it by its definition*)
   vevfi=M$vevs[[vevkk,1]]/.(Definitions/.vevtmp[[1,2]]);
   (*switch depending how many physical fields appear in vevfi*)
+  Print[InputForm[vevfi]];
   Switch[Length[Cases[vevfi,_?FieldQ,\[Infinity]]],
     1,tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];,
     (*shift the scalar or the pseudo scalar depending if the vev has a real or imaginary coefficient*)
@@ -198,14 +202,51 @@ For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
          tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];
        ];
      ],
-    _,Print[Style["Error : Unphysical fields with a vev are assumed to depend on 2 fields at most for the renormalization of the tadpole",Red]];Abort[]];
-tadrules=Cases[{ExpandIndices[tadrules,FlavorExpand->True]},_?FieldQ,\[Infinity]];
-  For[vevll=1,vevll<=Length[tadrules],vevll++,
+    _,vevfi2=Cases[vevfi,_?FieldQ,\[Infinity]];
+    Print["in last case"];
+    If[And@@(SelfConjugateQ/@vevfi2),
+    Print["In if sc"];
+    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[Re[vevfi],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
+    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[Im[vevfi],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
+    Print[InputForm[tadrules]];(*
+       If[Im[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0&&Not[Re[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0],
+          tadrules=Simplify[Re[vevfi],Assumptions\[Rule](((#\[Element]Reals)&)/@Join[vevfi2,realparam])]/.M$vevs[[vevkk,2]]\[Rule]0;
+          Print[InputForm[tadrules]];,
+          If[Re[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0&&Not[Im[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0],
+             tadrules=Simplify[Im[vevfi],Assumptions\[Rule](((#\[Element]Reals)&)/@Join[vevfi2,realparam])]/.M$vevs[[vevkk,2]]\[Rule]0;,
+             Print[Style["Error : cannot connect vev to fields",Red]];
+             Abort[]]
+             ];*)
+       ,
+       Print[Style["Error : Unphysical fields with a vev are assumed to depend on selfconjugated fields  for the renormalization of the tadpole",Red]];
+       Abort[]
+       ];];
+(*tadrules=Cases[{ExpandIndices[tadrules,FlavorExpand->True]},_?FieldQ,\[Infinity]];*)
+  (*For[vevll=1,vevll<=Length[tadrules],vevll++,
     tadrep=Append[tadrep,tadrules[[vevll]]->tadrules[[vevll]]-FR$CT*FR$deltat[tadrules[[vevll]]]/( Union[
     Cases[M$ClassesDescription,{c___,ClassName->tadrules[[vevll]],b___}:>(Mass/.{c,b})[[1]],2],
     Cases[M$ClassesDescription,{c___,ClassMembers->{xx___,tadrules[[vevll]],yy___},b___}:>(Mass/.{c,b})[[-Length[{yy}]-1,1]],2]][[1]])^2];
-  ];
+  ];*)
 ];
+Print["after for"];
+Print[InputForm[tadrules]];
+vevfi2=Union[Cases[tadrules,_?FieldQ,\[Infinity]]];
+Print[InputForm[vevfi2]];
+tadrules=Solve[(#[[1]]==#[[2]]&)/@tadrules,vevfi2];
+If[Length[tadrules]=!=1,
+   Print[Style["Error : no unique solution for the renormalization of the tadpole",Red]];
+   Abort[]];
+Print["t1"];
+Print[InputForm[tadrules]];
+tadrules=DeleteCases[tadrules[[1]],Rule[_,0]];
+Print[InputForm[tadrules]];
+Print["t2"];
+For[vevll=1,vevll<=Length[tadrules],vevll++,
+    tadrep=Append[tadrep,tadrules[[vevll,1]]->tadrules[[vevll,1]]-FR$CT*FR$deltat[tadrules[[vevll,1]]]/( Union[
+    Cases[M$ClassesDescription,{c___,ClassName->tadrules[[vevll,1]],b___}:>(Mass/.{c,b})[[1]],2],
+    Cases[M$ClassesDescription,{c___,ClassMembers->{xx___,tadrules[[vevll,1]],yy___},b___}:>(Mass/.{c,b})[[-Length[{yy}]-1,1]],2]][[1]])^2];
+  ];
+  Print[InputForm[tadrep]];
 tadrep
 ];
 
@@ -341,19 +382,19 @@ CreateDeltaParams[delta_,OptionsPattern[]]:= Block[{Iprm,Iinds={},Pindices, Pdes
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Main routine for the perturbative expansion of any renormalization constant*)
 
 
-PerturbativelyExpand[FR$del_[args__],ExpOrder_List]:=Block[{NewOrder,param,Pindx,CTType,MyTable,MyPattern,dummy,dummy2,resu,Prules,newparam,
+PerturbativelyExpand[FR$del_[argx__],ExpOrder_List]:=Block[{NewOrder,param,Pindx,CTType,MyTable,MyPattern,dummy,dummy2,resu,Prules,newparam,
   PrmToRenomList,deltaFuncList,deltaParamList,deltaOrderList},
 
   (* Initialization *)
   NewOrder=If[MatrixQ[ExpOrder],ExpOrder,{ExpOrder}];
   PrmToRenomList=Flatten[Union[MassList[[2,All,2]],MR$ParameterList,(ParameterName/.MR$ParameterRules[#])&/@MR$ParameterList]]/.Rule[a_,b_]:>b;
-  param=FR$del[args]/.FR$del[{prm_},__]->prm/.FR$del[args]->MR$Null;
+  param=FR$del[argx]/.FR$del[{prm_},__]->prm/.FR$del[argx]->MR$Null;
   newparam=param;
-  Pindx=FR$del[args]/.FR$del[_List,Indx_List]->Indx/.FR$del[args]->MR$Null;
+  Pindx=FR$del[argx]/.FR$del[_List,Indx_List]->Indx/.FR$del[argx]->MR$Null;
   Prules=If[ListQ[MR$ParameterRules[param]],MR$ParameterRules[param],List[]];
   Prules=ParameterName/.Prules/.ParameterName->{};
   If[Not[ListQ[Prules]],Prules={param->Prules}];
@@ -364,11 +405,11 @@ PerturbativelyExpand[FR$del_[args__],ExpOrder_List]:=Block[{NewOrder,param,Pindx
   (* 2. deltaParamList: list of the parameters associated to each coefficient *)
   (* 3. deltaOrderList: place of each coefficient in the series *)
   deltaFuncList=Drop[Flatten[
-    MyTable[FR$del[dummy][NewOrder[[All,1]]],Sequence@@(List[#[[1]],0,#[[2]]] &/@NewOrder)]/.MyTable->Table],1]/.FR$del[dummy]->FR$del[args];
+    MyTable[FR$del[dummy][NewOrder[[All,1]]],Sequence@@(List[#[[1]],0,#[[2]]] &/@NewOrder)]/.MyTable->Table],1]/.FR$del[dummy]->FR$del[argx];
   deltaParamList=(#/.FR$del[fld_List,inds_List,opt___][ord_List]:> 
     Symbol[StringJoin[CTType,opt, Sequence@@(ToString[#]&/@fld),Sequence@@(ToString[#]&/@ord)]][Sequence@@Flatten[inds]])&/@deltaFuncList;
   deltaParamList=If[deltaFuncList=!={},deltaParamList/.fff_[]->fff,{}];
-  deltaOrderList=deltaFuncList/.FR$del[args][orde_List]->orde;
+  deltaOrderList=deltaFuncList/.FR$del[argx][orde_List]->orde;
   deltaFuncList=#/.FR$del[fi_List,inds_List,opt___][orde_List]:>FR$del[fi,{MyPattern[ids,BlankNullSequence[]]},opt][Sequence@@orde]&/@deltaFuncList;
 
   (* We now add the series coefficient to the various parameter lists, if they are not in it already *)
@@ -400,7 +441,7 @@ PerturbativelyExpand[FR$del_[args__],ExpOrder_List]:=Block[{NewOrder,param,Pindx
   resu=Expand[Normal[Series[FR$del[dummy][Sequence@@NewOrder[[All,1]]],Sequence@@(List[#[[1]],0,#[[2]]]&/@NewOrder)]]];
   resu=resu/.{FR$del[dummy][__]->0,Derivative[aa__][FR$del[dummy]][__]->FR$del[dummy][aa]};
   resu=resu/.(Rule[#[[1]],#[[1]]/(2 Pi)]&/@NewOrder)/.(Rule[Power[#[[1]],n_],Power[#[[1]],n]*Factorial[n]]&/@NewOrder);
-  resu=resu/.FR$del[dummy]->FR$del[args];
+  resu=resu/.FR$del[dummy]->FR$del[argx];
   If[param=!=newparam,resu=resu/.param->newparam];
 resu];
 
@@ -409,7 +450,7 @@ resu];
 (*Extraction of the counterterm Lagrangian*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExtractCounterterms*)
 
 
@@ -459,8 +500,8 @@ ExtractCounterterms[lagr_,ExpOrder_List]:=Block[{NewOrder,ExpLag,WaveFunctions,P
 
   (* Expansion of the renormalization constants *)
   Print["Renormalization constant perturbative expansion..."];
-  ExpLag = Expand[# /. FR$deltaZ[args__] :> PerturbativelyExpand[FR$deltaZ[args], NewOrder]] &/@ ExpLag;
-  ExpLag = Expand[# /. FR$delta[args__] :> PerturbativelyExpand[FR$delta[args], NewOrder]] &/@ ExpLag; 
+  ExpLag = Expand[# /. FR$deltaZ[argx__] :> PerturbativelyExpand[FR$deltaZ[argx], NewOrder]] &/@ ExpLag;
+  ExpLag = Expand[# /. FR$delta[argx__] :> PerturbativelyExpand[FR$delta[argx], NewOrder]] &/@ ExpLag; 
 
   (* Rejecting all terms which have an higher order *)
   ExpLag=Plus@@ExpLag;
@@ -475,7 +516,7 @@ ExtractCounterterms[lagr_,ExpOrder_List]:=Block[{NewOrder,ExpLag,WaveFunctions,P
   ExpLag=DeleteCases[ExpLag,0];
 
   (* Formatting *)
-  ExpLag=ExpLag/.M$DeltaToParameters/.aa_?(MemberQ[M$RenormalizationConstants,#]&)[args1_?(Head[#]===List&),args___]:>aa[Sequence@@Join[args1,args]];
+  ExpLag=ExpLag/.M$DeltaToParameters/.aa_?(MemberQ[M$RenormalizationConstants,#]&)[argx1_?(Head[#]===List&),argx___]:>aa[Sequence@@Join[argx1,argx]];
 
   (* Outputting *)
   Print["Done."];

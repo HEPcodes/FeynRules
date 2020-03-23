@@ -649,7 +649,7 @@ SF2Components[exp_?(Head[#]=!=Plus&),mu_,alpha_,alphadot_] := Module[{tmp, resu,
 resu];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Superfield definitions*)
 
 
@@ -703,7 +703,7 @@ ApplySuperfieldDefinitions[exp_] := Module[{tmp,dum,dumdum},
    tmp = ReplaceRepeated[tmp,b_?(FieldQ[#]===True&)[inds___,t:(y|yc)]:> X2Y[b,List[inds],t]];
    
 (* Removal of the dummy variable introduced to treat the powers of superfields and the protection*)
-   tmp = tmp/.{dum->Times,sc_[dumdum,args__]->sc[args]};
+   tmp = tmp/.{dum->Times,sc_[dumdum,argx__]->sc[argx]};
 
 tmp];
 
@@ -984,7 +984,7 @@ GrassmannSimplify[exp_]:=Module[{tmp=Expand[exp],rules},
    tmp];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Extraction of the coefficients of the Grassmann variables combinations*)
 
 
@@ -1021,7 +1021,7 @@ ComponentList[exp_,mu_,alpha_,alphadot_] := Module[{tmp,resu=Array[MR$Null,9],du
      nc[aaa___,thetabar[sp1_],ccc___,thetabar[sp2_],bbb___]->0,
      nc[aaa___,fi_[indis__], thetabar[spd_],bbb___]->-nc[aaa,thetabar[spd],fi[indis],bbb]};
    resu[[3]]=resu[[3]]//.{x_[aa__,mmu_,savedel]:>del[x[aa],mmu],x_[mmu_,savedel]:>del[x,mmu]};
-   resu[[3]] = ToGrassmannBasis[resu[[3]]/.expr_ nc[thetabar[spd_],args___]:>ReplaceAll[expr nc[args],spd->alphadot]];
+   resu[[3]] = ToGrassmannBasis[resu[[3]]/.expr_ nc[thetabar[spd_],argx___]:>ReplaceAll[expr nc[argx],spd->alphadot]];
 
 (* theta sigma^mu thetabar coefficient*)
    resu[[4]]=ReplaceRepeated[tmp//.Dot[theta[a_],thetabar[b_]]si[nu_,a_,b_]->dumdum[nu],t:(theta|thetabar)[_]->0];
@@ -1644,7 +1644,7 @@ SimplifyLieAlgebra[exp_, GrName_] := Module[{tmp, AdjOper,GrRep,ID,struc,t1,t2},
 OptimizeIndex[t1+t2]/.Index[Type_,a_]->a];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Get the fields present in an expression*)
 
 
@@ -1666,7 +1666,7 @@ ToFieldIndexList[exp_]:=Module[{res=Expand[exp],ll},
     f_?(VectorFieldQ[#]===True&)[mu_,inds__]:> Sequence[Index[Lorentz,mu],Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]]],
     f_?(ScalarFieldQ[#]===True&)[inds__]:>Sequence[Inner[Index,Flatten[IndexType[f]],{inds},Sequence]],
     f_?(ScalarFieldQ[#]===True&)->{},
-    si[mu_,sp_,spd_]-> {},sibar[mu_,spd_,sp_]-> {}, Ueps[a_,b_]->{}, Deps[a_,b_]->{}, ME[mu_,nu_]->{}, Eps[args__]->{},
+    si[mu_,sp_,spd_]-> {},sibar[mu_,spd_,sp_]-> {}, Ueps[a_,b_]->{}, Deps[a_,b_]->{}, ME[mu_,nu_]->{}, Eps[argx__]->{},
     f_?(MemberQ[MR$ParameterList,#]===True&)[inds__]:>{}
  };
   Do[
@@ -1780,7 +1780,7 @@ TreatUDeps[exp_]:=Block[{indices,rules},
   indices=Cases[ToIndexList[exp],Index[Spin1|Spin2,_]];
   indices=ReplaceAll[DeleteCases[Tally[indices],{_,1}],{a_,2}->a];
   rules=(MyRule[#[[2]],#]&/@indices)/.MyRule->Rule;
-  Return[exp/.{Ueps[args__]:>ReplaceAll[Ueps[args],rules],Deps[args__]:>ReplaceAll[Deps[args],rules]}];
+  Return[exp/.{Ueps[argx__]:>ReplaceAll[Ueps[argx],rules],Deps[argx__]:>ReplaceAll[Deps[argx],rules]}];
 ];
 
 
@@ -1804,7 +1804,7 @@ ToIndexList[exp_]:=Block[{res,MyTens},
   res=res//.del[x_,mu_]->Sequence[x, Index[Lorentz,mu]];
   res=res/.FV[sa_, mu_]->Index[Lorentz, mu];
   res=res/.eeps[il_]:>Sequence@@il;
-  res=res/.TensDot->MyTens/.MyTens[args__][inds__]:>Sequence[args,Sequence@@(Index[Spin,#]&/@{inds})];
+  res=res/.TensDot->MyTens/.MyTens[argx__][inds__]:>Sequence[argx,Sequence@@(Index[Spin,#]&/@{inds})];
   res=DeleteCases[If[MatchQ[#,_[__]]&&Head[#]=!= Complex,#,{}]&/@res,{}];
   res=DeleteCases[If[NumericQ[#],{},#]&/@res,{}];
 

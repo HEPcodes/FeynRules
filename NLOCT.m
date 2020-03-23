@@ -14,6 +14,9 @@ Print["Version: "<>NLO$Version];
 Print["Authors: C. Degrande"];
 Print["Please cite C. Degrande, Comput.Phys.Commun. 197 (2015) 239-262"];
 
+NLO$ngluon=0;
+NLO$ncolour=0;
+
 Off[Simplify::time];(*avoid the warning from aborded long simplification*)
 
 
@@ -227,7 +230,7 @@ SP[a_,b_*FourMomentum[c__]]:=b*SP[a,FourMomentum[c]];
 SP[a_,b_?(FreeQ[#,FourMomentum]&)*c_]:=b*SP[a,c];
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*UV Tools*)
 
 
@@ -530,7 +533,7 @@ Dp2IntxnLog2[m1_,m2_,p2_,2]:=-IntxnLog2[m1,m2,p2,2]/p2+(-1/6-m2^2 Dp2IntxnLog2[m
 FreeQ[m1,Mass]&&FreeQ[m2,Mass]&&FreeQ[p2,FourMomentum];
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*SolveDelta*)
 
 
@@ -620,7 +623,8 @@ fullUV=fullUV/.{FourMomentum[1]->-FourMomentum[2]};
 fullUV=Sort[fullUV,Ordered2VertQ];
 res={};
 
-For[kuv=1,kuv<=Length[fullUV]-0,kuv++,(*Print[ToString[kuv]<>" is "<>ToString[fullUV[[kuv,1]]]<>" at "<>ToString[SessionTime[]]];(*Print[fullUV[[kuv,2]]];*)*)
+For[kuv=1,kuv<=Length[fullUV]-0,kuv++,
+(*Print[ToString[kuv]<>" is "<>ToString[fullUV[[kuv,1]]]<>" at "<>ToString[SessionTime[]]];Print[fullUV[[kuv,2]]];*)
    If[kuv==1||Not[Sort[(fullUV[[kuv,1]]/.-x_->x)[[All,1,1]]]===Sort[(fullUV[[kuv-1,1]]/.-x_->x)[[All,1,1]]]],eqlist={};];
    Switch[verttype,
      {F,F},
@@ -629,6 +633,7 @@ For[kuv=1,kuv<=Length[fullUV]-0,kuv++,(*Print[ToString[kuv]<>" is "<>ToString[fu
      fr=Coefficient[fullUV[[kuv,2]],TensDot[SlashedP[FourMomentum[2]], ProjP][Index[Spin, Ext[1]], Index[Spin, Ext[2]]]];
      fsl=Coefficient[fullUV[[kuv,2]],ProjM[Index[Spin, Ext[1]], Index[Spin, Ext[2]]]];
      fsr=Coefficient[fullUV[[kuv,2]],ProjP[Index[Spin, Ext[1]], Index[Spin, Ext[2]]]];
+     
 
      (*check a piori on the form of the vertex*)
      On[Simplify::time];
@@ -656,6 +661,7 @@ For[kuv=1,kuv<=Length[fullUV]-0,kuv++,(*Print[ToString[kuv]<>" is "<>ToString[fu
        DeleteCases[fullUV[[kuv,1,1,1]],Index[Gluon|Colour,_],\[Infinity]]===-DeleteCases[fullUV[[kuv,1,2,1]],Index[Gluon|Colour,_],\[Infinity]](*Same particle or particle and antiparticle*),
        eqlist=Append[eqlist,deq];
      ];
+     (*Print[InputForm[{eqlist}]];*)
      ,
 	 {S,S},
      If[DeleteCases[fullUV[[kuv,1,1,1]],Index[Gluon|Colour,_],\[Infinity]]===DeleteCases[fullUV[[kuv,1,2,1]],Index[Gluon|Colour,_],\[Infinity]]||
@@ -708,6 +714,7 @@ For[kuv=1,kuv<=Length[fullUV]-0,kuv++,(*Print[ToString[kuv]<>" is "<>ToString[fu
     If[kuv==Length[fullUV]||Not[Sort[(fullUV[[kuv,1]]/.-x_->x)[[All,1,1]]]===Sort[(fullUV[[kuv+1,1]]/.-x_->x)[[All,1,1]]]],
       res=Join[res,ConsSolve[eqlist/.{If->Cond,FR$IR->1},varlist],If[Length[extra]>0,(#->0&)/@extra,{}]];  (*set to zero no usefull delta(Z)*)
     ];
+    
   ];
 (*Print["before join"];Print[InputForm[If[Length[extra]>0,(#->0&)/@extra,{}]]];*)
 ];(*end for*)
@@ -726,7 +733,7 @@ res=Flatten[res/.Rule->tRule/.{tRule[FR$deltaZ[{a_,b_},xx__],-Conjugate[FR$delta
 (*Performs q integration*)
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Tadpoles*)
 
 
@@ -743,7 +750,7 @@ R2Tadpoles[num_,del_,next_,UVcounter_] := Block[{tmp, coef},
 ];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Bubbles*)
 
 
@@ -776,7 +783,7 @@ R2BubblesQ2[num_,lm_,del_,next_,UVcounter_]:=Block[{tmp,coef},
 ];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Triangles*)
 
 
@@ -818,7 +825,7 @@ R2BTriangles[num_,lm_]:=Block[{coef, tmp},
 ];
 
 
-(* ::Subsubtitle:: *)
+(* ::Subsubtitle::Closed:: *)
 (*Boxes*)
 
 
@@ -847,7 +854,7 @@ R2BBoxes[num_,lm_]:=Block[{coef, tmp},
 ];
 
 
-(* ::Subtitle:: *)
+(* ::Subtitle::Closed:: *)
 (*GetR2*)
 
 
@@ -1007,6 +1014,10 @@ R2atClass[Ampl_,INTopo_,verttype_,lab_,kept_,qcd_,UVfinite_]:=Block[{res,tmp,tmp
           ];
           rl=Table[Rule[Ampl[[kk,4,1,nn]],Ampl[[kk,4,2,ll,nn]]],{nn,1,Length[Ampl[[kk,4,1]]]}];
           rl=rl/.{FourVector->FV}/.{FV->FourVector};
+          rl=rl/.IndexSum[xx__, {bb_?(StringMatchQ[ToString[#],"Gluon$*"]&), 1, 8}]:>(NLO$ngluon++;SumOver[bb,8]*xx/.
+               {bb->Index[Gluon,NLO$ngluon*10+ToExpression[StringCases[ToString[bb],DigitCharacter..][[1]]]]});
+          rl=rl/.IndexSum[xx__, {bb_?(StringMatchQ[ToString[#],"Colour$*"]&), 1, 3}]:>(SumOver[bb,3]*xx/.
+               {bb->Index[Gluon,NLO$ncolour*10+ToExpression[StringCases[ToString[bb],DigitCharacter..][[1]]]]});
           intern=If[lab,IPL[Sort[List@@Union[DeleteCases[fc[[Length[verttype]+1;;,2]]/.{-1->1},Index[Except[Alternatives@@kept],__],\[Infinity]]],PartOrder]],1];
           tmp2=scalar*intern*tmp/.{FourVector->FV}/.{FV->FourVector}/.rl/.rf/.If[Length[M$FACouplings]>0,M$FACouplings,{}];
           If[qcd,
@@ -1022,7 +1033,7 @@ R2atClass[Ampl_,INTopo_,verttype_,lab_,kept_,qcd_,UVfinite_]:=Block[{res,tmp,tmp
 ]
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*CTatClass*)
 
 
@@ -1054,6 +1065,10 @@ CTatClass[Ampl_,INTopo_,verttype_]:=Block[{res,tmp,tmp2,top,gen,rf,rl,fc,scalar,
           ];
           rl=Table[Rule[Ampl[[kk,4,1,nn]],Ampl[[kk,4,2,ll,nn]]],{nn,1,Length[Ampl[[kk,4,1]]]}];
           rl=rl/.{FourVector->FV}/.{FV->FourVector};
+          rl=rl/.IndexSum[xx__, {bb_?(StringMatchQ[ToString[#],"Gluon$*"]&), 1, 8}]:>(NLO$ngluon++;SumOver[bb,8]*xx/.
+               {bb->Index[Gluon,NLO$ngluon*10+ToExpression[StringCases[ToString[bb],DigitCharacter..][[1]]]]});
+          rl=rl/.IndexSum[xx__, {bb_?(StringMatchQ[ToString[#],"Colour$*"]&), 1, 8}]:>(SumOver[bb,8]*xx/.
+               {bb->Index[Colour,NLO$ncolour*10+ToExpression[StringCases[ToString[bb],DigitCharacter..][[1]]]]});
           tmp2=scalar*tmp/.{FourVector->FV}/.{FV->FourVector}/.rl/.rf/.If[Length[M$FACouplings]>0,M$FACouplings,{}];
           
           res=res+tmp2;
@@ -1195,6 +1210,8 @@ temp=SessionTime[];
        MetricTensor[Index[Lorentz, Ext[1]], Index[Lorentz, Ext[4]]]SUF[Index[Gluon,Ext[1]],Index[Gluon,Ext[3]],Index[Gluon,Ext[2]],Index[Gluon,Ext[4]]]};
 
   For[kkpl=1,kkpl<=Length[genver]-If[no4SCT,1,0],kkpl++,
+    NLO$ngluon=0;
+    NLO$ncolour=0;
     Print[Style["Computing CT for the "<>ToString[genver[[kkpl]]]<>" vertices.",Blue]];
     rl1={MetricTensor->ME,ScalarProduct[FourMomentum[Incoming,a_],FourMomentum[Incoming,b_]]->SP[FourMomentum[a],FourMomentum[b]],ScalarProduct[FourMomentum[Incoming,a_],FourMomentum[Incoming,a_]]->
         SP[FourMomentum[a],FourMomentum[a]],SP[FourMomentum[Incoming,a_],FourMomentum[Incoming,b_]]->SP[FourMomentum[a],FourMomentum[b]],
@@ -1259,7 +1276,8 @@ temp=SessionTime[];
       tmp[[All,3]]=(ReplaceRepeated[#/.rl1/.tdrl/.IndexSum->Sum/.rlf,SumOver[ind_?((FreeQ[#,Gluon]&&FreeQ[#,Colour])&),x_Integer]*a__:>
         Total[Table[(Times[a])/.{ind->kkind},{kkind,1,x}]]]&)/@tmp[[All,3]];
       If[UVCT,
-        tmpCT[[All,3]]=(ReplaceRepeated[#/.rl1/.tdrl/.IndexSum->Sum/.rlf,SumOver[ind_?((FreeQ[#,Gluon]&&FreeQ[#,Colour])&),x_Integer]*a__:>Total[Table[(Times[a])/.{ind->kkpl},{kkpl,1,x}]]]&)/@tmpCT[[All,3]];
+        tmpCT[[All,3]]=(ReplaceRepeated[#/.rl1/.tdrl/.IndexSum->Sum/.rlf,SumOver[ind_?((FreeQ[#,Gluon]&&FreeQ[#,Colour])&),x_Integer]*a__:>
+           Total[Table[(Times[a])/.{ind->kkpl},{kkpl,1,x}]]]&)/@tmpCT[[All,3]];
 
         If[Length[genver[[kkpl]]]===2,
           (*Only the finite piece in the renormalization constants*)
@@ -1267,10 +1285,9 @@ temp=SessionTime[];
               -TensDot[a,SlashedP[FourMomentum[2]], b][Index[Spin, Ext[1]], Index[Spin, Ext[2]]]}/.{FourMomentum[1]->-FourMomentum[2]};
           tmpCT=tmpCT/.{TensDot[a___,SlashedP[FourMomentum[1]], b___][Index[Spin, Ext[1]], Index[Spin, Ext[2]]]->
               -TensDot[a,SlashedP[FourMomentum[2]], b][Index[Spin, Ext[1]], Index[Spin, Ext[2]]]}/.{FourMomentum[1]->-FourMomentum[2]};
-          (*Print["before CTSol close"];Print[tmp];*)
+          (*Print["before CTSol close"];Print[InputForm[tmp]];Print[InputForm[tmpCT]];*)
           CTSol=Join[CTSol,
             SolveDelta[tmpCT,({#1,#2,Simplify[#3-Coefficient[#3,inveps,1]*inveps/.inveps->1/FR$Eps,TimeConstraint->0.01]}&)@@@(tmp/.FR$Eps->1/inveps),genver[[kkpl]],assumpt,comas]];
-
 
         ];
         (*Only the 1/Eps in the vertlist if not tadpole, minus sign because counter terms have opposite sign than amplitudes*)
@@ -1285,8 +1302,10 @@ temp=SessionTime[];
           tmp[[All,3]]=-I*(Simplify[Coefficient[#/.FR$Eps->1/inveps,inveps,1]/FR$Eps,TimeConstraint->1]&)/@tmp[[All,3]];];
         tmpCT[[All,3]]=I*(Simplify[#/.{Conjugate[FR$deltaZ[{x_,x_},b__]]->FR$deltaZ[{x,x},b]},TimeConstraint->1]&)/@tmpCT[[All,3]];,(*Length[tmp]=0*)
 
+		Print["kkpl is"];Print[kkpl];
         If[Length[tmpCT]>0&&Length[genver[[kkpl]]]===2,
           tmpCT[[All,3]]=(ReplaceRepeated[#/.rl1/.tdrl/.IndexSum->Sum/.rlf,SumOver[ind_?((FreeQ[#,Gluon]&&FreeQ[#,Colour])&),x_Integer]*a__:>Total[Table[(Times[a])/.{ind->kkpl},{kkpl,1,x}]]]&)/@tmpCT[[All,3]];
+          Print[InputForm[tmpCT]];
           CTSol=Join[CTSol,SolveDelta[tmpCT,{},genver[[kkpl]],assumpt,comas]];
         ];];(*end If UVCT*)
       ];(*end if Length[tmp]>0*)
@@ -1299,6 +1318,7 @@ temp=SessionTime[];
 
   ];
 (*Print[InputForm[tadpolerep]];*)
+
 
 zmsol={};
 If[UVCT,
@@ -1335,8 +1355,6 @@ If[ctpa,CTSol=ToParam/@CTSol;tadpolerep=ToParam/@tadpolerep;];
 
 (*force delta m = 0 when m=0 *)
 CTSol=CTSol/.Rule[FR$delta[{x_},{}],y_]:>Rule[FR$delta[{x},{}],Expand[y*Simplify[If[x==0,0,1],Assumptions->assumpt]]]/.{If[a_,1,0]*If[a_,0,1]->0,If[a_,0,1]^2->If[a,0,1]};
-
-(*Print[InputForm[CTSol]];*)
 
 Print["before merge "<>ToString[SessionTime[]-temp]<>" temp="<>ToString[temp]];
 vertlist=MergeVertList[vertlist,If[UVCT,(vertCTlist/.Dispatch[tadpolerep]/.Dispatch[zmsol]//.Dispatch[CTSol]),{}]]/.{FourMomentum[xx_]->xx};
@@ -1461,7 +1479,7 @@ If[cms,NLO$CMS=True;,NLO$CMS=False;];
 ]
 
 
-(* ::Subtitle::Closed:: *)
+(* ::Subtitle:: *)
 (*SUN*)
 
 
@@ -1518,7 +1536,7 @@ SUT[Index[Gluon,a],Index[Gluon,d],Index[Gluon,b],Index[Gluon,c]]+SUT[Index[Gluon
 SUT[Index[Gluon,a],Index[Gluon,b],Index[Gluon,c],Index[Gluon,d]]/;ILQ[a,b]&&ILQ[b,c]&&ILQ[c,d];*)
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*SUT*)
 
 
@@ -1686,7 +1704,7 @@ SUF/:SumOver[Index[Gluon,a_],n2m1_Integer]SUF[Index[Gluon,a_],Index[Gluon,b_],In
 (Sqrt[n2m1+1])*IndexDel[Index[Gluon,c],Index[Gluon,e]]/SumOver[Index[Gluon,b],n2m1];
 
 
-(* ::Subsubtitle::Closed:: *)
+(* ::Subsubtitle:: *)
 (*dSUN*)
 
 

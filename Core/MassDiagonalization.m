@@ -553,7 +553,7 @@ RotatePseudoscalar[mbasis_,gbasis_,Val_]:=Block[{rule, MyModule},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Rotation of four-component fermionic fields*)
 
 
@@ -583,7 +583,7 @@ RotateFermion[mbasis_,gbasis_,Val_,chir_]:=Block[{rule,rule2,MyModule},
 
   (* From gauge to mass basis *)
   rule=Inner[MyRule,Patternize[gbasis],PrePutIndices[ConjugateTranspose[Val].mbasis],List];
-  rule=rule/.MyRule[a_,b_]:>MyRule[a,ReplaceAll[b,fiel_?(FieldQ[#]===True&)[args__]:>PrePutIndices[chir[fiel[args]]]]];  
+  rule=rule/.MyRule[a_,b_]:>MyRule[a,ReplaceAll[b,fiel_?(FieldQ[#]===True&)[argx__]:>PrePutIndices[chir[fiel[argx]]]]];  
   rule=(Modulize[#,MyModule]&/@rule)/.MyModule[{},expr_]->expr/.MyRule[a_,MyModule[{idx__},res_]]:>RuleDelayed[a,MyModule[{idx},res]];
   rule=rule/.MyRule->Rule/.MyModule->Module;
   If[Not[And@@(SelfConjugateQ[#]&/@gbasis)], rule=CreateHCRule[rule]];

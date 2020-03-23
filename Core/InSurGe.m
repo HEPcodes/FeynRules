@@ -24,7 +24,7 @@ Format[FR$D[aa_],TraditionalForm] := ("\[PartialD]"/"\[PartialD]t")[aa];
 IndexDim[ind_] := Length[IndexRange[Index[ind/.Index[aa__]->aa]]/.{NoUnfold[bb_]->bb,Unfold[bb_]->bb}];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SU(N) invariant products*)
 
 
@@ -36,14 +36,14 @@ IndexDim[ind_] := Length[IndexRange[Index[ind/.Index[aa__]->aa]]/.{NoUnfold[bb_]
 (*If a contracted index is on the form EpsUnfold[name], it can be explicitely expanded by the function ExpandSUDot.*)
 
 
-SUDot[args__,a_?(Head[#]=!=List&)]:=SUDot[args,{a}];
+SUDot[argx__,a_?(Head[#]=!=List&)]:=SUDot[argx,{a}];
 
 
-HC[SUDot[args__]]:=SUDot[Sequence@@(If[Head[#]=!=List,HC[#],#]&/@{args})];
+HC[SUDot[argx__]]:=SUDot[Sequence@@(If[Head[#]=!=List,HC[#],#]&/@{argx})];
 
 
-Conjugate[SUEps[args__]]^:=SUEps[args];
-HC[SUEps[args__]]^:=SUEps[args];
+Conjugate[SUEps[argx__]]^:=SUEps[argx];
+HC[SUEps[argx__]]^:=SUEps[argx];
 
 
 (* ::Text:: *)
@@ -53,9 +53,9 @@ HC[SUEps[args__]]^:=SUEps[args];
 ExpandSUDot[expr_]:=expr/.SUDot->TreatSUDot;
 
 
-TreatSUDot[args__,index_List]:=Module[{SUEps,tmp,SUDotb,luf,MyTable,MySignature},
+TreatSUDot[argx__,index_List]:=Module[{SUEps,tmp,SUDotb,luf,MyTable,MySignature},
   (* Creating the epsilons *)
-  tmp=SUDotb[args] Times@@ (SUEps[#,List[]]&/@index)/.EpsUnfold->Sequence;
+  tmp=SUDotb[argx] Times@@ (SUEps[#,List[]]&/@index)/.EpsUnfold->Sequence;
   tmp=tmp//.SUDotb[kkk___,fi_[arg0___,idx_,arg1___],lll___]SUEps[idx_,{in___}]:>
      Module[{nid=Unique["idx"]},SUDotb[kkk,fi[arg0,nid,arg1],lll] SUEps[idx,Append[{in},nid]]];
 
@@ -139,7 +139,7 @@ GetCommonPart[]:= Module[{sf1,sf3,sf2,sf4,sf5,sf6,nfields},
   FR$Common=DeleteCases[If[MatchQ[((#/.FR$Temp[a__]:>FR$SuperW[a])/.FR$SuperWRules ),KeepOrdered[___,0,___]],0,#]&/@FR$Common,0];];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Functions for preprocessing the superpotential and the soft SUSY-breaking Lagrangian*)
 
 
@@ -239,15 +239,16 @@ ExtractSuperWTerms[superpot_,flag_]:=Module[{tmp,tmpdelta},
 
   tmp=If[Head[superpot]===Plus,List@@superpot,{superpot}];
   tmp=Module[{prm=#/.{SUDot[__]->1,a_?(flag[#]===True&)[__]->1,a_?(flag[#]===True&)->1}},List[prm,#/prm]]&/@tmp;
+  (* Benj: commenting the conjugate part as probably not necessary *)
   If[flag===FieldQ, 
     tmp=(Sequence@@#)&/@(If[Length[#]===2,
-      DeleteCases[#,{___ Conjugate[_],_} | {Conjugate[_],_} | {_,_? (Cases[List@@#,_?(AntiFieldQ[#]===True&)]=!={} || AntiFieldQ[#]===True&)}],
+      DeleteCases[#,(*{___ Conjugate[_],_} | {Conjugate[_],_} |*) {_,_? (Cases[List@@#,_?(AntiFieldQ[#]===True&)]=!={} || AntiFieldQ[#]===True&)}],
       #]&/@
       (GatherBy[tmp,ReplaceRepeated[(#/.{a_,b_}-> a),{Conjugate[a__]->a,a_?(# =!= Rational && numQ[#[Sequence@@$IndList[#]]]===True&)[inds__]->a}]&]))
   ];
   tmp=tmp//.{
-    {expr_,bla__ SUDot[args__,{aa__}]}:>{expr*Times@@(Table[SUEps[{{aa}[[nn]]}],{nn,1,Length[{aa}]}]),ReplaceAll[List[bla, args],Rule[#,SUDot[#]]&/@{aa}]},
-    {expr_,SUDot[args__,{aa__}]}:>{expr*(Times@@Table[SUEps[{{aa}[[nn]]}],{nn,1,Length[{aa}]}]),ReplaceAll[List[args],Rule[#,SUDot[#]]&/@{aa}]}};
+    {expr_,bla__ SUDot[argx__,{aa__}]}:>{expr*Times@@(Table[SUEps[{{aa}[[nn]]}],{nn,1,Length[{aa}]}]),ReplaceAll[List[bla, argx],Rule[#,SUDot[#]]&/@{aa}]},
+    {expr_,SUDot[argx__,{aa__}]}:>{expr*(Times@@Table[SUEps[{{aa}[[nn]]}],{nn,1,Length[{aa}]}]),ReplaceAll[List[argx],Rule[#,SUDot[#]]&/@{aa}]}};
 (*  tmp=tmp/.Power[exp_,n_]:>Table[exp,{n}];*)
 (*Mod by A.A. 03.20.2013: Added test on exp so that nothing is done when exp is a number*)
   tmp=tmp/.Power[exp_?(!NumericQ[#]&),n_]:>Table[exp,{n}];
@@ -466,7 +467,7 @@ ComputeBetaMi2[superpot_,LagSoft_,inomasses_]:= Module[{M,tsf1,tsf2,indxSF,reps,
    FR$betaMi2=FR$betaMi2//.{SUEps[arg1_,arg2_]^2:> Factorial[Length[{arg1,arg2}]], SUEps[arg1_,arg2_]SUEps[arg2_,arg1_]:>Factorial[Length[{arg1,arg2}]],IndexDelta[Index[type_,ind_],Index[type_,ind_]]:>IndexDim[type]} ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Computing the Gaugino RGEs*)
 
 
@@ -489,7 +490,7 @@ GauginoMassesRGE[superpot_,LagSoft_,OptionsPattern[]]:= Module[{inomasses, Lmass
   Inner[DeriveRGE,inomasses,FR$betaMi1 + FR$betaMi2,List]];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*RGEs for the superpotential parameters*)
 
 
@@ -501,7 +502,7 @@ GauginoMassesRGE[superpot_,LagSoft_,OptionsPattern[]]:= Module[{inomasses, Lmass
 (*Colour and Colourb are reserved names for the color indices.*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*One-Loop Anomalous dimension matrices*)
 
 
@@ -530,7 +531,7 @@ AnomDim[sf1_,sf2_]:=Module[{gauge,yuka,sfname1,sfname2,tsf1,tsf2,ind1,ind2},
   tsf2= Table[Indexify[M$ChiralSuperfieldNames[[nn]]],{nn,1,Length[M$ChiralSuperfieldNames]}];
   yuka=Plus@@Flatten[Table[
     FR$SuperW[sf1 ,tsf1[[mm]],tsf2[[nn]]] Conjugate[FR$SuperW[sf2,tsf1[[mm]],tsf2[[nn]]]]/.FR$SuperWRules//.{
-      SUEps[args__]^2:>Factorial[Length[{args}]],
+      SUEps[argx__]^2:>Factorial[Length[{argx}]],
       SUEps[arg0___,arg1_,arg2___]SUEps[arg0p___,arg1_,arg2p___]:>
          Inner[IndexDelta,{arg0},{arg0p},Times]*Inner[IndexDelta,{arg2},{arg2p},Times]Factorial[Length[{arg0,arg2}]]},
     {nn,1,Length[M$ChiralSuperfieldNames]},{mm,1,Length[M$ChiralSuperfieldNames]}]];
@@ -710,8 +711,8 @@ FormattingRGE[expr_]:=Block[{tmp=Expand[expr],MyIndexDelta,MySUEps,MyEps},
   MyIndexDelta[Index[typ_,ind_],Index[typ_,ind_]]:=PRIVATE`IndexDim[typ];
   MyIndexDelta/:MyIndexDelta[ind1_,ind2_]MyIndexDelta[ind2_,ind3_]=MyIndexDelta[ind1,ind3];
 
-  MyEps/:MyEps[args__]^2:=Factorial[Length[{args}]];
-  MyEps/:MyEps[args__]^4:=(Factorial[Length[{args}]])^2;
+  MyEps/:MyEps[argx__]^2:=Factorial[Length[{argx}]];
+  MyEps/:MyEps[argx__]^4:=(Factorial[Length[{argx}]])^2;
   MyEps/:MyEps[arg0___,arg1_,arg2___]MyEps[arg0p___,arg1_,arg2p___]:=If[Length[{arg0p}]===Length[{arg0}],
         Inner[IndexDelta,{arg0},{arg0p},Times]*Inner[IndexDelta,{arg2},{arg2p},Times]Factorial[Length[{arg0,arg2}]], 
        (-1)^(Length[{arg2p}]+(Length[{arg2p}]+1)*Length[{arg0p}])*Inner[IndexDelta,{arg0},{arg2p},Times]*Inner[IndexDelta,{arg2},{arg0p},Times]Factorial[Length[{arg0,arg2}]]];
@@ -726,8 +727,8 @@ FormattingRGE[expr_]:=Block[{tmp=Expand[expr],MyIndexDelta,MySUEps,MyEps},
 
   (*Contracting SUEps*)
   tmp=tmp//.{
-      SUEps[args__]^2:>Factorial[Length[{args}]],
-      SUEps[args__]^4:>(Factorial[Length[{args}]])^2,
+      SUEps[argx__]^2:>Factorial[Length[{argx}]],
+      SUEps[argx__]^4:>(Factorial[Length[{argx}]])^2,
       SUEps[arg0___,arg1_,arg2___]SUEps[arg0p___,arg1_,arg2p___]:>If[Length[{arg0p}]===Length[{arg0}],
         Inner[IndexDelta,{arg0},{arg0p},Times]*Inner[IndexDelta,{arg2},{arg2p},Times]Factorial[Length[{arg0,arg2}]], 
        (-1)^(Length[{arg2p}]+(Length[{arg2p}]+1)*Length[{arg0p}])*Inner[IndexDelta,{arg0},{arg2p},Times]*Inner[IndexDelta,{arg2},{arg0p},Times]Factorial[Length[{arg0,arg2}]]]
@@ -785,8 +786,8 @@ FormattingRGE[rge_]:=Block[{MyIndexDelta,MyEps,MyPauli,tmp},
 
 
 
-  MyEps/:MyEps[args__]^2:=Factorial[Length[{args}]];
-  MyEps/:MyEps[args__]^-2:=Factorial[Length[{args}]];
+  MyEps/:MyEps[argx__]^2:=Factorial[Length[{argx}]];
+  MyEps/:MyEps[argx__]^-2:=Factorial[Length[{argx}]];
   MyEps/:MyEps[arg0___,arg1_,arg2___]MyEps[arg0p___,arg1_,arg2p___]:=If[Length[{arg0p}]===Length[{arg0}],
         Inner[MyIndexDelta,{arg0},{arg0p},Times]*Inner[MyIndexDelta,{arg2},{arg2p},Times]Factorial[Length[{arg0,arg2}]], 
        (-1)^(Length[{arg2p}]+(Length[{arg2p}]+1)*Length[{arg0p}])*Inner[MyIndexDelta,{arg0},{arg2p},Times]*Inner[MyIndexDelta,{arg2},{arg0p},Times]Factorial[Length[{arg0,arg2}]]];
@@ -959,7 +960,7 @@ SoftParameters[lsoft_]:=Module[{GetDim,tmp,Lino,MyTable,softmasses,softinteracti
 {softmasses, inomasses,softinteractions}];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Calculation of the beta functions for the soft parameters*)
 
 
@@ -1235,7 +1236,7 @@ betaSoftInt22[sf1_,sf2_,inomasses_]:=Module[{tmpp,sf2name},
   tmpp+=(Plus@@FR$Common)/.KeepOrdered[FR$Temp[f1_,f2_,f3_],FR$Temp[fields__],FR$Temp[f4_,f5_,f6_]]:>-1/2FR$SuperW[sf1,sf2,f1]Conjugate[FR$SuperW[f1,f2,f3]]FR$SuperW[f2,f6]FR$Soft[fields]Conjugate[FR$SuperW[f4,f5,f6]];
   tmpp+=(Plus@@FR$Common)/.KeepOrdered[FR$Temp[f1_,f2_,f3_],FR$Temp[fields__],FR$Temp[f4_,f5_,f6_]]:> - FR$SuperW[sf1,f1]Conjugate[FR$SuperW[f1,f2,f3]]FR$Soft[fields]Conjugate[FR$SuperW[f4,f5,f6]]FR$SuperW[f2,f6,sf2];
   tmpp+=(Plus@@FR$Common)/.KeepOrdered[FR$Temp[f1_,f2_,f3_],FR$Temp[fields__],FR$Temp[f4_,f5_,f6_]]:>-FR$SuperW[sf1,f1]Conjugate[FR$SuperW[f1,f2,f3]]FR$SuperW[fields]Conjugate[FR$SuperW[f4,f5,f6]]FR$Soft[f2,f6,sf2];
-  tmpp+=(Plus@@FR$Common)/.KeepOrdered[FR$Temp[f1_,f2_,f3_],args__]:>2*FR$SuperW[sf1,sf2,f1]Conjugate[FR$SuperW[f1,f2,f3]]*(FR$Soft[f2,f3] - FR$SuperW[f2,f3]inomasses[[#]])GroupToCoup[MR$GaugeGroupList[[#]]]^2 FCasimir[f2,MR$GaugeGroupList[[#]]] &/@Range[Length[MR$GaugeGroupList]];
+  tmpp+=(Plus@@FR$Common)/.KeepOrdered[FR$Temp[f1_,f2_,f3_],argx__]:>2*FR$SuperW[sf1,sf2,f1]Conjugate[FR$SuperW[f1,f2,f3]]*(FR$Soft[f2,f3] - FR$SuperW[f2,f3]inomasses[[#]])GroupToCoup[MR$GaugeGroupList[[#]]]^2 FCasimir[f2,MR$GaugeGroupList[[#]]] &/@Range[Length[MR$GaugeGroupList]];
   tmpp+=Plus@@Flatten[(FR$Common/.KeepOrdered[arg__,FR$Temp[f1_,f2_,f3_],FR$Temp[f2_,f3_,f4_?(#===sf2name&)[ind__]]]:>(FR$Soft[sf1,f1]Conjugate[FR$SuperW[f1,f2,f3]]FR$SuperW[f2,f3,sf2] + 2*FR$SuperW[sf1,f1] Conjugate[FR$SuperW[f1,f2,f3]]FR$Soft[f2,f3,sf2] - 2*FR$SuperW[sf1,f1]Conjugate[FR$SuperW[f1,f2,f3]]FR$SuperW[f2,f3,sf2]inomasses[[#]])GroupToCoup[MR$GaugeGroupList[[#]]]^2*(2FCasimir[f1,MR$GaugeGroupList[[#]]] - FCasimir[sf1,MR$GaugeGroupList[[#]]])&/@Range[Length[MR$GaugeGroupList]])/.KeepOrdered[__]->{}];
   tmpp+=2*FR$Soft[sf1,sf2]*GaugePiece[sf1/.a_[__]->a] - 8*FR$SuperW[sf1,sf2]GaugePiece[sf1/.a_[__]->a,GauginoMass->inomasses];
 (*Restoring proper fields in FR$SuperW and FR$Soft and applying different rules*)  
@@ -1273,13 +1274,13 @@ RestoreFields[expr_]:=Module[{resu},
 resu];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Replacing FR$SuperW and FR$Soft functions by their values and contracting deltas and epsilons*)
 
 
 ReplaceSuperAndSoftTerms[expr_]:=Module[{resu},
   resu=Expand[expr]//.FR$ScalarMassRules//.FR$SuperWRules//.FR$SoftRules//.{
-      SUEps[args__]^2:>Factorial[Length[{args}]],
+      SUEps[argx__]^2:>Factorial[Length[{argx}]],
       SUEps[arg0___,arg1_,arg2___]SUEps[arg0p___,arg1_,arg2p___]:>If[Length[{arg0p}]===Length[{arg0}],
         Inner[IndexDelta,{arg0},{arg0p},Times]*Inner[IndexDelta,{arg2},{arg2p},Times]Factorial[Length[{arg0,arg2}]], 
        (-1)^(Length[{arg2p}]+(Length[{arg2p}]+1)*Length[{arg0p}])*
@@ -1334,7 +1335,7 @@ TraceTerm2Loop[antifield_,field_]:=Module[{sfs,antisfs,indfl,indafl,tmpp},
   tmpp];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Computing the RGEs*)
 
 
@@ -1377,7 +1378,7 @@ ScaSoftRGE[lsoft_,superpot_,OptionsPattern[]]:=Module[{tmp, rge,rge1,rge2, InoMa
 rge];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Get Renormalization Group Equations*)
 
 

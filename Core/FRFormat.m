@@ -497,5 +497,5 @@ Format[FR$delta[{prm_},inds_List]]:=Subscript[Subscript["\[Delta]",prm],Sequence
 (*Coefficient of the expansion of the renormalization constants*)
 
 
-Format[FR$deltaZ[args__][$aa__]] := Superscript[FR$deltaZ[args],List[$aa]];
-Format[FR$delta[args__][$aa__]] := Superscript[FR$delta[args],List[$aa]];
+Format[FR$deltaZ[argx__][$aa__]] := Superscript[FR$deltaZ[argx],List[$aa]];
+Format[FR$delta[argx__][$aa__]] := Superscript[FR$delta[argx],List[$aa]];

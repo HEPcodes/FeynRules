@@ -754,7 +754,7 @@ GetIntOrder[If[x_,0,1]] := 1;
 
 
 GetIntOrder[expr_Times] := GetIntOrder /@ expr;
-GetIntOrder[expr_Power] := MapAt[GetIntOrder, expr, 1];
+GetIntOrder[expr_Power] := (MapAt[GetIntOrder, expr, 1]/.{Sqrt[gioa_^gion_]->gioa^(gion/2),(gioa_^giob_)^gioc_->gioa^(giob*gioc)});
 
 
 (* ::Text:: *)
@@ -773,6 +773,9 @@ GetIntOrder[expr_Plus] := Block[{
 
 ];
     
+
+
+GetIntOrder[Eps[args__]]:=1;
 
 
 (* ::Text:: *)

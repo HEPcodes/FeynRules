@@ -5,9 +5,9 @@ import lorentz
 import parameters
 import vertices
 import coupling_orders
-import write_param_card
+#import write_param_card
 import propagators
-
+import object_library
 import function_library
 
 

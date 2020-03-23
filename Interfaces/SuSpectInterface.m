@@ -59,11 +59,11 @@ SuSpect$ToyVector={};
 SuSpect$Dictionary:={};
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Initialization of all the lists required by the SuSpect interface*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*This function initialize a given set of parameters*)
 
 
@@ -84,10 +84,10 @@ ListInit[coups_,OptionsPattern[]]:=Module[{MyTable, list,yv},
     MyTable[MyTable[func__],func2_]:>MyTable[func,func2]}]&/@list)/.MyTable->Table];
 
   (* Add the corresponding entries to SuSpect$Convertion *)
-  SuSpect$Convertion=Join[SuSpect$Convertion,(If[MatchQ[#,_[__]],Rule[#,#/.he_[args__]:>Symbol[StringJoin[ToString[he],Sequence[ToString/@{args}]]]]]&/@list)];
+  SuSpect$Convertion=Join[SuSpect$Convertion,(If[MatchQ[#,_[__]],Rule[#,#/.he_[argx__]:>Symbol[StringJoin[ToString[he],Sequence[ToString/@{argx}]]]]]&/@list)];
 
   (* Add the corresponding entries to SuSpect$ToyVector *)
-  list=If[MatchQ[#,_[__]],#/.he_[args__]:>StringJoin[ToString[he],Sequence[ToString/@{args}]],ToString[#]]&/@list;
+  list=If[MatchQ[#,_[__]],#/.he_[argx__]:>StringJoin[ToString[he],Sequence[ToString/@{argx}]],ToString[#]]&/@list;
   If[yv,SuSpect$ToyVector=Join[SuSpect$ToyVector,(Rule[#,"yVector[m_"<>#<>"]"]&/@ list)]];
 
   (* Output *)
@@ -477,7 +477,7 @@ WriteDerivativeExternalRGEs[file_,title_,prm_]:=Module[{},
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Calculation of the coefficients of the beta functions*)
 
 
@@ -575,11 +575,11 @@ SuperWBetaFunction[superw_]:=Module[{prmlist,l1,l2,l3},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Formatting*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Core function*)
 
 
@@ -588,7 +588,7 @@ FormatizeBeta[soft_,expression_]:=Module[{tmpp},
   tmpp=tmpp//.{
     Equal[FR$D[-a_],expre_]:>Equal[FR$D[a],Expand[-expre]],
     Equal[FR$D[muf_?(NumericQ[#]&)*a_],expre_]:>Equal[FR$D[a],Expand[expre/muf]],
-    Equal[FR$D[func_?(#===IndexDelta||#===SUEps&)[args__] expr_],expre_]:>Equal[FR$D[expr],Expand[expre/ func[args]]]};
+    Equal[FR$D[func_?(#===IndexDelta||#===SUEps&)[argx__] expr_],expre_]:>Equal[FR$D[expr],Expand[expre/ func[argx]]]};
   tmpp=ReplaceAll[tmpp,SUEps[aaa__]:>Signature[{aaa}] SUEps[Sequence@@Sort[{aaa}]]];
   tmpp=(#/.Equal[FR$D[a_],b_]:> Equal[a,OptimizeIndex[b]])&/@tmpp;
 
