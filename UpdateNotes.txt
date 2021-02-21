@@ -1,5 +1,16 @@
 Update notes for FeynRules 2.3.x
 
+2628 2.3.41 09-12-20 claudeduhr: fixed merge conflict 
+
+2626 2.3.40 02-12-20 claudeduhr: nothing 
+
+2626 2.3.39 02-12-20 claudeduhr: nothing 
+
+2626 2.3.38 02-12-20 claudeduhr: nothing (conflict resolved, which doe snot 
+                                 change anything) 
+
+2626 2.3.37 02-12-20 claudeduhr: fixed args name clash 
+
 2614 2.3.36 28-11-19 fuks:       Small in InSurGe and with the interaction 
                                  orders in the UFO interface 
 
