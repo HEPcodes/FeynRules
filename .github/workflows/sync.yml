@@ -1,0 +1,24 @@
+name: Sync
+
+on:
+  schedule:
+    - cron: 0 0 * * * # daily
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Fetch from the upstream
+        run: .github/fetch-upstream.sh
+
+      - name: Push changes
+        run: |
+          if [[ $(git status --porcelain) ]]; then
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git commit -am "$(.github/make-commit-msg.sh)"
+            git push
+          fi
