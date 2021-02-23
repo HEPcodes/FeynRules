@@ -1,5 +1,7 @@
 Update notes for FeynRules 2.3.x
 
+2631 2.3.42 14-02-21 claudeduhr: fixed bug in numQ for exponentials 
+
 2628 2.3.41 09-12-20 claudeduhr: fixed merge conflict 
 
 2626 2.3.40 02-12-20 claudeduhr: nothing 

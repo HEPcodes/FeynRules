@@ -81,7 +81,7 @@ NumericalValue[Abs[x_]] := Abs[NumericalValue[x]];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Dot*)
 
 
@@ -226,7 +226,7 @@ numQ /: numQ[a_/b_] := numQ[a] && numQ[b];
 numQ /: numQ[1/a_] := numQ[a];
 numQ /: numQ[f_?(MemberQ[{Sqrt, Exp, Log, Sin, Cos, Tan, Csc, Sec, Cot, ArcSin, ArcCos, ArcTan, ArcCsc, ArcSec, ArcCot, Sinh, Cosh, 
 Tanh, Csch, Sech, Coth, ArcSinh, ArcCosh, ArcTanh, ArcCsch, ArcSech, ArcCoth}, #]&)[a_]] := numQ[a];
-numQ /: numQ[Power[a_, n_]] := numQ[a];
+numQ /: numQ[Power[a_, n_]] := numQ[a] && numQ[n];
 
 numQ[FV[__]] := True;
 
