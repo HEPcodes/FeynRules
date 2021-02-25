@@ -190,18 +190,7 @@ For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
   (*switch depending how many physical fields appear in vevfi*)
   Print[InputForm[vevfi]];
   Switch[Length[Cases[vevfi,_?FieldQ,\[Infinity]]],
-    1,tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];,
     (*shift the scalar or the pseudo scalar depending if the vev has a real or imaginary coefficient*)
-    2,If[Im[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0,
-       If[Im[Coefficient[vevfi,Cases[vevfi,_?FieldQ,\[Infinity]][[1]]]]===0&&SelfConjugateQ[Cases[vevfi,_?FieldQ,\[Infinity]][[1]]],
-         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];,
-         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[2]];
-       ],
-       If[Im[Coefficient[vevfi,Cases[vevfi,_?FieldQ,\[Infinity]][[1]]]]===0&&SelfConjugateQ[Cases[vevfi,_?FieldQ,\[Infinity]][[1]]],
-         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[2]];,
-         tadrules=Cases[vevfi,_?FieldQ,\[Infinity]][[1]];
-       ];
-     ],
     _,vevfi2=Cases[vevfi,_?FieldQ,\[Infinity]];
     Print["in last case"];
     If[And@@(SelfConjugateQ/@vevfi2),
@@ -228,24 +217,24 @@ For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
     Cases[M$ClassesDescription,{c___,ClassMembers->{xx___,tadrules[[vevll]],yy___},b___}:>(Mass/.{c,b})[[-Length[{yy}]-1,1]],2]][[1]])^2];
   ];*)
 ];
-Print["after for"];
-Print[InputForm[tadrules]];
+(*Print["after for"];
+Print[InputForm[tadrules]];*)
 vevfi2=Union[Cases[tadrules,_?FieldQ,\[Infinity]]];
-Print[InputForm[vevfi2]];
+(*Print[InputForm[vevfi2]];*)
 tadrules=Solve[(#[[1]]==#[[2]]&)/@tadrules,vevfi2];
 If[Length[tadrules]=!=1,
    Print[Style["Error : no unique solution for the renormalization of the tadpole",Red]];
    Abort[]];
-Print["t1"];
+Print["Fields and corresponding vevs"];
 Print[InputForm[tadrules]];
 tadrules=DeleteCases[tadrules[[1]],Rule[_,0]];
-Print[InputForm[tadrules]];
-Print["t2"];
+(*Print[InputForm[tadrules]];*)
 For[vevll=1,vevll<=Length[tadrules],vevll++,
     tadrep=Append[tadrep,tadrules[[vevll,1]]->tadrules[[vevll,1]]-FR$CT*FR$deltat[tadrules[[vevll,1]]]/( Union[
     Cases[M$ClassesDescription,{c___,ClassName->tadrules[[vevll,1]],b___}:>(Mass/.{c,b})[[1]],2],
     Cases[M$ClassesDescription,{c___,ClassMembers->{xx___,tadrules[[vevll,1]],yy___},b___}:>(Mass/.{c,b})[[-Length[{yy}]-1,1]],2]][[1]])^2];
   ];
+  Print["Tadpole redefinition"];
   Print[InputForm[tadrep]];
 tadrep
 ];
