@@ -26,7 +26,7 @@ TODO
 (*
    "API" version to ensure that the top level code gets what it deserves
 *)
-WO`APIversion = 2;
+WO`APIversion = 3;
 
 (*
 The backend can query the revision
@@ -44,7 +44,7 @@ Options[WO`WriteOutput] = {
    WO`WOMaxNcf -> 4,
    WO`WOGauge -> WO`WOUnitarity,
    WO`WOGaugeParameter -> "Rxi",
-   WO`WOWhizardVersion -> "2.4.0",
+   WO`WOWhizardVersion -> "3.0.0",
    WO`WOVerbose -> False,
    WO`WOAutoGauge -> True,
    WO`WOMaxCouplingsPerFile -> 500,
@@ -62,7 +62,7 @@ Options[WO`WriteOutput] = {
 };
 
 Options[WO`WriteExtParams] = {
-   WO`WOWhizardVersion -> "2.4.0",
+   WO`WOWhizardVersion -> "3.0.0",
    WO`WOEParamList -> {},
    WO`WOModelName -> "unknown",
    WO`WOMassList -> {},
@@ -96,7 +96,8 @@ WO`WOWhizardVersion::usage = (""
    <> "   \"2.0.3\": 2.0.3 - 2.2.2\n"
    <> "   \"2.2.3\": 2.2.3\n"
    <> "   \"2.3.0\": 2.3.0\n"
-   <> "   \"2.4.0\": 2.4.0 (default)");
+   <> "   \"2.4.0\": 2.4.0\n"
+   <> "   \"3.0.0\": 3.0.0 (default)");
 WO`WOVerbose::usage = (""
    <> "Verbose output. At the moment, this enables more detailed information "
    <> "on skipped vertices. Default: False");
@@ -140,7 +141,7 @@ WO`GlobalSetup := Module[{},
    WO`appendAlphas = False;
    WO`gauge = WO`WOUnitarity;
    WO`gsym = "Rxi";
-   WO`whizv = "2.2.3";
+   WO`whizv = "3.0.0";
    WO`verbose = False;
    WO`autogauge = False;
    WO`MaxCouplingsPerFile = 500;
@@ -453,9 +454,10 @@ WO`GaugeName[g_] := Switch[g, WO`WOUnitarity, "Unitarity", WO`WOFeynman, "Feynma
 WO`GaugeName[] := WO`GaugeName[WO`gauge];
 
 (* Version query helpers *)
-WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,"2.3.0",230,"2.4.0",240,_,
+WO`whizvn[v_] := Switch[v, "1.93", 193, "1.95", 195, "1.96", 196, "2.0", 200, "2.0.3", 203,"2.2.3",223,"2.3.0",230,"2.4.0",240,"3.0.0",300,_,
    Throw["BUG: invalid version in WO`whizvn, please report", WO`EAbort]];
 WO`whizvn[] := WO`whizvn[WO`whizv];
+WO`whizv30[] := WO`whizvn[] >= WO`whizvn["3.0.0"];
 WO`whizv23[] := WO`whizvn[] >= WO`whizvn["2.3.0"];
 WO`whizv2x[] := WO`whizvn[] >= WO`whizvn["2.0"];
 WO`whizv19x[] := !WO`whizv2x[];
@@ -721,7 +723,8 @@ WO`CopyAux[srcdir_, destdir_] := Module[{CopyHelper},
             ToFileName[{srcdir, "2.2.3"}, filea],
             ToFileName[{srcdir, "2.0"}, filea]
          ];*)
-         src=Which[WO`whizvn[] >= WO`whizvn["2.3.0"], ToFileName[{srcdir, "2.3.0"}, filea],
+         src=Which[WO`whizvn[] >= WO`whizvn["3.0.0"], ToFileName[{srcdir, "3.0.0"}, filea],
+		           WO`whizvn[] >= WO`whizvn["2.3.0"], ToFileName[{srcdir, "2.3.0"}, filea],
                    WO`whizvn[] > WO`whizvn["2.0.3"], ToFileName[{srcdir, "2.2.3"}, filea],
                    True, ToFileName[{srcdir, "2.0"}, filea]
          ];
@@ -803,18 +806,18 @@ WO`WriteWhiz[dir_] := Module[{whizmdl, whizglue},
 WO`WriteOmegaSig[file_] := Module[{handle, contents},
    handle = OpenWrite[file];
    contents = ""
-      <> WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n"
-      <> "\n"
-      <> "type gauge = Unitarity | Feynman | Rxi\n"
-      <> "\n"
-      <> "module type Frules_options = \n"
-      <> "sig\n"
-      <> "   val gauge: gauge\n"
-      <> "   val color: bool\n"
-      <> "end\n"
-      <> "\n"
-      <> "module Implementation: functor (Opts: Frules_options) -> Model.T\n"
-      <> If[WO`whizvn[] >= WO`whizvn["2.0.3"], "   with module Ch = Charges.Null\n", ""];
+      <> WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n "
+      <> "\n "
+      <> "type gauge = Unitarity | Feynman | Rxi \n "
+      <> "\n "
+      <> "module type Frules_options = \n "
+      <> "sig \n "
+      <> "   val gauge: gauge \n "
+      <> "   val color: bool \n "
+      <> "end \n "
+      <> "\n "
+      <> "module Implementation: functor (Opts: Frules_options) -> Model.T\n "
+      <> If[WO`whizvn[] >= WO`whizvn["2.0.3"], "   with module Ch = Charges.Null\n ", ""];
    WriteString[handle, contents];
    Close[handle];
 ];
@@ -826,7 +829,7 @@ WO`WriteOmegaSig[file_] := Module[{handle, contents},
  * "oids" omega identifier register, "goldstone" goldstone flag, "HC": WO`HC helper                 *)
 
 (* Write the O'Mega module structure *)
-WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color, pdg, lorentz,
+WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color, nc, caveats, pdg, lorentz,
       gauge, propagator, width, conjugate, fermion, colsymm, constant, maxdegree, vertices, fusions,
       flavors, extflavor, goldstone, parameters, flavortostring, flavorofstring, flavorsym, gaugesym,
       masssym, widthsym, texsym, constsym, options, rcs, ParsePList, sanscolorstubs, charges},
@@ -1172,6 +1175,8 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
       pdg = "let pdg = function\n";
       conjugate = "let conjugate = function\n";
       color = "let color = function\n";
+      nc = "let nc () = 3\n";
+      caveats = "let caveats () = []\n  ";
       lorentz = "let lorentz = function\n";
       goldstone = "let goldstone = function\n";
       masssym = "let mass_symbol = function\n";
@@ -1184,50 +1189,50 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
       flavors = flavors <> "\n";
       ftype = ftype <> "\n";
       flavor = ""
-         <> "(* Classes with their members *)\n\n"
+         <> "(* Classes with their members *)\n \n "
          <> classtypes
-         <> "\n(* Lorentz types with the corresponding classes *)\n\n"
+         <> "\n(* Lorentz types with the corresponding classes *)\n \n "
          <> (StringJoin /@ ltypes)
-         <> "\n(* The actual flavor type *)\n\n"
+         <> "\n(* The actual flavor type *)\n \n "
          <> ftype
-         <> "\n(* Trampoline functions *)\n\n"
+         <> "\n(* Trampoline functions *)\n \n "
          <> trampolines
-         <> "\n(* Particle lists *)\n\n"
+         <> "\n(* Particle lists *)\n \n "
          <> mlists <> (StringJoin /@ clists);
       conjugate = ""
-         <> "(* The conjugation operation on a single class *)\n\n"
+         <> "(* The conjugation operation on a single class *)\n \n "
          <> cconjugators
-         <> "\n(* The conjugation operation on a lorentz type *)\n\n"
+         <> "\n(* The conjugation operation on a lorentz type *)\n \n "
          <> StringJoin @@ lconjugators
-         <> "\n(* Conjugation for the masses *)\n\n"
+         <> "\n(* Conjugation for the masses *)\n \n "
          <> conjugate;
       propagator = ""
-         <> "let propagator = \n"
-         <> "   let msg = \"" <> WO`omeganame <> ".Implementation: invalid lorentz rep in propagator\" in function\n"
-         <> If[ltypes[[1]] != "", "   | FRS _ -> Prop_Scalar\n", ""]
+         <> "let propagator = \n "
+         <> "   let msg = \" " <> WO`omeganame <> ".Implementation: invalid lorentz rep in propagator \" in function \n "
+         <> If[ltypes[[1]] != "", "   | FRS _ -> Prop_Scalar \n ", ""]
          <> If[ltypes[[2]] != "", ""
-            <>"   | FRF x -> (match lorentz (FRF x) with\n"
-            <> "      | Spinor -> Prop_Spinor\n"
-            <> "      | ConjSpinor -> Prop_ConjSpinor\n"
-            <> "      | Majorana -> Prop_Majorana\n"
-            <> "      | _ -> invalid_arg msg)\n",
+            <>"   | FRF x -> (match lorentz (FRF x) with \n "
+            <> "      | Spinor -> Prop_Spinor \n "
+            <> "      | ConjSpinor -> Prop_ConjSpinor \n "
+            <> "      | Majorana -> Prop_Majorana \n "
+            <> "      | _ -> invalid_arg msg)\n ",
             ""]
          <> If[ltypes[[3]] != "", ""
-            <>"   | FRV x -> (match Opts.gauge with\n"
-            <> "      | Unitarity -> (match lorentz (FRV x) with\n"
-            <> "         | Vector -> Prop_Feynman\n"
-            <> "         | Massive_Vector -> Prop_Unitarity\n"
-            <> "         | _ -> invalid_arg msg)\n"
-            <> "      | Feynman -> (match lorentz (FRV x) with\n"
-            <> "         | Vector -> Prop_Feynman\n"
-            <> "         | Massive_Vector -> Prop_Rxi Xi\n"
-            <> "         | _ -> invalid_arg msg)\n"
-            <> "      | Rxi -> (match lorentz (FRV x) with\n"
-            <> "         | Vector -> Prop_Gauge Xi\n"
-            <> "         | Massive_Vector -> Prop_Rxi Xi\n"
-            <> "         | _ -> invalid_arg msg))\n",
+            <>"   | FRV x -> (match Opts.gauge with \n "
+            <> "      | Unitarity -> (match lorentz (FRV x) with \n "
+            <> "         | Vector -> Prop_Feynman \n "
+            <> "         | Massive_Vector -> Prop_Unitarity \n "
+            <> "         | _ -> invalid_arg msg)\n "
+            <> "      | Feynman -> (match lorentz (FRV x) with \n "
+            <> "         | Vector -> Prop_Feynman \n "
+            <> "         | Massive_Vector -> Prop_Rxi Xi \n "
+            <> "         | _ -> invalid_arg msg)\n "
+            <> "      | Rxi -> (match lorentz (FRV x) with \n "
+            <> "         | Vector -> Prop_Gauge Xi \n "
+            <> "         | Massive_Vector -> Prop_Rxi Xi \n "
+            <> "         | _ -> invalid_arg msg))\n ",
             ""]
-         <> If[ltypes[[4]] != "","   | FRT _ -> Prop_Tensor_2\n", ""];
+         <> If[ltypes[[4]] != "","   | FRT _ -> Prop_Tensor _ 2\n ", ""];
    ];
 
    (* Digest the vertices *)
@@ -2045,20 +2050,20 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
    DigestVertices[];
    (* The preamble *)
    preamble = ""
-      <> WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n"
-      <> "\n"
-      <> "type gauge = Unitarity | Feynman | Rxi\n"
-      <> "\n"
-      <> "module type Frules_options =\n"
-      <> "sig\n"
-      <> "   val gauge: gauge\n"
-      <> "   val color: bool\n"
-      <> "end\n"
-      <> "\n"
-      <> "module Implementation (Opts: Frules_options) =\n"
-      <> "struct\n"
-      <> "\n"
-      <> "   open Coupling\n";
+      <> WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n "
+      <> "\n "
+      <> "type gauge = Unitarity | Feynman | Rxi \n "
+      <> "\n "
+      <> "module type Frules_options =\n "
+      <> "sig \n "
+      <> "   val gauge: gauge \n "
+      <> "   val color: bool \n "
+      <> "end \n "
+      <> "\n "
+      <> "module Implementation (Opts: Frules_options) =\n "
+      <> "struct \n "
+      <> "\n "
+      <> "   open Coupling \n ";
    (* Stuff independent of the actual model *)
    gauge = "type gauge = Xi\n";
    width = ""
@@ -2128,18 +2133,20 @@ WO`WriteOmegaStruct[file_] := Module[{handle, contents, preamble, flavor, color,
          <> flavortostring <> "\n" <> If[FreeQ[{"1.92"}, WO`whizv], texsym <> "\n", ""]
          <> flavorofstring <> "\n" <> flavorsym <> "\n" <> gaugesym <> "\n"
          <> masssym <> "\n"
-         <> "(* Coupling constants and parameters *)\n\n"
-         <> constant <> "\n" <> parameters <> "\n" <> constsym <> "\n"
-         <> "(* Vertices and fusions *)\n\n"
-         <> maxdegree <> "\n" <> vertices <> "\n" <> fusions <> "\n"
+         <> "(* Coupling constants and parameters *)\n \n "
+         <> constant <> "\n " <> parameters <> "\n " <> constsym <> "\n "
+         <> "(* Vertices and fusions *)\n \n "
+         <> maxdegree <> "\n " <> vertices <> "\n " <> fusions <> "\n "
+         <> If[WO`whizv30[], nc <> "\n", ""]
+         <> If[WO`whizv30[], caveats <> "\n", ""]
          <> If[WO`whizvn[] >= WO`whizvn["2.0.3"], ""
-               <> "(* Charge (stubbed) *)\n\n"
+               <> "(* Charge (stubbed) *)\n \n "
                <> charges
-               <> "\n"
+               <> "\n "
             , ""]
-         <> "(* Misc. infrastructure *)\n\n"
-         <> options <> "\n" <> If[MemberQ[{"1.92", "1.93", "1.96", "2.0", "2.0.3", "2.2.3", "2.3.0"}, WO`whizv], rcs <> "\n", ""]
-         <> If[WO`whizv2x[], sanscolorstubs <> "\n", ""]
+         <> "(* Misc. infrastructure *)\n \n "
+         <> options <> "\n" <> If[MemberQ[{"1.92", "1.93", "1.96", "2.0", "2.0.3", "2.2.3", "2.3.0", "2.4.0"}, WO`whizv], rcs <> "\n", ""]
+         <> If[WO`whizv2x[], sanscolorstubs <> "\n ", ""]
       , 3] <> finalwords
    ];
    Close[handle];
@@ -2157,26 +2164,26 @@ WO`WriteOmegaBinary[file_, cfile_, ncf_] := Module[{handle, contents, fusions, m
    gauge = modname <> "." <> WO`GaugeName[];
    colorinvanilla = If[WO`whizv2x[], "true", "false"];
    target = "Targets.Fortran" <> If[WO`havemajoranas, "_Majorana", ""];
-   header = WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n";
+   header = WO`CommentMaker[WO`fileheader, "(* ", "   ", " *)"] <> "\n ";
    contents = ""
       <> header
-      <> "\n"
-      <> "module O =  Omega.Make (Fusion." <> fusions <> ") (" <> target <> ")\n"
-      <> "   (" <> modname <> ".Implementation (struct let gauge = " <> gauge <> " let color = " <> colorinvanilla <> " end))\n"
-      <> "\n"
-      <> "let _ = O.main ()\n";
+      <> "\n "
+      <> "module O =  Omega.Make (Fusion." <> fusions <> ") (" <> target <> ")\n "
+      <> "   (" <> modname <> ".Implementation (struct let gauge = " <> gauge <> " let color = " <> colorinvanilla <> " end))\n "
+      <> "\n "
+      <> "let _ = O.main ()\n ";
    handle = OpenWrite[file];
    WriteString[handle, contents];
    Close[handle];
    contents = ""
       <> header
-      <> "\n"
-      <> "module O =  Omega.Make (Fusion." <> fusions <> ") (" <> target <> ")\n"
-      <> "   (Colorize.It (struct let max_num = " <> ToString[ncf] <> " end)\n"
-      <> "      (" <> modname <> ".Implementation\n"
-      <> "         (struct let gauge = " <> gauge <> " let color = true end)))\n"
-      <> "\n"
-      <> "let _ = O.main ()\n";
+      <> "\n "
+      <> "module O =  Omega.Make (Fusion." <> fusions <> ") (" <> target <> ")\n "
+      <> "   (Colorize.It (struct let max_num = " <> ToString[ncf] <> " end)\n "
+      <> "      (" <> modname <> ".Implementation\n "
+      <> "         (struct let gauge = " <> gauge <> " let color = true end)))\n "
+      <> "\n "
+      <> "let _ = O.main ()\n ";
    If[WO`whizv19x[],
       handle = OpenWrite[cfile];
       WriteString[handle, contents];

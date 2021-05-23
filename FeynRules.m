@@ -14,6 +14,13 @@
 
 
 (* ::Section:: *)
+(*Compatibility with Mathematica 12.2*)
+
+
+If[$VersionNumber>=12.2, SetOptions[ValueQ, Method->"Legacy"]];
+
+
+(* ::Section:: *)
 (*Main call to the package*)
 
 

@@ -12,8 +12,8 @@ FR$Loaded = True;
 
 BeginPackage["FeynRules`"];
 
-FR$VersionNumber = "2.3.43";
-FR$VersionDate = "23 February 2021";
+FR$VersionNumber = "2.3.46";
+FR$VersionDate = "21 May 2021";
 
 Print[" - FeynRules - "];
 Print["Version: ", FR$VersionNumber, " ("FR$VersionDate, ")."];
@@ -1748,10 +1748,10 @@ FRExp::usage="";
 (* Useful? *)
 FCasimir::usage"Gives the casimir associated to the reprsentation of the gauge group in which lies the superfield";
 FormattingExpr::usage" Helps to reduce MyEps and MyDelta ";
-MyDelta/: Conjugate[MyDelta[a__]] := MyDelta[a];
+MyDelta/: Conjugate[MyDelta[aa__]] := MyDelta[aa];
 SetAttributes[MyDelta, Orderless];
 MyDelta::usage="This variable mimics the IndexDelta variable. Some rules that apply to IndexDelta can't be applied to RGEs.";
-MyEps/: Conjugate[MyEps[a__]] := MyEps[a];
+MyEps/: Conjugate[MyEps[aa__]] := MyEps[aa];
 SetAttributes[MyEps, Orderless];
 MyEps::usage="This variable mimics the SUEps variable. Some rules that apply to SUEps can't be applied to RGEs.";
 
@@ -1780,8 +1780,8 @@ $OptIndex=1;
 
 FR$Dot[] = 1;
 
-FR$Dot[xx___, a_ + b_, yy___] := FR$Dot[xx, a, yy] + FR$Dot[xx, b, yy];
-FR$Dot[xx___, a_*(b_ + c_), yy___] := FR$Dot[xx, a * b ,yy] + FR$Dot[xx, a * c, yy];
+FR$Dot[xx___, aa_ + b_, yy___] := FR$Dot[xx, aa, yy] + FR$Dot[xx, b, yy];
+FR$Dot[xx___, aa_*(b_ + c_), yy___] := FR$Dot[xx, aa * b ,yy] + FR$Dot[xx, aa * c, yy];
 FR$Dot[xx___, n_?numQ * f_, yy___] := n * FR$Dot[xx, f, yy];
 (* MW edit: as below, only pull out scalar fields with all indices written out *)
 FR$Dot[xx___, n_?((ScalarFieldQ[#]  && Not[GhostFieldQ[#] === True] && Length[$IndList[#]] == 0)&)* f_, yy___] := n * FR$Dot[xx, f, yy];

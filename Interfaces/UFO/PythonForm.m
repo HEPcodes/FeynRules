@@ -480,17 +480,17 @@ SetOutputDirectory[dir_String] := Block[{},
 (*Python Format*)
 
 
-PY$InputForm = {Complex[a_,b_] :> a + b * PYComplexI, 
+PY$InputForm = {Complex[aa_,b_] :> aa + b * PYComplexI, 
                 Power[x_, 1/2] :> FRSqrt[x],
                 Power[x_, -1/2] :> 1/FRSqrt[x],
-                E^a_.:>FRExp[a],
-                Less[a_,b_]:>PythonForm[a]<>"<"<>PythonForm[b],
-                LessEqual[a_,b_]:>PythonForm[a]<>"<="<>PythonForm[b],
-                Greater[a_,b_]:>PythonForm[a]<>">"<>PythonForm[b],
-                GreaterEqual[a_,b_]:>PythonForm[a]<>">="<>PythonForm[b],
-                Equal[a_,b_]:>PythonForm[a]<>"=="<>PythonForm[b],
-                Unequal[a_,b_]:>PythonForm[a]<>"<="<>PythonForm[b],
-                If[a_,b_,c_]:>"( "<> PythonForm[b]<>" if "<>PythonForm[a]<>" else "<>PythonForm[c]<>" )"};
+                E^aa_.:>FRExp[aa],
+                Less[aa_,b_]:>PythonForm[aa]<>"<"<>PythonForm[b],
+                LessEqual[aa_,b_]:>PythonForm[aa]<>"<="<>PythonForm[b],
+                Greater[aa_,b_]:>PythonForm[aa]<>">"<>PythonForm[b],
+                GreaterEqual[aa_,b_]:>PythonForm[aa]<>">="<>PythonForm[b],
+                Equal[aa_,b_]:>PythonForm[aa]<>"=="<>PythonForm[b],
+                Unequal[aa_,b_]:>PythonForm[aa]<>"<="<>PythonForm[b],
+                If[aa_,b_,c_]:>"( "<> PythonForm[b]<>" if "<>PythonForm[aa]<>" else "<>PythonForm[c]<>" )"};
 PY$OutputForm = {"PYTuple" -> "", "ADDSLASH" -> "\\'","\""->"",".and."->" and ",".or."->" or "};
 
 PY$IndexForm = {Index[_, Ext[k_]] :> k,
