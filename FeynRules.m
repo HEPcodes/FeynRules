@@ -39,6 +39,7 @@ If[FR$Loaded =!= True,
 		DistributeDefinitions[$FeynRulesPath];
 		ParallelEvaluate[
 			$Output={};
+			If[$VersionNumber>=12.2, SetOptions[ValueQ, Method->"Legacy"]]; (* Compatilibity with Mathematica 12.2 *)
 			SetDirectory[$FeynRulesPath];
 			Get[ToFileName[$FeynRulesPath, "FeynRulesPackage.m"]];
 			$Output={OutputStream["stdout",1]};
