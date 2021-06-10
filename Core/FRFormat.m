@@ -130,8 +130,8 @@ Int[i_, ki_] := If[ValueQ[StoreInt[i, ki]], StoreInt[i, ki],
 (*To get the correct TeX output, I have to fix the StandardForm*)
 
 
-MySuperscript[a_, b_] := Superscript[a,b];
-MySuperscript[a__, b_, c_] := MySuperscript[MySuperscript[a, b], c];
+MySuperscript[aa_, b_] := Superscript[aa,b];
+MySuperscript[aa__, b_, c_] := MySuperscript[MySuperscript[aa, b], c];
 
 TeXFormat[$xx_, $yy_] := Block[{tmp},
      SetDelayed[Format[$xx, StandardForm], $yy];
@@ -191,7 +191,7 @@ Format[SP[k1_, k2_], StandardForm] := Dot[Subscript["p", k1], Subscript[p, k2]];
 Format[SlashedP[k_,i_,j_], StandardForm] := Subscript[Dot[\[Gamma], Subscript["p",k]], i,j];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Sherpa formatting*)
 
 
@@ -251,7 +251,7 @@ Abs->fabs,Ceiling->ceil,Floor->floor,Max->fmax,Min->fmin,
 (*CalcHEP only allows complex numbers in a very limited way.
 Parameters and Functions have to be real.
 Imaginary numbers can only be present in the vertices.*)
-Conjugate[a_]->a
+Conjugate[aa_]->aa
 };
 
 
@@ -448,27 +448,27 @@ MakeOptimization[expr_]:= Block[{tempexpr},
 (*Superfield module related formats*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Format of the Grassman variables (theta and thetabar)*)
 
 
-Format[theta[a_]]:=Subscript[\[Theta],a];
+Format[theta[aa_]]:=Subscript[\[Theta],aa];
 
-Format[thetabar[a_]]:=Subscript[OverBar[\[Theta]],a]
+Format[thetabar[aa_]]:=Subscript[OverBar[\[Theta]],aa]
 
 
 (* ::Subsubsection:: *)
 (*2-D epsilon tensor*)
 
 
-Format[Ueps[Index[type_,a_],Index[type_,b_]]]:=Superscript[\[Epsilon],ToString[a]<>" " <>ToString[b]];
+Format[Ueps[Index[type_,aa_],Index[type_,b_]]]:=Superscript[\[Epsilon],ToString[aa]<>" " <>ToString[b]];
 
-Format[Deps[Index[type_,a_],Index[type_,b_]]]:=Subscript[\[Epsilon],ToString[a]<>" " <>ToString[b]];
+Format[Deps[Index[type_,aa_],Index[type_,b_]]]:=Subscript[\[Epsilon],ToString[aa]<>" " <>ToString[b]];
 
 
-Format[Ueps[a_,b_]]:=Superscript[\[Epsilon],ToString[a]<>" " <>ToString[b]];
+Format[Ueps[aa_,b_]]:=Superscript[\[Epsilon],ToString[aa]<>" " <>ToString[b]];
 
-Format[Deps[a_,b_]]:=Subscript[\[Epsilon],ToString[a]<>" " <>ToString[b]];
+Format[Deps[aa_,b_]]:=Subscript[\[Epsilon],ToString[aa]<>" " <>ToString[b]];
 
 
 (* ::Section:: *)

@@ -551,18 +551,18 @@ FR$AbbIndexSumCounter = 1;
 (*    * FlavorExpandISUM expand an abbreviation ISUM over externl indices*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*IndexSumExpand*)
 
 
-IndexSumExpand[a_ * b_., {Index[g_, Int[i_]], inds_}] := a * IndexSumExpand[b, {Index[g, Int[i]], inds}] /; FreeQ[a, Int[i]] || FreeQ[a, g];
+IndexSumExpand[aa_ * b_., {Index[g_, Int[i_]], inds_}] := aa * IndexSumExpand[b, {Index[g, Int[i]], inds}] /; FreeQ[aa, Int[i]] || FreeQ[aa, g];
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*IndexSumCombine*)
 
 
-IndexSumCombine[a_. IndexSumCombine[b_, inds1__], inds2__] := IndexSumCombine[a * b, inds1, inds2];
+IndexSumCombine[aa_. IndexSumCombine[b_, inds1__], inds2__] := IndexSumCombine[aa * b, inds1, inds2];
 
 
 (* ::Subsubsection::Closed:: *)
@@ -1018,7 +1018,7 @@ RelabelExt[{parts1_, vertex_}] := Block[{newparts = parts1, extrpls, newvertex},
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SortVertexFields*)
 
 
@@ -1033,9 +1033,9 @@ RelabelExt[{parts1_, vertex_}] := Block[{newparts = parts1, extrpls, newvertex},
 
 SortVertexFields[{parts_, vertex_}] := Block[{newparts, newvertex, FieldOrder},
 	(* Sort, but only interchange fields which are not both ghosts. *)
-	FieldOrder[{a_,b_}]:=Which[
-		GhostFieldQ[a[[1]]]===True&&GhostFieldQ[b[[1]]]===True,True,
-		1==1,OrderedQ[{a,b}]
+	FieldOrder[{aa_,b_}]:=Which[
+		GhostFieldQ[aa[[1]]]===True&&GhostFieldQ[b[[1]]]===True,True,
+		1==1,OrderedQ[{aa,b}]
 	];
 	newparts = Sort[parts,FieldOrder[{#1,#2}]&];
 

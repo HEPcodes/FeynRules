@@ -68,7 +68,7 @@ GetFermionChainFromVertex[vertex_] := Block[{
    },
 
    (* This is the helpter function, an extractor, that pulls out the terms that have a spin index *)
-   ChainExtractor[a_, expr_. * tens_[inds___, Index[Spin,s1_], Index[Spin, s2_]]] := ChainExtractor[a* tens[inds, Index[Spin, s1], Index[Spin, s2]], expr];
+   ChainExtractor[aa_, expr_. * tens_[inds___, Index[Spin,s1_], Index[Spin, s2_]]] := ChainExtractor[aa* tens[inds, Index[Spin, s1], Index[Spin, s2]], expr];
    
    (* Main routine *)
    vert = If[Head[vert] === Plus,
@@ -311,7 +311,7 @@ MergeAllVertices[vertexlist_List] := SortVertexParticles/@PrecollectVerticesAcco
 (*Sorting vertices*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SortVertexFields*)
 
 
@@ -326,9 +326,9 @@ MergeAllVertices[vertexlist_List] := SortVertexParticles/@PrecollectVerticesAcco
 
 SortVertexFields[{parts_, vertex_}] := Block[{newparts, newvertex, FieldOrder},
 	(* Sort, but only interchange fields which are not both ghosts. *)
-	FieldOrder[{a_,b_}]:=Which[
-		GhostFieldQ[a[[1]]]===True&&GhostFieldQ[b[[1]]]===True,True,
-		1==1,OrderedQ[{a,b}]
+	FieldOrder[{aa_,b_}]:=Which[
+		GhostFieldQ[aa[[1]]]===True&&GhostFieldQ[b[[1]]]===True,True,
+		1==1,OrderedQ[{aa,b}]
 	];
 
 	newparts = Sort[MakeIdenticalFermions[parts],FieldOrder[{#1,#2}]&];
@@ -579,7 +579,7 @@ CheckForMassEigenstates[ vertexlist_ ] := Block[{
 (*Runs*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*AddToRunTable*)
 
 
@@ -626,7 +626,7 @@ DisplayRuns[] := Block[{header, output},
 InterfaceRun[n_Integer] := Cases[FR$InterfaceRuns, InterfaceRunObject[n, ___]][[1,-1]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*VertexSimplify*)
 
 
@@ -642,21 +642,21 @@ VertexSimplify[particles_, expr_] := Block[{
     },
 
     (* Simplification Rules *)
-    ff$SimRules1 = {ff$Sim[a_,b_,c_,d_] :> -ff$Sim[b,a,c,d] /; Not[OrderedQ[{a,b}]],
-              ff$Sim[a_,b_,c_,d_] :> -ff$Sim[a,b,d,c] /; Not[OrderedQ[{c,d}]]
+    ff$SimRules1 = {ff$Sim[aa_,bb_,c_,d_] :> -ff$Sim[bb,aa,c,d] /; Not[OrderedQ[{aa,bb}]],
+              ff$Sim[aa_,b_,c_,d_] :> -ff$Sim[aa,b,d,c] /; Not[OrderedQ[{c,d}]]
               };
-    ff$SimRules2 = {ff$Sim[a_,b_,c_,d_] :> ff$Sim[c,d,a,b] /; Not[OrderedQ[{a,c}]]
+    ff$SimRules2 = {ff$Sim[aa_,b_,cc_,d_] :> ff$Sim[cc,d,aa,b] /; Not[OrderedQ[{aa,cc}]]
                    };
-    jacobirules = {g1_. ff$Sim[a_,b_,c_,d_] + g2_. ff$Sim[a_,c_,b_,d_] + g1_. ff$Sim[a_,d_,b_,c_] :> 0 /; g2 === -g1
+    jacobirules = {g1_. ff$Sim[aa_,b_,c_,d_] + g2_. ff$Sim[aa_,c_,b_,d_] + g1_. ff$Sim[aa_,d_,b_,c_] :> 0 /; g2 === -g1
                   };
 
     (* Jacobi identity *)
-    vertex = vertex /. {f[a_,b_,e_]f[c_,d_,e_] :> ff$Sim[a,b,c,d]};
+    vertex = vertex /. {f[aa_,b_,e_]f[c_,d_,e_] :> ff$Sim[aa,b,c,d]};
     If[Not[FreeQ[vertex, ff$Sim]],
        vertex = Factor[vertex //. ff$SimRules1 //. ff$SimRules2];
        vertex = vertex //. jacobirules
        ];
-    vertex = vertex //. ff$Sim[a_,b_,c_,d_] :> Module[{xx}, f[a,b,Index[Gluon, xx, 1]]f[c,d,Index[Gluon, xx, 1]]];
+    vertex = vertex //. ff$Sim[aa_,b_,c_,d_] :> Module[{xx}, f[aa,b,Index[Gluon, xx, 1]]f[c,d,Index[Gluon, xx, 1]]];
 
     Return[{particles, vertex}];
 
@@ -812,7 +812,7 @@ SplitVertex[{parts_List,expr_}]:=Block[{
 SplitVertices[list_]:=Flatten[SplitVertex/@list];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ComputeFermionFlowForTerm*)
 
 
@@ -827,7 +827,7 @@ SplitVertices[list_]:=Flatten[SplitVertex/@list];
 (*{out1, in1, out2, in2, ...}*)
 
 
-FermionFlowExtractor[a_, b_?(FreeQ[#,Spin]&)c_] := FermionFlowExtractor[a b, c]
+FermionFlowExtractor[aa_, b_?(FreeQ[#,Spin]&)c_] := FermionFlowExtractor[aa b, c]
 
 
 CheckSpinIndexOrder[pair_, list_] := Block[{
@@ -856,14 +856,14 @@ ComputeFermionFlowForTerm[split_SplitVertex$Obj]:=Block[{
    rest,dummyGamma
    },
 
-   dummyGamma/:dummyGamma[Index[Spin,a_],Index[Spin,b_]]dummyGamma[Index[Spin,b_],Index[Spin,c_]]:=dummyGamma[Index[Spin,a],Index[Spin,c]];
+   dummyGamma/:dummyGamma[Index[Spin,aa_],Index[Spin,b_]]dummyGamma[Index[Spin,b_],Index[Spin,c_]]:=dummyGamma[Index[Spin,aa],Index[Spin,c]];
 
    expr=FermionFlowExtractor[1,expr];
    gammastructure=expr[[2]];
    flow=gammastructure;
    rest=expr[[1]];
 
-   flow=flow/.Except[dummyGamma][___,Index[Spin,a_],Index[Spin,b_]]:>dummyGamma[Index[Spin,a],Index[Spin,b]]//.{Index[Spin,Ext[i_]]:>i};
+   flow=flow/.Except[dummyGamma][___,Index[Spin,aa_],Index[Spin,b_]]:>dummyGamma[Index[Spin,aa],Index[Spin,b]]//.{Index[Spin,Ext[i_]]:>i};
    flow=Sort[(flow/.Times->List)];
    flow = flow /. aa_dummyGamma :> CheckSpinIndexOrder[aa, particles];
 
@@ -874,7 +874,7 @@ ComputeFermionFlowForTerm[split_SplitVertex$Obj]:=Block[{
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*CanonicalizeFlows*)
 
 
@@ -889,10 +889,10 @@ CanonicalizeFlows[fermions_List, nferms_Integer] := Block[{
    pairs, unnumberedpairs, referenceordermap, orderQ
    },
 
-   orderQ = (#1 /. {a_, _Integer} :> a /. referenceordermap) < (#2 /. {a_, _Integer} :> a /. referenceordermap)&;
+   orderQ = (#1 /. {aa_, _Integer} :> aa /. referenceordermap) < (#2 /. {aa_, _Integer} :> aa /. referenceordermap)&;
 
    pairs = Transpose[{left,right}];
-   unnumberedpairs = Sort[DeleteDuplicates[pairs /. {a_, _Integer} :> a]];
+   unnumberedpairs = Sort[DeleteDuplicates[pairs /. {aa_, _Integer} :> aa]];
    referenceordermap = Table[Rule[unnumberedpairs[[i]], i], {i, Length[unnumberedpairs]}];
 
    pairs = Sort[pairs, orderQ];
@@ -1001,7 +1001,7 @@ Print[multifermionvertices];
    
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*FermionFlows*)
 
 
@@ -1096,7 +1096,7 @@ PutRightSignForIdenticalFermions[vertex_] := Block[{
       Note that each external fermion is conencted to one and only one chain.
       Then we go on and check whetehr we need to flip the flow and add a sign,
      *)
-    ChainExtractor[a_, exp_. * tens_[inds___, Index[Spin,s1_], Index[Spin, s2_]]] := ChainExtractor[a* tens[inds, Index[Spin, s1], Index[Spin, s2]], exp];
+    ChainExtractor[aa_, exp_. * tens_[inds___, Index[Spin,s1_], Index[Spin, s2_]]] := ChainExtractor[aa* tens[inds, Index[Spin, s1], Index[Spin, s2]], exp];
 
     expr = ChainExtractor[1,expr];
     chains = expr[[1]];

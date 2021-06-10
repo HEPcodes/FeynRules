@@ -2,7 +2,7 @@
 
 (*
    
-   $Id: WhizardOmegaInterface.m 2148 2013-09-17 15:53:15Z NeilChristensen $
+   $Id: WhizardOmegaInterface.m 2640 2021-05-21 14:19:13Z BenjF $
 
    This is the sugar coating of WOMathematicaInterface.m which restores its
    functionality as a FR interface.
@@ -30,7 +30,7 @@ Catch[Module[{path, importedopts, importedmisc, symrules},
    Get[ToFileName[WO`InterfacePath, "WOMathematicaInterface.m"]];
 
    (* Version check *)
-   If[WO`APIversion != 2, Throw[Null, "Invalid API version."]];
+   If[WO`APIversion != 3, Throw[Null, "Invalid API version."]];
 
    (* Import the options for WriteWOOutput. *)
    importedopts = {

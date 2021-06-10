@@ -217,7 +217,7 @@ True
 ];
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Check for diagonal lagrangians*)
 
 
@@ -334,7 +334,7 @@ CheckDiagonalQuadraticTerms[lagrangian_, options___] := Block[{lag, DQT = True, 
 
 FR$DSign = 1;
 
-FS[bos_, mu_, nu_, a_, ff_, cpco_] := Module[{bb, cc}, del[bos[nu, a],mu] - del[bos[mu,a] ,nu] + FR$DSign *cpco ff[a ,bb ,cc ]bos[mu,bb]bos[nu,cc]];
+FS[bos_, mu_, nu_, aa_, ff_, cpco_] := Module[{bb, cc}, del[bos[nu, aa],mu] - del[bos[mu,aa] ,nu] + FR$DSign *cpco ff[aa ,bb ,cc ]bos[mu,bb]bos[nu,cc]];
 
 (* U (1) vector field *)
 
@@ -346,8 +346,8 @@ FS[bos_, mu_, nu_] := del[bos[nu],mu] - del[bos[mu] ,nu];
 
 
 Dual[FS][g_, mu_, nu_] := Module[{xx, yy}, 1/2 Eps[mu, nu, xx, yy] FS[g, xx, yy]];
-Dual[FS][g_, mu_, nu_, a_] := Module[{xx, yy}, 1/2 Eps[mu, nu, xx, yy] FS[g, xx, yy, a]];
-Dual[FS][ww_, mu_, nu_, a_, f_, gg_] := Module[{xx, yy},  1/2 Eps[mu, nu, xx, yy] FS[ww, xx, yy, a, f, gg]];
+Dual[FS][g_, mu_, nu_, aa_] := Module[{xx, yy}, 1/2 Eps[mu, nu, xx, yy] FS[g, xx, yy, aa]];
+Dual[FS][ww_, mu_, nu_, aa_, f_, gg_] := Module[{xx, yy},  1/2 Eps[mu, nu, xx, yy] FS[ww, xx, yy, aa, f, gg]];
 
 
 (* ::Section:: *)
@@ -468,7 +468,7 @@ CheckKineticTermNormalisation[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fc
       If[ck=!=True, Print["Warning: Kinetic term for ",ToString[fcl1[[$nn]]]," seems not to be correctly normalized."]];
       cktot=cktot&&ck,
       fcl[[$nn]] === {"F","F"},
-      tmpterm=tmp[[$nn]]/.Dot[del[psi1_,mu_],psi2_]:>-Dot[psi1,del[psi2,mu]]//.Dot[psi1_[a___,b_,c___],del[psi2_[d___,e_,f___],g_]]IndexDelta[b_,e_]->Dot[psi1[a,b,c],del[psi2[d,b,f],g]]/.del[__]->1/._?FieldQ->1/.Dot[1,1]->1//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2 //. TensDot[___,(ProjP|ProjM)][__]->1/2;
+      tmpterm=tmp[[$nn]]/.Dot[del[psi1_,mu_],psi2_]:>-Dot[psi1,del[psi2,mu]]//.Dot[psi1_[aa___,b_,c___],del[psi2_[d___,e_,f___],g_]]IndexDelta[b_,e_]->Dot[psi1[aa,b,c],del[psi2[d,b,f],g]]/.del[__]->1/._?FieldQ->1/.Dot[1,1]->1//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2 //. TensDot[___,(ProjP|ProjM)][__]->1/2;
       numtmp = NumericalValue[tmpterm];
       If[Not[NumericQ[numtmp]], Print["Warning: non numerical value encountered for ", ToString[fcl1[[$nn]]], ". Unable to check normalisation."]];
       ck=If[MajoranaFieldQ[fcl1[[$nn,1]]], numtmp == 0.+0.5 I, numtmp == 0.+1. I];
@@ -482,7 +482,7 @@ CheckKineticTermNormalisation[lagrangian_, options___]:=Block[{lag,isdiag,fcl,fc
       If[ck=!=True, Print["Warning: Kinetic term for ",ToString[fcl1[[$nn]]]," seems not to be correctly normalized."]];
       cktot=cktot&&ck,
       fcl[[$nn]] === {"V","V"},
-      tmpterm=tmp[[$nn]]//.del[a1_[mu_,ind___],nu_]del[a2_[nu_,ind___],mu_]:>-a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.del[a1_[mu_,ind___],mu_]del[a2_[nu_,ind___],nu_]:>-a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.a1_[mu_,ind___]del[del[a2_[nu_,ind___],mu_],nu_]:>a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.a1_[mu_,ind___]del[del[a2_[nu_,ind___],nu_],mu_]:>a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.del[a1_[mu_,ind___],nu_]del[a2_[mu_,ind___],nu_]:>-a1[FR$mu]del[del[a2[FR$mu],FR$nu,FR$nu]]//.del[a_[mu_,ind___],nu_]^2:>-a[FR$mu]del[del[a[FR$mu],FR$nu,FR$nu]]//.a1_[mu_,ind___]del[del[a2_[mu_,ind___],nu_,nu_]]:>a1[FR$mu]del[del[a2[FR$mu],FR$nu],FR$nu];
+      tmpterm=tmp[[$nn]]//.del[a1_[mu_,ind___],nu_]del[a2_[nu_,ind___],mu_]:>-a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.del[a1_[mu_,ind___],mu_]del[a2_[nu_,ind___],nu_]:>-a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.a1_[mu_,ind___]del[del[a2_[nu_,ind___],mu_],nu_]:>a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.a1_[mu_,ind___]del[del[a2_[nu_,ind___],nu_],mu_]:>a1[FR$mu]del[del[a2[FR$nu],FR$nu],FR$mu]//.del[a1_[mu_,ind___],nu_]del[a2_[mu_,ind___],nu_]:>-a1[FR$mu]del[del[a2[FR$mu],FR$nu,FR$nu]]//.del[aa_[mu_,ind___],nu_]^2:>-aa[FR$mu]del[del[aa[FR$mu],FR$nu,FR$nu]]//.a1_[mu_,ind___]del[del[a2_[mu_,ind___],nu_,nu_]]:>a1[FR$mu]del[del[a2[FR$mu],FR$nu],FR$nu];
       tmpterm=tmpterm//.a1_[FR$mu]del[del[a2_?(AntiFieldQ)[FR$mu],FR$nu],FR$nu]:>a2[FR$mu]del[del[a1[FR$mu],FR$nu],FR$nu]//.a1_[FR$mu]del[del[a2_?(AntiFieldQ)[FR$nu],FR$nu],FR$mu]:>a2[FR$mu]del[del[a1[FR$nu],FR$nu],FR$mu];
       tmp1=tmpterm/.a1_[FR$mu]del[del[a2_[FR$mu],FR$nu],FR$nu]->0/.a1_[FR$mu]del[del[a2_[FR$nu],FR$nu],FR$mu]->1;
       tmp2=tmpterm/.a1_[FR$mu]del[del[a2_[FR$mu],FR$nu],FR$nu]->1/.a1_[FR$mu]del[del[a2_[FR$nu],FR$nu],FR$mu]->0;
@@ -719,18 +719,18 @@ Options[Generarte2to2Processes]={SelectFieldTypes->{},SelectIndices->{},SelectCh
 Generate2to2Processes[opts___]:=Module[{isOk,partsTmp,i,j,k,l,i1,j1,k1,l1,i2,j2,k2,l2,N=0,fldTp,fldTpN={},indcs,indcsN={},tindL={},chrgs,chrgsN={},tmp1,tmp2,tmp3,procList={}},
 fldTp=SelectFieldTypes/.{opts}/.Options[Generate2to2Processes];
 If[Length[fldTp]>0,
-	fldTpN=Select[fldTp,Head[#]==Not&]/.Not[a_]->a;
+	fldTpN=Select[fldTp,Head[#]==Not&]/.Not[aa_]->aa;
 	fldTp=Select[fldTp,Head[#]=!=Not&];
 ];
 indcs=SelectIndices/.{opts}/.Options[Generate2to2Processes];
 If[Length[indcs]>0,
-	indcsN=Flatten/@Index/@(Select[indcs,Head[#]==Not&]/.Not[a_]->a);
+	indcsN=Flatten/@Index/@(Select[indcs,Head[#]==Not&]/.Not[aa_]->aa);
 	indcs=Flatten/@Index/@(Select[indcs,Head[#]=!=Not&]);
 	tindL=DeleteDuplicates[Flatten[{indcs,indcsN}]];
 ];
 chrgs=SelectCharges/.{opts}/.Options[Generarte2to2Processes];
 If[Length[chrgs]>0,
-	chrgsN=Select[chrgs,Head[#]==Not&]/.Not[a_]->a;
+	chrgsN=Select[chrgs,Head[#]==Not&]/.Not[aa_]->aa;
 	chrgs=Select[chrgs,Head[#]=!=Not&];
 ];
 partsTmp=Flatten[PartList[[All,2]],1];
@@ -826,18 +826,18 @@ Options[Generate1to2Decays]={SelectFieldTypes->{},SelectIndices->{},SelectCharge
 Generate1to2Decays[opts___]:=Module[{isOk,partsTmp,i,j,k,i1,j1,k1,i2,j2,k2,N=0,fldTp,fldTpN={},indcs,indcsN={},tindL={},chrgs,chrgsN={},tmp1,tmp2,tmp3,procList={}},
 fldTp=SelectFieldTypes/.{opts}/.Options[Generate1to2Decays];
 If[Length[fldTp]>0,
-	fldTpN=Select[fldTp,Head[#]==Not&]/.Not[a_]->a;
+	fldTpN=Select[fldTp,Head[#]==Not&]/.Not[aa_]->aa;
 	fldTp=Select[fldTp,Head[#]=!=Not&];
 ];
 indcs=SelectIndices/.{opts}/.Options[Generate1to2Decays];
 If[Length[indcs]>0,
-	indcsN=Flatten/@Index/@(Select[indcs,Head[#]==Not&]/.Not[a_]->a);
+	indcsN=Flatten/@Index/@(Select[indcs,Head[#]==Not&]/.Not[aa_]->aa);
 	indcs=Flatten/@Index/@(Select[indcs,Head[#]=!=Not&]);
 	tindL=DeleteDuplicates[Flatten[{indcs,indcsN}]];
 ];
 chrgs=SelectCharges/.{opts}/.Options[Generate1to2Decays];
 If[Length[chrgs]>0,
-	chrgsN=Select[chrgs,Head[#]==Not&]/.Not[a_]->a;
+	chrgsN=Select[chrgs,Head[#]==Not&]/.Not[aa_]->aa;
 	chrgs=Select[chrgs,Head[#]=!=Not&];
 ];
 partsTmp=Flatten[PartList[[All,2]],1];

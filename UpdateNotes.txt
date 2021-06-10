@@ -1,5 +1,15 @@
 Update notes for FeynRules 2.3.x
 
+2642 2.3.47 25-05-21 fuks:       Mathematica 12.2 and parallelisation are 
+                                 fixed 
+
+2640 2.3.46 21-05-21 fuks:       Updating the WO interface to version 3.0.0 
+
+2638 2.3.45 21-05-21 fuks:       Compatibility with mathematica 12.2 (next 
+                                 episode) 
+
+2635 2.3.44 21-05-21 fuks:       Compatibility with Mathematica 12.2 
+
 2633 2.3.43 23-02-21 degrande:   bug fix for tadpole renormalisation 
 
 2631 2.3.42 14-02-21 claudeduhr: fixed bug in numQ for exponentials 
