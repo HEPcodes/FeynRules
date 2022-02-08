@@ -1,5 +1,10 @@
 Update notes for FeynRules 2.3.x
 
+2647 2.3.49 29-09-21 degrande:   bug fixes 
+
+2644 2.3.48 23-08-21 fuks:       Bug fix in CheckDiagonalKineticTerms 
+                                 (thanks to J. Hajer) 
+
 2642 2.3.47 25-05-21 fuks:       Mathematica 12.2 and parallelisation are 
                                  fixed 
 

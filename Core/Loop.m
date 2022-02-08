@@ -173,31 +173,39 @@ ParameterRenormalization[]:=Flatten[Block[{bare, ren, Inds,MyPattern,bare2,ren2,
 (*This produces a list of rules allowing to replace the fields with a vev by temself and a tadpole*)
 
 
-TadpoleRenormalization[]:=Block[{tadrep={},vevtmp,vevfi,tadrules,vevkk,vevll,realparam,vevfi2,vevre,zerorule},
+TadpoleRenormalization[]:=Block[{tadrep={},vevtmp,vevfi,tadrules,vevkk,vevll,realparam,vevfi2,vevre,zerorule,cplxparam,cplxfield},
 zerorule[x_]:=x->0;
 tadrep={};
 tadrules={};
 realparam=Cases[Join[Flatten[EParamList[[1;;,2,1;;,2]],1],IParamList],{__,False,_}][[1;;,1]];
+cplxparam=Cases[Join[Flatten[EParamList[[1;;,2,1;;,2]],1],IParamList],{__,True,_}][[1;;,1]];
+(*Print["cplx param"];*)
 For[vevkk=1,vevkk<=Length[M$vevs],vevkk++,
   (*get the properties of the field with the vev*)
   vevtmp=Cases[M$ClassesDescription,_?(Not[FreeQ[#,If[Depth[M$vevs[[vevkk,1]]]>1,ClassName->Head[M$vevs[[vevkk,1]]],ClassName->M$vevs[[vevkk,1]]]]]&)];
+  (*Print[InputForm[vevtmp]];*)
   (*Abort if the field is not in the classes description*)
   If[Length[vevtmp]<1,Print[Style["Error : not all field in M$vevs are properly declared",Red]];Abort[]];
   (*Abort if the class description of that fields does contain its definition*)
   If[FreeQ[vevtmp,Definitions],Print[Style["Error : not all field in M$vevs are properly defined",Red]];Abort[]];
   (*the field after replacing it by its definition*)
   vevfi=M$vevs[[vevkk,1]]/.(Definitions/.vevtmp[[1,2]]);
+  vevfi=ExpandIndices[vevfi,FlavorExpand->True];
   (*switch depending how many physical fields appear in vevfi*)
-  Print[InputForm[vevfi]];
+  (*Print[InputForm[vevfi]];*)
   Switch[Length[Cases[vevfi,_?FieldQ,\[Infinity]]],
     (*shift the scalar or the pseudo scalar depending if the vev has a real or imaginary coefficient*)
     _,vevfi2=Cases[vevfi,_?FieldQ,\[Infinity]];
-    Print["in last case"];
+    cplxfield = Cases[vevfi2,_?(Not[#==anti[#]]&)];
+    (*Print[InputForm[cplxfield]];
+    Print[InputForm[vevfi2]];
+    Print["in last case"];*)
     If[And@@(SelfConjugateQ/@vevfi2),
-    Print["In if sc"];
-    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[Re[vevfi],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
-    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[Im[vevfi],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
-    Print[InputForm[tadrules]];(*
+    (*Print["In if sc"];
+    Print[InputForm[vevfi]];*)
+    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[ComplexExpand[Re[vevfi],Join[cplxparam,cplxfield]],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
+    tadrules=Append[tadrules,({#/.M$vevs[[vevkk,2]]->0,#/.(zerorule/@vevfi2)}&)[Simplify[ComplexExpand[Im[vevfi],Join[cplxparam,cplxfield]],Assumptions->(((#\[Element]Reals)&)/@Join[vevfi2,realparam])]]];
+    (*Print[InputForm[tadrules]];*)(*
        If[Im[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0&&Not[Re[Coefficient[vevfi,M$vevs[[vevkk,2]]]]===0],
           tadrules=Simplify[Re[vevfi],Assumptions\[Rule](((#\[Element]Reals)&)/@Join[vevfi2,realparam])]/.M$vevs[[vevkk,2]]\[Rule]0;
           Print[InputForm[tadrules]];,
@@ -573,7 +581,7 @@ Options[OnShellRenormalization] = {QCDOnly->False,FlavorMixing->True,Only2Point-
 
 OnShellRenormalization[Lag_,options___]:=Module[{FieldRenoList,ExternalParamList,InternalParamList,internalMasses,massRules, deltaLagp,deltaLag,classname, classmembers,
 flavor,fi,paramreno,FreeM,Patbis,qcd,flm,only2,qcdind,qcdclasses,kk1,extNotMass,cvar,tmppara,itp,tmp,tmpRule,lkinmass,GetnFlavor,extfla,MassFreeQ,skin,no4S,lag4S,Pow,
-deltaLagt,massspec,replist,InternalParamList2,lagtmp,frtmp,logfile},
+deltaLagt,massspec,replist,InternalParamList2,lagtmp,frtmp,logfile,eerep,aEWlab},
 
 Off[Simplify::time];
 qcd=QCDOnly/.{options}/.Options[OnShellRenormalization];
@@ -733,14 +741,15 @@ If[FR$DoPara,
      ParallelSubmit[{itp,tmppara},(Replace[#,Times[I*a_Plus]:>PlusI@@a,1]&)[tmppara]],{itp,Length[deltaLagp]}];
    deltaLagp=Plus@@WaitAll[tmp];
    tmp=Table[tmppara=deltaLagp[[itp]]/.Dot->RenDot/.RenDot->Dot;
-     ParallelSubmit[{itp,tmppara},(SeriesCoefficient[#,{FR$CT,0,1}]&)[tmppara]],{itp,Length[deltaLagp]}];
+     ParallelSubmit[{itp,tmppara},(Simplify[SeriesCoefficient[#,{FR$CT,0,1}],TimeConstraint->1]&)[tmppara]],{itp,Length[deltaLagp]}];
    deltaLagp=Plus@@WaitAll[tmp];
    ,
    deltaLagp=((Expand[(#(*//.massRules*)/.paramreno/.InternalParamList),FR$CT]&)/@deltaLag)/.FR$CT^n_Integer:>0/;n>1;
    deltaLagp=(Replace[#,Times[I*a_Plus]:>PlusI@@a,1]&)/@deltaLagp;
-   deltaLagp=(SeriesCoefficient[#,{FR$CT,0,1}]&)/@(deltaLagp/.Dot->RenDot/.RenDot->Dot);
+   deltaLagp=(Simplify[SeriesCoefficient[#,{FR$CT,0,1}],TimeConstraint->1]&)/@(deltaLagp/.Dot->RenDot/.RenDot->Dot);
 ];
 deltaLagp=(FR$CT*#&)/@deltaLagp;
+Print["paramters before tadpole"];
 
 (*Print[InputForm[deltaLagp]];*)
 If[qcd,deltaLagt=0;lagtmp=0;,
@@ -748,14 +757,27 @@ If[qcd,deltaLagt=0;lagtmp=0;,
   deltaLagt=(Coefficient[#,FR$CT]&)/@(deltaLag/.TadpoleRenormalization[])*FR$CT;
   $Output=logfile;
   lagtmp = DeleteCases[Expand[GetMassTerms[deltaLagt+deltaLagp]],_?(Not[FreeQ[#,_?GhostFieldQ]]&)];
+  Print["t2"];
   massspec=GetMassSpectrum[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Not[Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]]]]&)]];
   $Output={OutputStream["stdout",1]};
   replist=Flatten[(Dmshift/@massspec[[1,2;;,{1,2}]])];
+  Print["t3"];
   deltaLagp=Expand[(#/.replist&)/@deltaLagp];
+  Print["t4"];
   deltaLagt = (*Factor[*)Expand[deltaLagt+DeleteCases[deltaLagp,_?(FreeQ[#,FR$deltat]&)]/.InternalParamList2](*]*);
+  Print["t5"];
   If[Not[FreeQ[InternalParamList2[[All,1]],ee]],
-    deltaLagt=deltaLagt/.Solve[Cases[InternalParamList2/.Rule->tmpRule,tmpRule[ee,bb_]->ee==bb][[1]],{aEWM1}][[1]]/.{Sqrt[ee^2]->ee,Power[ee^2,Rational[n_Integer,2]]->ee^n}];
+    Print["in if ee"];
+    eerep=Cases[InternalParamList2/.Rule->tmpRule,tmpRule[ee,bb_]->ee==bb];
+    aEWlab=DeleteCases[Cases[eerep[[1,2]],_Symbol,\[Infinity]],Pi];
+    eerep=Solve[eerep,aEWlab];
+    Print[InputForm[eerep[[1]]]];
+    deltaLagt=deltaLagt/.eerep[[1]][[1]]/.{Sqrt[ee^2]->ee,Power[ee^2,Rational[n_Integer,2]]->ee^n};,
+    Print[Directive[Orange,"ee is not defined, this may cause issue for tadpoles renormalisation"]];
+    ];
+  Print["t6"];
   deltaLagp = deltaLagp/.FR$deltat[_]->0;
+  Print["end tadpole renormalisation"];
 ];
 
 Print["with the fields"];

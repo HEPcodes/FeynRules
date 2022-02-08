@@ -217,7 +217,7 @@ True
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Check for diagonal lagrangians*)
 
 
@@ -294,7 +294,7 @@ CheckDiagonalKineticTerms[lagrangian_, options___] := Block[{lag, DKT = True, fc
          Do[If[fcl1[[$kk,1]] =!= anti[fcl1[[$kk,2]]],
                tmptmp = tmp[[$kk]] //. del[psi_, mu_] -> psi //. psi_?FieldQ -> 1 //.TensDot[Ga[_],ProjM|ProjP][_,_]->1/2//. Ga[__] -> 1 //. (ProjP|ProjM)[_,_] -> 1/2;
                If[Not[NumericQ[NumericalValue[tmptmp]]], Print["Warning: not numerical value encountered. Unable to decide whether kinetic term is diagonal"]];
-               If[(NumericalValue[tmptmp] < N[10^(-8)])=!=True, DKT = False;
+               If[(Abs[NumericalValue[tmptmp]] < N[10^(-8)])=!=True, DKT = False;
                   Print["Non diagonal kinetic term found: ", tmp[[$kk]]]]],
             {$kk, Length[tmp]}];
          If[DKT, Print["All kinetic terms are diagonal."]; True, False]]];

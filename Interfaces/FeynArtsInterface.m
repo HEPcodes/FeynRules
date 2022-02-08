@@ -321,7 +321,7 @@ porder=Ordering[faparts,All,FAParticleOrderingQ[#1,#2]&];
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*CouplRenaming*)
 
 
@@ -1268,6 +1268,7 @@ FR$FeynArtsInterface = False;
 
         vertexlistFA = DeleteCases[vertexlistFA, {_,_,_, 0 ,___}|{_,_,_,{0,0},___}];,
         (* else *)
+Print["mytimecheck,before LGC"];
 
         If[FR$DoPara,      
           (*SetSharedVariable[vertexlistFA];*)
@@ -1275,15 +1276,16 @@ FR$FeynArtsInterface = False;
           tmp=Table[tmppara=vertexlistFA[[wfoit]];ParallelSubmit[{wfoit,tmppara},LorentzGenCouplings @@ tmppara],{wfoit,Length[vertexlistFA]}];
           vertexlistFA=WaitAll[tmp];,
           vertexlistFA = LorentzGenCouplings @@@ vertexlistFA;];
-
+Print["mytimecheck,after 1 LGC"];
 
         (*Split the tree-level and counterterms and put them as two different entries*)
-        vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0]],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
+        vertexlistFA = ({#1,Join[Simplify[Coefficient[#2,FR$CT,0],TimeConstraint->1],Coefficient[#2,FR$CT,1],2]}&)@@@vertexlistFA;
         (*Remove the tree-level component for the vertices with two legs or less*)
         vertexlistFA = (If[Length[#1]>2,{#1,#2},{#1,Transpose[{#2[[All,1]]*0,#2[[All,2]]}]}]&)@@@vertexlistFA;
         vertexlistFA = DeleteCases[vertexlistFA,{a_,_?(Union[#]==={{0,0}}&)}];
 		];
 
+Print["mytimecheck,after LGC"];
        (* Coupling renaming *)
 
 	  If[couplRenameOpt === True,
@@ -1516,7 +1518,7 @@ If[Length[Cases[temp,yx_?(FreeQ[#,Spin]&&FreeQ[#,Lorentz]&&FreeQ[#,SP]&)*newpat-
 
 
 LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, temp1, temp2, temp3, output, $HCHELAS, tempFApc, done, deltflavind, GaAlgebraDone},   
-
+  Print["mytimecheck, LGC1"];
   temp = vertex; //. IndexDelta[Index[Spin, s_], Index[Spin, r_]] -> 1;
 
       (* We have to rename the color matrix T into SUNT for FormCalc to run properly.*)
@@ -1648,7 +1650,7 @@ LorentzGenCouplings[vertextype_, FAPartContent_, vertex_, fc_] := Block[{temp, t
       On[Simplify::time];
 
       tempFApc = First /@ FAPartContent;
-
+Print["mytimecheck, LGC-1"];
       output = {tempFApc, temp}];
 
 
