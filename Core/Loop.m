@@ -560,6 +560,10 @@ CCtmp[1/2a_]:=CCtmp[a]/2;
 CCtmp[a_FR$deltaZ*b_]:=a*CCtmp[b];
 CCtmp[Conjugate[a_FR$deltaZ]*b_]:=Conjugate[a]*CCtmp[b];
 
+DeleteTerms[exp_, condition__] := Block[{expanded = Expand[exp], listed},
+  listed = If[Head[expanded] === Plus, List @@ expanded, List[expanded]];
+  Plus @@ DeleteCases[listed, condition]
+]
 
 Dmshift[x_]:=Block[{FR$delta2},If[GhostFieldQ[x[[1]]]||GoldstoneQ[x[[1]]],
   {},
@@ -625,9 +629,12 @@ FR$DoPara=If[Global`FR$Parallelize && Length[Lag]>10 && $KernelCount>1,True,Fals
 cvar=Flatten[({#[___],#}&)/@Cases[M$Parameters,_?(Not[FreeQ[#,ComplexParameter->True]]||
   (Not[FreeQ[#,Indices]]&&FreeQ[#,Orthogonal->True]&&FreeQ[#,ComplexParameter->False])&)][[All,1]]];
 
-qcdind=(Representations/.Flatten[Cases[M$GaugeGroups,_?(Not[FreeQ[#,gs]]&),{2}]])[[All,2]];
-qcdclasses=DeleteCases[DeleteCases[M$ClassesDescription,_?(Not[FreeQ[#,Unphysical->True]]||Not[FreeQ[#,Ghost]]&)],
+qcdclasses = {};
+If[Not[FreeQ[M$GaugeGroups, gs]],
+  qcdind=(Representations/.Flatten[Cases[M$GaugeGroups,_?(Not[FreeQ[#,gs]]&),{2}]])[[All,2]];
+  qcdclasses=DeleteCases[DeleteCases[M$ClassesDescription,_?(Not[FreeQ[#,Unphysical->True]]||Not[FreeQ[#,Ghost]]&)],
            _?(And@@Table[FreeQ[#,qcdind[[kk]]],{kk,Length[qcdind]}]&)];
+];
 
 (*Keep two point in the vertices list*)
 FR$Loop=True;
@@ -750,15 +757,14 @@ If[FR$DoPara,
 ];
 deltaLagp=(FR$CT*#&)/@deltaLagp;
 Print["paramters before tadpole"];
-
 (*Print[InputForm[deltaLagp]];*)
 If[qcd,deltaLagt=0;lagtmp=0;,
   Print["with the tadpoles"];
   deltaLagt=(Coefficient[#,FR$CT]&)/@(deltaLag/.TadpoleRenormalization[])*FR$CT;
   $Output=logfile;
-  lagtmp = DeleteCases[Expand[GetMassTerms[deltaLagt+deltaLagp]],_?(Not[FreeQ[#,_?GhostFieldQ]]&)];
+  lagtmp = DeleteTerms[Expand[GetMassTerms[deltaLagt+deltaLagp]],_?(Not[FreeQ[#,_?GhostFieldQ]]&)];
   Print["t2"];
-  massspec=GetMassSpectrum[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Not[Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]]]]&)]];
+  massspec=GetMassSpectrum[DeleteTerms[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Not[Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]]]]&)]];
   $Output={OutputStream["stdout",1]};
   replist=Flatten[(Dmshift/@massspec[[1,2;;,{1,2}]])];
   Print["t3"];
@@ -770,7 +776,7 @@ If[qcd,deltaLagt=0;lagtmp=0;,
     Print["in if ee"];
     eerep=Cases[InternalParamList2/.Rule->tmpRule,tmpRule[ee,bb_]->ee==bb];
     aEWlab=DeleteCases[Cases[eerep[[1,2]],_Symbol,\[Infinity]],Pi];
-    eerep=Solve[eerep,aEWlab];
+    eerep=Solve[eerep,aEWlab, Assumptions -> {ee > 0}];
     Print[InputForm[eerep[[1]]]];
     deltaLagt=deltaLagt/.eerep[[1]][[1]]/.{Sqrt[ee^2]->ee,Power[ee^2,Rational[n_Integer,2]]->ee^n};,
     Print[Directive[Orange,"ee is not defined, this may cause issue for tadpoles renormalisation"]];
@@ -796,7 +802,7 @@ If[FR$DoPara,
 
 If[qcd,deltaLag=Expand[deltaLag],
   (*shift the wave function renormalization constant to absorb the tadpole contribution to the two points vertices*)
-  lagtmp = Expand[DeleteCases[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]],True]&)]//.InternalParamList2];
+  lagtmp = Expand[DeleteTerms[lagtmp,_?(If[Length[Cases[#,_?FieldQ]]==2,Cases[#,_?FieldQ][[1]]===anti[Cases[#,_?FieldQ][[2]]],True]&)]//.InternalParamList2];
   $Output=logfile;
   frtmp=FeynmanRules[lagtmp];
   frtmp=(MomentumReplace[#,1]&)/@MergeVertices[frtmp,FeynmanRules[deltaLag,SelectParticles->frtmp[[All,1,All,1]]]];
