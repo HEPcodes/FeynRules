@@ -874,7 +874,7 @@ GetR2[amp_,next_,UVfin_]:=Block[{temp,loopmom,nden,den,num,kk,extmom,intmom,lmco
     num=R2Tadpoles[num,den[[1,2]]^2,next,UVfin];
     ,
     2,
-    extmom=(Coefficient[#,loopmom]&/@Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a]).Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a]-2loopmom;
+    extmom=(Coefficient[#,loopmom]&/@Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a]) . Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a]-2loopmom;
     delta=SP[extmom,extmom]x*(x-1)+Cases[den,_?(Not[FreeQ[#,extmom]]&)][[1,2]]^2*x+Cases[den,_?(FreeQ[#,extmom]&)][[1,2]]^2*(1-x);
 
     If[FreeQ[num,F],
@@ -903,7 +903,7 @@ GetR2[amp_,next_,UVfin_]:=Block[{temp,loopmom,nden,den,num,kk,extmom,intmom,lmco
     ,
     3,
     extmom=(Coefficient[#,loopmom]&/@Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a])*Cases[den,\!\(TraditionalForm\`PropagatorDenominator\)[a_,b_]->a]-loopmom;
-    extmom=DeleteCases[extmom,0].{x,y};
+    extmom=DeleteCases[extmom,0] . {x,y};
     If[FreeQ[num,F],
       lmcoef=Cases[num,_?(Not[FreeQ[#,loopmom]]&)];
       If[Length[lmcoef]==3,
