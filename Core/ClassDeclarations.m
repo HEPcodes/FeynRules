@@ -1910,7 +1910,7 @@ GetOrder[{x1_,x2___}] := GetOrder[x1] /; (x1 =!= 0);
 GetOrder[{0,x2_,___}] := GetOrder[x2];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExtParameter*)
 
 
@@ -2092,7 +2092,7 @@ DeclareTensor[t_, ind_List, options___] := Block[{tc, tcom, tex},
 (*Gauge group declaration*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Abelian gauge groups*)
 
 
@@ -2257,14 +2257,14 @@ GroupToDynkins[gr_]:=Block[{reps,fund,adj,ind,gen,indd,dyn,bla},
     (*Expand indices ind1 and ind2 while setting bla to 1. This will create the matrix representing the first generator of the adj*)
     gen=MyTable[gen/.a_[Index[_,_],ind1_,ind2_]:>a[1,ind1,ind2]/.Index[_,a_]->a,Sequence@@Inner[List,indd,IndexDim/@Delete[ind,1],List]]/.MyTable->Table;
     (*Compute the dynkin index according to the formula above and return a rule like Rep -> dynkin*)
-    dyn=Rule[adj[[2]],Tr[gen.ConjugateTranspose[gen]]];
+    dyn=Rule[adj[[2]],Tr[gen . ConjugateTranspose[gen]]];
 
   (*Dynkin for other representations*)
     dyn=Join[{dyn},(ind={bla,#[[2]],#[[2]]};
     gen= #[[1]][Sequence@@Inner[Index,ind,Unique/@ind,List]];
     indd=gen/.a_[ind1_,ind2__]:>List@ind2/.Index[_,a_]->a;
     gen=ApplyDefinitions/@(MyTable[gen/.a_[Index[_,_],ind1_,ind2_]:>a[1,ind1,ind2]/.Index[_,a_]->a,Sequence@@Inner[List,indd,IndexDim/@Delete[ind,1],List]]/.MyTable->Table);
-   Rule[#[[2]],Tr[gen.ConjugateTranspose[gen]]])&/@fund];
+   Rule[#[[2]],Tr[gen . ConjugateTranspose[gen]]])&/@fund];
 
   (*Special case for SU(3)*)
    (*For the moment keep it commented 
